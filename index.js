@@ -93,7 +93,7 @@ app.get("/api/data", function (req, res) {
                     var _type = tmp.substring(6, tmp.length - 1);
                 var _client = expl[expl.length - 1];
                 var data = {
-                    time : moment(_time).toISOString(),
+                    time : moment(_time,"MMM DD hh:mm:ss").toISOString(),
                     domain : _domain,
                     status : _status,
                     type : _type,

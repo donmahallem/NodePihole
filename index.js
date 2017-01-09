@@ -24,8 +24,8 @@ function cr(pwd) {
 
 var CONFIG = ini.parse(fs.readFileSync("/etc/pihole/setupVars.conf", "utf-8"));
 
-secret = "" + cr(cr(cr("" + (Math.random() * Date.now()))));
-cookieSecret = "" + cr(cr(cr("" + (Math.random() * Date.now())) + secret));
+var secret = cr(cr(cr("" + (Math.random() * Date.now()))));
+var cookieSecret = cr(cr(cr("" + (Math.random() * Date.now())) + secret));
 
 app.use("/img", serveStatic(__dirname + "/img"))
 app.use("/scripts", serveStatic(__dirname + "/scripts"))
@@ -75,7 +75,7 @@ app.get("/api/data", function (req, res) {
         var lineReader = require("readline").createInterface({
                 input : require("fs").createReadStream("/var/log/pihole.log")
             });
-        lines = [];
+        var lines = [];
         lineReader.on("line", function (line) {
             if (line == undefined || line.trim() == "") {
                 console.log("empty line");
@@ -89,7 +89,7 @@ app.get("/api/data", function (req, res) {
                 var _status = Math.random() < 0.5 ? "Pi-holed" : "OK"
                     var _type = tmp.substring(6, tmp.length - 1);
                 var _client = expl[expl.length - 1];
-                data = {
+                var data = {
                     time : moment(_time).toISOString(),
                     domain : _domain,
                     status : _status,
@@ -105,8 +105,9 @@ app.get("/api/data", function (req, res) {
                 data : lines
             });
         });
-    } else
+    } else{
         res.end();
+	}
 });
 app.get("/api/list", function (req, res) {
     if (!req.user.authenticated) {
@@ -118,7 +119,6 @@ app.get("/api/list", function (req, res) {
             const filepath = "/etc/pihole/" + req.query.list + "list.txt";
             fs.access(filepath, fs.constants.F_OK | fs.constants.R_OK, function (err) {
                 if (err) {
-                    console.error("List file \"" + filepath + "\" does not exist");
                     res.sendStatus(500);
                 } else {
                     lines = [];

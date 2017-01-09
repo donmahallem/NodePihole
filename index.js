@@ -116,7 +116,7 @@ app.get('/api/list', function (req, res) {
     if (req.query.list != undefined) {
         if (req.query.list == "white" || req.query.list == "black") {
             const filepath = '/etc/pihole/' + req.query.list + 'list.txt';
-            fs.access(filepath, fs.constants.F_OK | fs.constants.R_OK, (err) =  > {
+            fs.access(filepath, fs.constants.F_OK | fs.constants.R_OK, function(err) {
                     if (err) {
                         console.error('List file \'' + filepath + '\' does not exist');
                         res.sendStatus(500);

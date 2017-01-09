@@ -22,7 +22,7 @@ function cr(pwd){
 	return crypto.createHash('sha256','utf8').update(hash1).digest('hex');
 }
 
-var CONFIG = ini.parse(fs.readFileSync('./setupVars.conf', 'utf-8'))
+var CONFIG = ini.parse(fs.readFileSync('/etc/pihole/setupVars.conf', 'utf-8'))
 
 secret=""+cr(cr(cr(""+(Math.random()*Date.now()))));
 cookieSecret=""+cr(cr(cr(""+(Math.random()*Date.now()))+secret));
@@ -165,6 +165,7 @@ app.get('/queries', function (req, res) {
 	if(req.user.authenticated){
 		res.render('queries_layout.pug', { PCONFIG:{boxedLayout:false,wrongPassword:false,authenticated :req.user.authenticated,activePage:"queries"} })
 	}else{
+		console.log("Unauthorized request to /queries");
 		res.redirect('/login');
 	}
 });
@@ -219,4 +220,6 @@ app.post('/login', function (req, res) {
 
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!')
-})
+});
+
+module.exports = app;

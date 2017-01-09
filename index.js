@@ -125,9 +125,10 @@ app.get("/api/list", function (req, res) {
                             input : require("fs").createReadStream("/etc/pihole/" + req.query.list + "list.txt")
                         });
                     lineReader.on("line", function (line) {
-                        if (line === undefined || line === "")
+                        if (line === undefined || line === ""){
                             return;
-                        lines.push(line);
+                        }
+						lines.push(line);
                     });
                     lineReader.on("close", function () {
                         res.json(lines);

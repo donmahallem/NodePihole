@@ -77,12 +77,11 @@ app.get("/api/data", function (req, res) {
             });
         var lines = [];
         lineReader.on("line", function (line) {
-            if (line === undefined || line.trim() === "") {
+            if ( (line === undefined || line.trim() === "") && line.indexOf(": query[A") === -1) {
                 console.log("empty line");
                 return;
-            }
-            if (line.indexOf(": query[A") != -1) {
-                var _time = line.substring(0, 16);
+            }else{
+				var _time = line.substring(0, 16);
                 var expl = line.trim().split(" ");
                 var _domain = expl[expl.length - 3];
                 var tmp = expl[expl.length - 4];
@@ -114,7 +113,7 @@ app.get("/api/list", function (req, res) {
         res.sendStatus(401);
         return;
     }
-    if (req.query.list != undefined) {
+    if (req.query.list !== undefined) {
         if (req.query.list === "white" || req.query.list === "black") {
             const filepath = "/etc/pihole/" + req.query.list + "list.txt";
             fs.access(filepath, fs.constants.F_OK | fs.constants.R_OK, function (err) {

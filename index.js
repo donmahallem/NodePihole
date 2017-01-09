@@ -77,7 +77,7 @@ app.get("/api/data", function (req, res) {
             });
         var lines = [];
         lineReader.on("line", function (line) {
-            if (line == undefined || line.trim() == "") {
+            if (line === undefined || line.trim() === "") {
                 console.log("empty line");
                 return;
             }
@@ -115,7 +115,7 @@ app.get("/api/list", function (req, res) {
         return;
     }
     if (req.query.list != undefined) {
-        if (req.query.list == "white" || req.query.list == "black") {
+        if (req.query.list === "white" || req.query.list === "black") {
             const filepath = "/etc/pihole/" + req.query.list + "list.txt";
             fs.access(filepath, fs.constants.F_OK | fs.constants.R_OK, function (err) {
                 if (err) {
@@ -126,7 +126,7 @@ app.get("/api/list", function (req, res) {
                             input : require("fs").createReadStream("/etc/pihole/" + req.query.list + "list.txt")
                         });
                     lineReader.on("line", function (line) {
-                        if (line == undefined || line == "")
+                        if (line === undefined || line === "")
                             return;
                         lines.push(line);
                     });
@@ -151,11 +151,11 @@ app.post("/scripts/pi-hole/php/add.php", function (req, res) {
     var list = req.body.list;
     var token = req.body.token;
     if (domain && list) {
-        if (list == "white") {
+        if (list === "white") {
             exec("sudo pihole -w -q " + domain);
             res.end();
             return;
-        } else if (list == "black") {
+        } else if (list === "black") {
             exec("sudo pihole -b -q " + domain);
             res.end();
             return;
@@ -196,7 +196,7 @@ app.get("/list", function (req, res) {
         res.redirect("/login");
         return;
     }
-    if (req.query.l == "white") {
+    if (req.query.l === "white") {
         res.render("list_layout.pug", {
             PCONFIG : {
                 boxedLayout : false,
@@ -206,7 +206,7 @@ app.get("/list", function (req, res) {
                 listType : "white"
             }
         });
-    } else if (req.query.l == "black") {
+    } else if (req.query.l === "black") {
         res.render("list_layout.pug", {
             PCONFIG : {
                 boxedLayout : false,
@@ -256,7 +256,7 @@ app.post("/login", function (req, res) {
     var token = req.body.pw;
     if (token) {
         tokenHash = cr(token);
-        if (tokenHash == CONFIG.WEBPASSWORD) {
+        if (tokenHash === CONFIG.WEBPASSWORD) {
             console.log("User authenticated successful");
             jwt.sign({
                 foo : "bar"

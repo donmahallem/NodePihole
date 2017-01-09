@@ -1,4 +1,4 @@
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = "test";
 
 
 var chai = require('chai');
@@ -8,46 +8,46 @@ var should = chai.should();
 
 chai.use(chaiHttp);
 
-describe('Checking Gets', function() {
-  it('get /', function(done) {
+describe("Checking Gets", function() {
+  it("get /", function(done) {
 	  chai.request(server)
-		.get('/')
+		.get("/")
 		.end(function(err, res){
             if(err) done(err);
 		  res.status.should.equal(200);
 		  done();
 		});
 	});
-  it('get /home', function(done) {
+  it("get /home", function(done) {
 	  chai.request(server)
-		.get('/home')
+		.get("/home")
 		.end(function(err, res){
             if(err) done(err);
 		  res.status.should.equal(200);
 		  done();
 		});
 	});
-  it('get /login', function(done) {
+  it("get /login", function(done) {
 	  chai.request(server)
-		.get('/login')
+		.get("/login")
 		.end(function(err, res){
             if(err) done(err);
 		  res.status.should.equal(200);
 		  done();
 		});
 	});
-  it('get /logout', function(done) {
+  it("get /logout", function(done) {
 	  chai.request(server)
-		.get('/logout')
+		.get("/logout")
 		.end(function(err, res){
             if(err) done(err);
 		  res.status.should.equal(200);
 		  done();
 		});
 	});
-  it('get /queries', function(done) {
+  it("get /queries", function(done) {
 	  chai.request(server)
-		.get('/queries')
+		.get("/queries")
 		.end(function(err, res){
             if(err) done(err);
 			res.status.should.equal(302);

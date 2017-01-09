@@ -21,7 +21,7 @@ function cr(pwd){
 	return crypto.createHash('sha256','utf8').update(hash1).digest('hex');
 }
 
-var CONFIG = ini.parse(fs.readFileSync('/etc/pihole/setupVars.conf', 'utf-8'))
+var CONFIG = ini.parse(fs.readFileSync("/etc/pihole/setupVars.conf", "utf-8"))
 
 secret=""+cr(cr(cr(""+(Math.random()*Date.now()))));
 cookieSecret=""+cr(cr(cr(""+(Math.random()*Date.now()))+secret));

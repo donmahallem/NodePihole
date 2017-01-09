@@ -55,7 +55,7 @@ function updateSummaryData(runOnce) {
 
 var failures = 0;
 function updateQueriesOverTime() {
-    $.getJSON("api.php?overTimeData10mins", function(data) {
+    $.getJSON("/api/data?overTimeData10mins", function(data) {
         // convert received objects to arrays
         data.domains_over_time = objectToArray(data.domains_over_time);
         data.ads_over_time = objectToArray(data.ads_over_time);

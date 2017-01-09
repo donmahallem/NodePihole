@@ -27,9 +27,7 @@ var CONFIG = ini.parse(fs.readFileSync("/etc/pihole/setupVars.conf", "utf-8"));
 var secret = cr(cr(cr("" + (Math.random() * Date.now()))));
 var cookieSecret = cr(cr(cr("" + (Math.random() * Date.now())) + secret));
 
-app.use("/img", serveStatic(__dirname + "/img"))
-app.use("/scripts", serveStatic(__dirname + "/scripts"))
-app.use("/style", serveStatic(__dirname + "/style"))
+app.use("/static", serveStatic(__dirname + "/static"))
 app.use(cookieParser(cookieSecret))
 
 app.use(function (req, res, next) {
@@ -72,6 +70,11 @@ app.get("/api/data", function (req, res) {
         res.write("BBBBB");
     }
     if (req.query.overTimeData !== undefined) {}
+    if ("overTimeData10mins" in req.query) {
+		var byTimeDomains = [];
+        var byTimeAds = [];
+        res.json([byTimeDomains,byTimeAds]);
+	}
     if (req.query.topItems !== undefined) {}
     if (req.query.recentItems !== undefined) {}
     if (req.query.getQueryTypes !== undefined) {}

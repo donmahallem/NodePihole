@@ -30,7 +30,7 @@ function updateSummaryData(runOnce) {
             setTimeout(updateSummaryData, timeInSeconds * 1000);
         }
     };
-    $.getJSON("api.php?summary", function LoadSummaryData(data) {
+    $.getJSON("/api/data?summary", function LoadSummaryData(data) {
 
         ["ads_blocked_today", "dns_queries_today", "ads_percentage_today"].forEach(function(today) {
             var todayElement = $("h3#" + today);

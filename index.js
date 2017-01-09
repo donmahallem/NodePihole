@@ -59,8 +59,13 @@ app.use(function (req, res, next) {
 });
 
 app.get("/api/data", function (req, res) {
-    if (req.query.summary !== undefined) {
-        res.write("AAAAA");
+    if ("summary" in req.query) {
+		var testData={
+			ads_blocked_today:10,
+			dns_queries_today:200,
+			ads_percentage_today:10.2,
+			domains_being_blocked:20};
+		res.json(testData);
     }
     if (req.query.summaryRaw !== undefined) {
         res.write("BBBBB");
@@ -71,14 +76,13 @@ app.get("/api/data", function (req, res) {
     if (req.query.getQueryTypes !== undefined) {}
     if (req.query.getForwardDestinations !== undefined) {}
     if (req.query.getQuerySources !== undefined) {}
-    if (req.query.getAllQueries !== undefined) {
+    if ("getAllQueries" in req.query) {
         var lineReader = require("readline").createInterface({
                 input : require("fs").createReadStream("/var/log/pihole.log")
             });
         var lines = [];
         lineReader.on("line", function (line) {
-            if ( (line === undefined || line.trim() === "") && line.indexOf(": query[A") === -1) {
-                console.log("empty line");
+            if (typeof line === 'undefined' || line.trim() === "" || line.indexOf(": query[A") === -1) {
                 return;
             }else{
 				var _time = line.substring(0, 16);
@@ -257,7 +261,6 @@ app.post("/login", function (req, res) {
     if (token) {
         tokenHash = cr(token);
         if (tokenHash === CONFIG.WEBPASSWORD) {
-            console.log("User authenticated successful");
             jwt.sign({
                 foo : "bar"
             }, "secret", {

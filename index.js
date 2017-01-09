@@ -17,6 +17,10 @@ app.set('view engine', 'pug')
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
+function cr(pwd){
+	hash1=crypto.createHash('sha256','utf8').update(pwd).digest('hex');
+	return crypto.createHash('sha256','utf8').update(hash1).digest('hex');
+}
 
 var CONFIG = ini.parse(fs.readFileSync('./setupVars.conf', 'utf-8'))
 
@@ -30,10 +34,6 @@ app.use(cookieParser(cookieSecret))
 
 
 
-function cr(pwd){
-	hash1=crypto.createHash('sha256','utf8').update(pwd).digest('hex');
-	return crypto.createHash('sha256','utf8').update(hash1).digest('hex');
-}
 
 app.use(function (req, res, next) {
 	if(req.signedCookies.auth){
@@ -52,26 +52,26 @@ app.use(function (req, res, next) {
 });
 
 app.get('/api/data', function (req, res) {
-	if(req.query.summary!=undefined){
+	if(req.query.summary!==undefined){
 		res.write("AAAAA");
 	}
-	if(req.query.summaryRaw!=undefined){
+	if(req.query.summaryRaw!==undefined){
 		res.write("BBBBB");
 	}
-	if(req.query.overTimeData!=undefined){
+	if(req.query.overTimeData!==undefined){
 	}
-	if(req.query.topItems!=undefined){
+	if(req.query.topItems!==undefined){
 	}
-	if(req.query.recentItems!=undefined){
+	if(req.query.recentItems!==undefined){
 	}
-	if(req.query.getQueryTypes!=undefined){
+	if(req.query.getQueryTypes!==undefined){
 	}
-	if(req.query.getForwardDestinations!=undefined){
+	if(req.query.getForwardDestinations!==undefined){
 	
 	}
-	if(req.query.getQuerySources!=undefined){
+	if(req.query.getQuerySources!==undefined){
 	}
-	if(req.query.getAllQueries!=undefined){
+	if(req.query.getAllQueries!==undefined){
 		var lineReader = require('readline').createInterface({input: require('fs').createReadStream('/var/log/pihole.log')});
 		lines=[];
 		lineReader.on('line', function (line) {

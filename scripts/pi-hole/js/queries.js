@@ -8,12 +8,13 @@ function escapeRegex(text) {
   };
   return text.replace(/[().]/g, function(m) { return map[m]; });
 }
+
 // stores if the table is already displaying a loading indicator
 var tableIsLoading=true;
 // shows loading indicator above table
 function setTableLoading(loading){
 	// dont progress if queried state is already active
-	if(loading == tableIsLoading){
+	if(loading === tableIsLoading){
 		return;
 	}
 	tableIsLoading=loading;

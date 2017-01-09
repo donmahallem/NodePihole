@@ -1,25 +1,25 @@
-var serveStatic = require('serve-static');
-    var app = require('express')();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
-const crypto = require('crypto');
-var jwt = require('jsonwebtoken');
-var bodyParser = require('body-parser');
-const fs = require('fs');
-const ini = require('ini');
-const cookieParser = require('cookie-parser');
-    const spawn = require('child_process').spawn;
-const exec = require('child_process').exec;
-const readline = require('readline');
-const moment = require('moment');
-app.set('view engine', 'pug');
+var serveStatic = require("serve-static");
+var app = require("express")();
+var server = require("http").Server(app);
+var io = require("socket.io")(server);
+const crypto = require("crypto");
+var jwt = require("jsonwebtoken");
+var bodyParser = require("body-parser");
+const fs = require("fs");
+const ini = require("ini");
+const cookieParser = require("cookie-parser");
+const spawn = require("child_process").spawn;
+const exec = require("child_process").exec;
+const readline = require("readline");
+const moment = require("moment");
+app.set("view engine", "pug");
 app.use(bodyParser.urlencoded({
         extended : true
     }));
 
 function cr(pwd) {
-    hash1 = crypto.createHash('sha256', 'utf8').update(pwd).digest('hex');
-    return crypto.createHash('sha256', 'utf8').update(hash1).digest('hex');
+    hash1 = crypto.createHash("sha256", "utf8").update(pwd).digest("hex");
+    return crypto.createHash("sha256", "utf8").update(hash1).digest("hex");
 }
 
 var CONFIG = ini.parse(fs.readFileSync("/etc/pihole/setupVars.conf", "utf-8"));
@@ -27,17 +27,17 @@ var CONFIG = ini.parse(fs.readFileSync("/etc/pihole/setupVars.conf", "utf-8"));
 secret = "" + cr(cr(cr("" + (Math.random() * Date.now()))));
 cookieSecret = "" + cr(cr(cr("" + (Math.random() * Date.now())) + secret));
 
-app.use("/img", serveStatic(__dirname + '/img'))
-app.use("/scripts", serveStatic(__dirname + '/scripts'))
-app.use("/style", serveStatic(__dirname + '/style'))
+app.use("/img", serveStatic(__dirname + "/img"))
+app.use("/scripts", serveStatic(__dirname + "/scripts"))
+app.use("/style", serveStatic(__dirname + "/style"))
 app.use(cookieParser(cookieSecret))
 
 app.use(function (req, res, next) {
     if (req.signedCookies.auth) {
-        jwt.verify(req.signedCookies.auth, 'secret', {
-            subject : 'admin',
-            issuer : 'pihole',
-            audience : 'piholeuser'
+        jwt.verify(req.signedCookies.auth, "secret", {
+            subject : "admin",
+            issuer : "pihole",
+            audience : "piholeuser"
         }, function (err, decoded) {
             if (decoded) {
                 req.user = {
@@ -58,7 +58,7 @@ app.use(function (req, res, next) {
     }
 });
 
-app.get('/api/data', function (req, res) {
+app.get("/api/data", function (req, res) {
     if (req.query.summary !== undefined) {
         res.write("AAAAA");
     }
@@ -72,16 +72,16 @@ app.get('/api/data', function (req, res) {
     if (req.query.getForwardDestinations !== undefined) {}
     if (req.query.getQuerySources !== undefined) {}
     if (req.query.getAllQueries !== undefined) {
-        var lineReader = require('readline').createInterface({
-                input : require('fs').createReadStream('/var/log/pihole.log')
+        var lineReader = require("readline").createInterface({
+                input : require("fs").createReadStream("/var/log/pihole.log")
             });
         lines = [];
-        lineReader.on('line', function (line) {
+        lineReader.on("line", function (line) {
             if (line == undefined || line.trim() == "") {
                 console.log("empty line");
                 return;
             }
-            if (line.indexOf(': query[A') != -1) {
+            if (line.indexOf(": query[A") != -1) {
                 var _time = line.substring(0, 16);
                 var expl = line.trim().split(" ");
                 var _domain = expl[expl.length - 3];
@@ -100,7 +100,7 @@ app.get('/api/data', function (req, res) {
                 lines.push(data);
             }
         });
-        lineReader.on('close', function () {
+        lineReader.on("close", function () {
             res.json({
                 data : lines
             });
@@ -108,40 +108,40 @@ app.get('/api/data', function (req, res) {
     } else
         res.end();
 });
-app.get('/api/list', function (req, res) {
+app.get("/api/list", function (req, res) {
     if (!req.user.authenticated) {
         res.sendStatus(401);
         return;
     }
     if (req.query.list != undefined) {
         if (req.query.list == "white" || req.query.list == "black") {
-            const filepath = '/etc/pihole/' + req.query.list + 'list.txt';
-            fs.access(filepath, fs.constants.F_OK | fs.constants.R_OK, function(err) {
-                    if (err) {
-                        console.error('List file \'' + filepath + '\' does not exist');
-                        res.sendStatus(500);
-                    } else {
-                        lines = [];
-                        var lineReader = require('readline').createInterface({
-                                input : require('fs').createReadStream('/etc/pihole/' + req.query.list + 'list.txt')
-                            });
-                        lineReader.on('line', function (line) {
-                            if (line == undefined || line == "")
-                                return;
-                            lines.push(line);
+            const filepath = "/etc/pihole/" + req.query.list + "list.txt";
+            fs.access(filepath, fs.constants.F_OK | fs.constants.R_OK, function (err) {
+                if (err) {
+                    console.error("List file \"" + filepath + "\" does not exist");
+                    res.sendStatus(500);
+                } else {
+                    lines = [];
+                    var lineReader = require("readline").createInterface({
+                            input : require("fs").createReadStream("/etc/pihole/" + req.query.list + "list.txt")
                         });
-                        lineReader.on('close', function () {
-                            res.json(lines);
-                        });
-                    }
-                });
+                    lineReader.on("line", function (line) {
+                        if (line == undefined || line == "")
+                            return;
+                        lines.push(line);
+                    });
+                    lineReader.on("close", function () {
+                        res.json(lines);
+                    });
+                }
+            });
             return;
         }
     }
     res.sendStatus(404);
 });
 
-app.post('/scripts/pi-hole/php/add.php', function (req, res) {
+app.post("/scripts/pi-hole/php/add.php", function (req, res) {
     if (!req.user.authenticated) {
         res.sendStatus(401);
         res.end();
@@ -151,11 +151,11 @@ app.post('/scripts/pi-hole/php/add.php', function (req, res) {
     var list = req.body.list;
     var token = req.body.token;
     if (domain && list) {
-        if (list == 'white') {
+        if (list == "white") {
             exec("sudo pihole -w -q " + domain);
             res.end();
             return;
-        } else if (list == 'black') {
+        } else if (list == "black") {
             exec("sudo pihole -b -q " + domain);
             res.end();
             return;
@@ -166,9 +166,9 @@ app.post('/scripts/pi-hole/php/add.php', function (req, res) {
     res.sendStatus(404);
 
 });
-app.get('/queries', function (req, res) {
+app.get("/queries", function (req, res) {
     if (req.user.authenticated) {
-        res.render('queries_layout.pug', {
+        res.render("queries_layout.pug", {
             PCONFIG : {
                 boxedLayout : false,
                 wrongPassword : false,
@@ -178,11 +178,11 @@ app.get('/queries', function (req, res) {
         })
     } else {
         console.log("Unauthorized request to /queries");
-        res.redirect('/login');
+        res.redirect("/login");
     }
 });
-app.get('/login', function (req, res) {
-    res.render('login_layout.pug', {
+app.get("/login", function (req, res) {
+    res.render("login_layout.pug", {
         PCONFIG : {
             boxedLayout : false,
             wrongPassword : false,
@@ -191,49 +191,49 @@ app.get('/login', function (req, res) {
         }
     })
 });
-app.get('/list', function (req, res) {
+app.get("/list", function (req, res) {
     if (!req.user.authenticated) {
-        res.redirect('/login');
+        res.redirect("/login");
         return;
     }
     if (req.query.l == "white") {
-        res.render('list_layout.pug', {
+        res.render("list_layout.pug", {
             PCONFIG : {
                 boxedLayout : false,
                 wrongPassword : false,
                 authenticated : req.user.authenticated,
                 activePage : "login",
-                listType : 'white'
+                listType : "white"
             }
         });
     } else if (req.query.l == "black") {
-        res.render('list_layout.pug', {
+        res.render("list_layout.pug", {
             PCONFIG : {
                 boxedLayout : false,
                 wrongPassword : false,
                 authenticated : req.user.authenticated,
                 activePage : "login",
-                listType : 'black'
+                listType : "black"
             }
         });
     } else {
-        res.render('list_layout.pug', {
+        res.render("list_layout.pug", {
             PCONFIG : {
                 boxedLayout : false,
                 wrongPassword : false,
                 authenticated : req.user.authenticated,
                 activePage : "login",
-                listType : 'unknown'
+                listType : "unknown"
             }
         });
     }
 });
-app.get('/logout', function (req, res) {
-    res.clearCookie('auth');
-    res.redirect('/home');
+app.get("/logout", function (req, res) {
+    res.clearCookie("auth");
+    res.redirect("/home");
 });
-app.get('/', function (req, res) {
-    res.render('main_layout.pug', {
+app.get("/", function (req, res) {
+    res.render("main_layout.pug", {
         PCONFIG : {
             boxedLayout : false,
             wrongPassword : false,
@@ -242,8 +242,8 @@ app.get('/', function (req, res) {
         }
     })
 });
-app.get('/home', function (req, res) {
-    res.render('main_layout.pug', {
+app.get("/home", function (req, res) {
+    res.render("main_layout.pug", {
         PCONFIG : {
             boxedLayout : false,
             wrongPassword : false,
@@ -252,23 +252,23 @@ app.get('/home', function (req, res) {
         }
     })
 });
-app.post('/login', function (req, res) {
+app.post("/login", function (req, res) {
     var token = req.body.pw;
     if (token) {
         tokenHash = cr(token);
         if (tokenHash == CONFIG.WEBPASSWORD) {
             console.log("User authenticated successful");
             jwt.sign({
-                foo : 'bar'
-            }, 'secret', {
-                expiresIn : '1h',
-                subject : 'admin',
-                issuer : 'pihole',
-                audience : 'piholeuser'
+                foo : "bar"
+            }, "secret", {
+                expiresIn : "1h",
+                subject : "admin",
+                issuer : "pihole",
+                audience : "piholeuser"
             },
                 function (err, token) {
                 if (token) {
-                    res.cookie('auth', token, {
+                    res.cookie("auth", token, {
                         expires : new Date(Date.now() + 60 * 60 * 1000),
                         httpOnly : true,
                         signed : true
@@ -276,7 +276,7 @@ app.post('/login', function (req, res) {
                     res.redirect("/home");
                 } else {
                     console.log("error occured");
-                    res.render('login_layout.pug', {
+                    res.render("login_layout.pug", {
                         PCONFIG : {
                             boxedLayout : false,
                             wrongPassword : false,
@@ -289,7 +289,7 @@ app.post('/login', function (req, res) {
             return;
         }
     }
-    res.render('login_layout.pug', {
+    res.render("login_layout.pug", {
         PCONFIG : {
             boxedLayout : false,
             wrongPassword : true,
@@ -300,7 +300,7 @@ app.post('/login', function (req, res) {
 });
 
 app.listen(3000, function () {
-    console.log('Example app listening on port 3000!')
+    console.log("Example app listening on port 3000!")
 });
 
 module.exports = app;

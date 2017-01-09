@@ -5,7 +5,6 @@ var io = require('socket.io')(server);
 const crypto = require('crypto');
 var jwt = require('jsonwebtoken');
 var bodyParser = require('body-parser');
-const piholeConf=require('pihole-config');
 const fs = require('fs');
 const ini = require('ini');
 const cookieParser = require('cookie-parser')

@@ -6,4 +6,5 @@ node_js:
   - "0.6"
   - "iojs"
 before_install:
+- mkdir -p /etc/pihole
 - cp ./test/setupVars.conf /etc/pihole/setupVars.conf

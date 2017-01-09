@@ -60,12 +60,13 @@ app.use(function (req, res, next) {
 
 app.get("/api/data", function (req, res) {
     if ("summary" in req.query) {
-		var testData={
-			ads_blocked_today:10,
-			dns_queries_today:200,
-			ads_percentage_today:10.2,
-			domains_being_blocked:20};
-		res.json(testData);
+        var testData = {
+            ads_blocked_today : 10,
+            dns_queries_today : 200,
+            ads_percentage_today : 10.2,
+            domains_being_blocked : 20
+        };
+        res.json(testData);
     }
     if (req.query.summaryRaw !== undefined) {
         res.write("BBBBB");
@@ -82,10 +83,10 @@ app.get("/api/data", function (req, res) {
             });
         var lines = [];
         lineReader.on("line", function (line) {
-            if (typeof line === 'undefined' || line.trim() === "" || line.indexOf(": query[A") === -1) {
+            if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
                 return;
-            }else{
-				var _time = line.substring(0, 16);
+            } else {
+                var _time = line.substring(0, 16);
                 var expl = line.trim().split(" ");
                 var _domain = expl[expl.length - 3];
                 var tmp = expl[expl.length - 4];
@@ -93,7 +94,7 @@ app.get("/api/data", function (req, res) {
                     var _type = tmp.substring(6, tmp.length - 1);
                 var _client = expl[expl.length - 1];
                 var data = {
-                    time : moment(_time,"MMM DD hh:mm:ss").toISOString(),
+                    time : moment(_time, "MMM DD hh:mm:ss").toISOString(),
                     domain : _domain,
                     status : _status,
                     type : _type,
@@ -108,9 +109,9 @@ app.get("/api/data", function (req, res) {
                 data : lines
             });
         });
-    } else{
+    } else {
         res.end();
-	}
+    }
 });
 app.get("/api/list", function (req, res) {
     if (!req.user.authenticated) {
@@ -129,10 +130,10 @@ app.get("/api/list", function (req, res) {
                             input : require("fs").createReadStream("/etc/pihole/" + req.query.list + "list.txt")
                         });
                     lineReader.on("line", function (line) {
-                        if (line === undefined || line === ""){
+                        if (line === undefined || line === "") {
                             return;
                         }
-						lines.push(line);
+                        lines.push(line);
                     });
                     lineReader.on("close", function () {
                         res.json(lines);

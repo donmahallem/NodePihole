@@ -1,0 +1,54 @@
+section.content
+	if PCONFIG.listType=='unknown'
+		.row
+			.col-md-12
+				.callout.callout-warning
+					h4 The list type you were asking for is unknown
+					p
+						| Choose one of the list types below
+
+		.row
+			.col-lg-3.col-md-6.col-xs-12
+				a(href='/list?l=white')
+					.small-box.bg-green
+						.inner
+							h3 Whitelist
+							p Domains Being Whitelisted
+						.icon
+							i.fa.fa-pencil-square-o
+			.col-lg-3.col-md-6.col-xs-12
+				a(href='/list?l=black')
+					.small-box.bg-red
+						.inner
+							h3 Blacklist
+							p Domains Being Blocked
+						.icon
+							i.fa.fa-ban
+	else
+		// Send list type to JS
+		#list-type(hidden='')= PCONFIG.listType
+		// Title
+		.page-header
+			h1= PCONFIG.listType=='black'?'Blacklist':'Whitelist'
+		// Domain Input
+		.form-group.input-group
+			input#domain.form-control(type='text', placeholder='Add a domain (example.com or sub.example.com)')
+			span.input-group-btn
+				button#btnAdd.btn.btn-default(type='button') Add
+				button#btnRefresh.btn.btn-default(type='button') Refresh
+		// Alerts
+		#alInfo.alert.alert-info.alert-dismissible.fade.in(role='alert', hidden='true')
+			button.close(type='button', data-hide='alert', aria-label='Close')
+				span(aria-hidden='true') ×
+			|     Adding to the= PCONFIG.listType
+			| ...
+		#alSuccess.alert.alert-success.alert-dismissible.fade.in(role='alert', hidden='true')
+			button.close(type='button', data-hide='alert', aria-label='Close')
+				span(aria-hidden='true') ×
+			|     Success! The list will refresh.
+		#alFailure.alert.alert-danger.alert-dismissible.fade.in(role='alert', hidden='true')
+			button.close(type='button', data-hide='alert', aria-label='Close')
+				span(aria-hidden='true') ×
+			|     Failure! Something went wrong.
+		// Domain List
+		ul#list.list-group

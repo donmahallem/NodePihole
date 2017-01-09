@@ -1,0 +1,129 @@
+// Main content
+section.content
+	// Small boxes (Stat box)
+	.row
+		.col-lg-3.col-xs-12
+			// small box
+			.small-box.bg-aqua
+				.inner
+					h3#ads_blocked_today.statistic ---
+					p DNS Queries Blocked Today
+				.icon
+					i.ion.ion-android-hand
+		// ./col
+		.col-lg-3.col-xs-12
+			// small box
+			.small-box.bg-green
+				.inner
+					h3#dns_queries_today.statistic ---
+					p DNS Queries Today
+				.icon
+					i.ion.ion-earth
+		// ./col
+		.col-lg-3.col-xs-12
+			// small box
+			.small-box.bg-yellow
+				.inner
+					h3#ads_percentage_today.statistic ---
+					p Of Today's Queries Were Blocked
+				.icon
+					i.ion.ion-pie-graph
+		// ./col
+		.col-lg-3.col-xs-12
+			// small box
+			.small-box.bg-red
+				.inner
+					h3#domains_being_blocked.statistic ---
+					p Domains Being Blocked
+				.icon
+					i.ion.ion-ios-list
+		// ./col
+	.row
+		.col-md-12
+			#queries-over-time.box
+				.box-header.with-border
+					h3.box-title Queries over time
+				.box-body
+					.chart
+						canvas#queryOverTimeChart(width='800', height='250')
+				.overlay
+					i.fa.fa-refresh.fa-spin
+				// /.box-body
+	if PCONFIG.authenticated
+		.row
+			.col-md-6
+				#query-types.box
+					.box-header.with-border
+						h3.box-title Query Types
+					.box-body
+						.chart
+							canvas#queryTypeChart(width='400', height='200')
+					.overlay
+						i.fa.fa-refresh.fa-spin
+					// /.box-body
+			.col-md-6
+				#forward-destinations.box
+					.box-header.with-border
+						h3.box-title Forward Destinations
+					.box-body
+						.chart
+							canvas#forwardDestinationChart(width='400', height='200')
+					.overlay
+						i.fa.fa-refresh.fa-spin
+					// /.box-body
+		.row
+			div(class=PCONFIG.boxedLayout?'col-md-6':'col-md-6 col-lg-4')
+				#domain-frequency.box
+					.box-header.with-border
+						h3.box-title Top Domains
+					// /.box-header
+					.box-body
+						.table-responsive
+							table.table.table-bordered
+								tbody
+									tr
+										th Domain
+										th Hits
+										th Frequency
+					.overlay
+						i.fa.fa-refresh.fa-spin
+					// /.box-body
+				// /.box
+			// /.col
+			div(class=PCONFIG.boxedLayout?'col-md-6':'col-md-6 col-lg-4')
+				#ad-frequency.box
+					.box-header.with-border
+						h3.box-title Top Advertisers
+					// /.box-header
+					.box-body
+						.table-responsive
+							table.table.table-bordered
+								tbody
+									tr
+										th Domain
+										th Hits
+										th Frequency
+					.overlay
+						i.fa.fa-refresh.fa-spin
+					// /.box-body
+				// /.box
+			// /.col
+			div(class=PCONFIG.boxedLayout?'col-md-6':'col-md-6 col-lg-4')
+				#client-frequency.box
+					.box-header.with-border
+						h3.box-title Top Clients
+					// /.box-header
+					.box-body
+						.table-responsive
+							table.table.table-bordered
+								tbody
+									tr
+										th Client
+										th Requests
+										th Frequency
+					.overlay
+						i.fa.fa-refresh.fa-spin
+					// /.box-body
+				// /.box
+			// /.col
+		// /.row

@@ -1,0 +1,130 @@
+aside.main-sidebar
+	// sidebar: style can be found in sidebar.less
+	section.sidebar
+		// Sidebar user panel
+		.user-panel
+			.pull-left.image
+				img.img-responsive(src='img/logo.svg', alt='Pi-hole logo', style='display: table; table-layout: fixed; height: 67px;')
+			.pull-left.info
+				p Status
+				a#status(href='#')
+					i.fa.fa-circle(style='color:#7FFF00')
+					|  Active
+				a#temperature(href='#')
+					i.fa.fa-fire(style='color:#FF0000')
+					|  Temp: 60.1°C
+				br
+				a(href='#')
+					i.fa.fa-circle(style='color:#7FFF00')
+					|  Load:  1.18  1.07  1.02
+				br
+				a(href='#')
+					i.fa.fa-circle(style='color:#7FFF00')
+					|  Memory usage:  17.2%
+		// sidebar menu: : style can be found in sidebar.less
+		ul.sidebar-menu
+			li.header MAIN NAVIGATION
+			// Home Page
+			li(class=PCONFIG.activePage=='home'?'active':'')
+				a(href='/home')
+					i.fa.fa-home
+					span Main Page
+			if !PCONFIG.authenticated
+				// Login
+				li(class=PCONFIG.activePage=='login'?'active':'')
+					a(href='/login')
+						i.fa.fa-user
+						span Login
+			if PCONFIG.authenticated
+				// Query Log
+				li(class=PCONFIG.activePage=='queries'?'active':'')
+					a(href='/queries')
+						i.fa.fa-file-text-o
+						span Query Log
+				// Whitelist
+				li(class=PCONFIG.activePage=='whitelist'?'active':'')
+					a(href='/list?l=white')
+						i.fa.fa-pencil-square-o
+						span Whitelist
+				// Blacklist
+				li(class=PCONFIG.activePage=='blacklist'?'active':'')
+					a(href='/list?l=black')
+						i.fa.fa-ban
+						span Blacklist
+				// Toggle
+				li#pihole-disable.treeview
+					a(href='#')
+						i.fa.fa-stop
+						span Disable
+						span#flip-status-disable
+						span.pull-right-container
+							i.fa.fa-angle-down.pull-right(style='padding-right: 5px;')
+					ul.treeview-menu
+						li
+							a#pihole-disable-permanently(href='#')
+								i.fa.fa-stop
+								span Permanently
+						li
+							a#pihole-disable-10s(href='#')
+								i.fa.fa-clock-o
+								span For 10 seconds
+						li
+							a#pihole-disable-30s(href='#')
+								i.fa.fa-clock-o
+								span For 30 seconds
+						li
+							a#pihole-disable-5m(href='#')
+								i.fa.fa-clock-o
+								span For 5 minutes
+					// <a href="#" id="flip-status"><i class="fa fa-stop"></i> <span>Disable</span></a>
+				li#pihole-enable.treeview(hidden='true')
+					a(href='#')
+						i.fa.fa-play
+						span Enable
+						span#flip-status-enable
+				// Tools
+				li.treeview
+					a(href='#')
+						i.fa.fa-folder
+						span Tools
+						span.pull-right-container
+							i.fa.fa-angle-down.pull-right(style='padding-right: 5px;')
+					ul.treeview-menu
+						// Run gravity.sh
+						li
+							a(href='gravity.php')
+								i.fa.fa-arrow-circle-down
+								span Update Lists
+						// Query adlists
+						li
+							a(href='queryads.php')
+								i.fa.fa-search
+								span Query adlists
+						// Tail pihole.log
+						li
+							a(href='taillog.php')
+								i.fa.fa-list-ul
+								span Tail pihole.log
+				// Settings
+				li
+					a(href='/settings')
+						i.fa.fa-gears
+						span Settings
+				// Logout
+				li
+					a(href='/logout')
+						i.fa.fa-user-times
+						span Logout
+			// Login
+			// Donate
+			li
+				a(href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3J2L3Z4DHW9UY')
+					i.fa.fa-paypal
+					span Donate
+			if authenticated
+				// Help
+				li
+					a(href='help.php')
+						i.fa.fa-question-circle
+						span Help
+	// /.sidebar

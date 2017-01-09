@@ -1,0 +1,50 @@
+section.content
+	// Send PHP info to JS
+	div#token(hidden) JAJAJ
+	// Alerts
+	#alInfo.alert.alert-info.alert-dismissible.fade.in(role='alert', hidden='true')
+		button.close(type='button', data-hide='alert', aria-label='Close')
+			span(aria-hidden='true') ×
+		|     Adding 
+		span#alDomain
+		|  to the 
+		span#alList
+		| ...
+	#alSuccess.alert.alert-success.alert-dismissible.fade.in(role='alert', hidden='true')
+		button.close(type='button', data-hide='alert', aria-label='Close')
+			span(aria-hidden='true') ×
+		|     Success!
+	#alFailure.alert.alert-danger.alert-dismissible.fade.in(role='alert', hidden='true')
+		button.close(type='button', data-hide='alert', aria-label='Close')
+			span(aria-hidden='true') ×
+		|     Failure! Something went wrong.
+	.row
+		.col-md-12
+			#recent-queries.box.box-solid
+				.box-header.with-border
+					h3.box-title Recent Queries 
+				// /.box-header
+				.box-body
+					.table-responsive
+						table#all-queries.display.table.table-striped.table-bordered(cellspacing='0', width='100%')
+							thead
+								tr
+									th Time
+									th Type
+									th Domain
+									th Client
+									th Status
+									th Action
+							tfoot
+								tr
+									th Time
+									th Type
+									th Domain
+									th Client
+									th Status
+									th Action
+				// /.box-body
+				.overlay
+					i.fa.fa-refresh.fa-spin
+
+			// /.box

@@ -36,16 +36,35 @@ describe("Check endpoints", function() {
                     done();
                 });
         });
-        it("get /home", function(done) {
-            chai.request(server.app)
-                .get("/home")
-                .end(function(err, res) {
-                    expect(err)
-                        .to.be.null;
-                    expect(res.status)
-                        .to.be.equal(200);
-                    done();
+        describe("/home", function(done) {
+            describe("get", function(done) {
+                it("should succeed", function(done) {
+                    chai.request(server.app)
+                        .get("/home")
+                        .end(function(err, res) {
+                            expect(err)
+                                .to.be.null;
+                            expect(res.status)
+                                .to.be.equal(200);
+                            done();
+                        });
                 });
+            });
+        });
+        describe("/queries", function() {
+            describe("get", function() {
+                it("should fail", function(done) {
+                    chai.request(server.app)
+                        .get("/queries")
+                        .end(function(err, res) {
+                            expect(err)
+                                .to.not.be.null;
+                            expect(res.status)
+                                .to.be.equal(401);
+                            done();
+                        });
+                });
+            });
         });
         describe("/login", function() {
             describe("get", function() {
@@ -109,15 +128,20 @@ describe("Check endpoints", function() {
                 });
             });
         });
-        it("get /logout", function(done) {
-            chai.request(server.app)
-                .get("/logout")
-                .end(function(err, res) {
-                    if (err)
-                        done(err);
-                    res.status.should.equal(200);
-                    done();
+        describe("/logout", function() {
+            describe("get", function() {
+                it("should succeed", function(done) {
+                    chai.request(server.app)
+                        .get("/logout")
+                        .end(function(err, res) {
+                            expect(err)
+                                .to.be.null;
+                            expect(res.status)
+                                .to.equal(200);
+                            done();
+                        });
                 });
+            });
         });
         describe("/api", function() {
             describe("/list", function() {

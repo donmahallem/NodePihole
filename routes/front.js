@@ -15,7 +15,15 @@ var frontEnd = {
                     }
                 });
             } else {
-                res.redirect("/login");
+                res.status(401);
+                res.render("login_layout.pug", {
+                    PCONFIG: {
+                        boxedLayout: false,
+                        wrongPassword: false,
+                        authenticated: false,
+                        activePage: "login"
+                    }
+                });
             }
         }
     },

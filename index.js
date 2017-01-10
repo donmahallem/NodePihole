@@ -13,7 +13,7 @@ const exec = require("child_process").exec;
 const readline = require("readline");
 const moment = require("moment");
 
-var DEFAULTS=require("./defaults.js");
+var DEFAULTS = require("./defaults.js");
 
 app.set("view engine", "pug");
 app.use(bodyParser.urlencoded({

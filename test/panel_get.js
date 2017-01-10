@@ -59,7 +59,7 @@ describe("Check endpoints", function () {
                 });
             });
             describe("post", function () {
-                it('should succeed', function (done) {
+                it("should succeed", function (done) {
                     chai.request(server.app)
                     .post("/login")
                     .type("form")
@@ -72,7 +72,7 @@ describe("Check endpoints", function () {
                         done();
                     });
                 });
-                it('should fail and respond with 401', function (done) {
+                it("should fail and respond with 401", function (done) {
                     chai.request(server.app)
                     .post("/login")
                     .type("form")
@@ -85,7 +85,7 @@ describe("Check endpoints", function () {
                         done();
                     });
                 });
-                it('should fail and respond with 400', function (done) {
+                it("should fail and respond with 400", function (done) {
                     chai.request(server.app)
                     .post("/login")
                     .type("form")

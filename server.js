@@ -1,4 +1,4 @@
-var serveStatic = require("serve-static");
+﻿var serveStatic = require("serve-static");
 var express = require("express");
 const crypto = require("crypto");
 var jwt = require("jsonwebtoken");
@@ -19,14 +19,14 @@ function cr(pwd) {
     return crypto.createHash("sha256", "utf8").update(hash1).digest("hex");
 }
 
-var PiServer = function () {
+var PiServer = function() {
     this.app = express();
     this.server = require("http").Server(this.app);
     this.io = socketIo(this.server);
     this.app.set("view engine", "pug");
     this.app.use(bodyParser.urlencoded({
-            extended : true
-        }));
+        extended: true
+    }));
 
     var secret = cr(cr(cr("" + (Math.random() * Date.now()))));
     var cookieSecret = cr(cr(cr("" + (Math.random() * Date.now())) + secret));
@@ -34,27 +34,27 @@ var PiServer = function () {
     this.app.use("/static", serveStatic(__dirname + "/static"))
     this.app.use(cookieParser(cookieSecret))
 
-    this.app.use(function (req, res, next) {
+    this.app.use(function(req, res, next) {
         if (req.signedCookies.auth) {
             jwt.verify(req.signedCookies.auth, "secret", {
-                subject : "admin",
-                issuer : "pihole",
-                audience : "piholeuser"
-            }, function (err, decoded) {
+                subject: "admin",
+                issuer: "pihole",
+                audience: "piholeuser"
+            }, function(err, decoded) {
                 if (decoded) {
                     req.user = {
-                        authenticated : true
+                        authenticated: true
                     };
                 } else {
                     req.user = {
-                        authenticated : false
+                        authenticated: false
                     };
                 }
                 next();
             });
         } else {
             req.user = {
-                authenticated : false
+                authenticated: false
             };
             next();
         }
@@ -68,7 +68,7 @@ var PiServer = function () {
     this.app.get("/queries", frontEnd.queries.get);
     this.app.get("/list", frontEnd.list.get);
 
-    this.app.post("/scripts/pi-hole/php/add.php", function (req, res) {
+    this.app.post("/scripts/pi-hole/php/add.php", function(req, res) {
         if (!req.user.authenticated) {
             res.sendStatus(401);
             res.end();
@@ -95,15 +95,15 @@ var PiServer = function () {
     });
 };
 
-PiServer.prototype.load = function () {
+PiServer.prototype.load = function() {
     this.app.locals.settings = require("./defaults.js");
     this.app.locals.piHoleConfig = ini.parse(fs.readFileSync(this.app.locals.settings.setupVars, "utf-8"));
 };
 
-PiServer.prototype.start = function () {
-    this.app.listen(this.app.locals.settings.port, function () {
-        console.log("Server listening on port " + this.app.locals.settings.port + "!")
-    }
+PiServer.prototype.start = function() {
+    this.app.listen(this.app.locals.settings.port, function() {
+            console.log("Server listening on port " + this.app.locals.settings.port + "!")
+        }
         .bind(this));
 };
 

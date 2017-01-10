@@ -52,10 +52,12 @@ describe("Checking Gets", function () {
         chai.request(server)
         .get("/api/list")
         .end(function (err, res) {
-            if (err)
+            if (err){
                 done(err);
-            res.status.should.equal(401);
-            done();
+			}else{
+				res.status.should.equal(401);
+				done();
+			}
         });
     });
 });

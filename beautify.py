@@ -7,6 +7,7 @@ opts = jsbeautifier.default_options()
 opts.indent_size = 4
 opts.jslint_happy = False
 opts.end_with_newline = True
+opts.break_chained_methods = True
 
 excludedDirs=["node_modules",".git","vendor"]
 

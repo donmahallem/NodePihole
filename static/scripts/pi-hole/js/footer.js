@@ -1,12 +1,20 @@
 // User menu toggle
-$("#dropdown-menu a").on("click", function(event) {
-    $(this).parent().toggleClass("open");
-});
-$("body").on("click", function(event) {
-    if (!$("#dropdown-menu").is(event.target) && $("#dropdown-menu").has(event.target).length === 0) {
-        $("#dropdown-menu").removeClass("open");
-    }
-});
+$("#dropdown-menu a")
+    .on("click", function(event) {
+        $(this)
+            .parent()
+            .toggleClass("open");
+    });
+$("body")
+    .on("click", function(event) {
+        if (!$("#dropdown-menu")
+            .is(event.target) && $("#dropdown-menu")
+            .has(event.target)
+            .length === 0) {
+            $("#dropdown-menu")
+                .removeClass("open");
+        }
+    });
 
 function piholeChanged(action) {
     const status = $("#status");
@@ -31,7 +39,8 @@ function piholeChanged(action) {
 }
 
 function piholeChange(action, duration) {
-    const token = encodeURIComponent($("#token").html());
+    const token = encodeURIComponent($("#token")
+        .html());
     var btnStatus;
 
     switch (action) {
@@ -60,38 +69,45 @@ function piholeChange(action, duration) {
 }
 
 // Handle Enable/Disable
-$("#pihole-enable").on("click", (e) => {
-    e.preventDefault();
-    piholeChange("enable", "");
-});
-$("#pihole-disable-permanently").on("click", (e) => {
-    e.preventDefault();
-    piholeChange("disable", "0");
-});
-$("#pihole-disable-10s").on("click", (e) => {
-    e.preventDefault();
-    piholeChange("disable", "10");
-    setTimeout(function() {
-        piholeChanged("enabled");
-    }, 10000);
-});
-$("#pihole-disable-30s").on("click", (e) => {
-    e.preventDefault();
-    piholeChange("disable", "30");
-    setTimeout(function() {
-        piholeChanged("enabled");
-    }, 30000);
-});
-$("#pihole-disable-5m").on("click", (e) => {
-    e.preventDefault();
-    piholeChange("disable", "300");
-    setTimeout(function() {
-        piholeChanged("enabled");
-    }, 300000);
-});
+$("#pihole-enable")
+    .on("click", (e) => {
+        e.preventDefault();
+        piholeChange("enable", "");
+    });
+$("#pihole-disable-permanently")
+    .on("click", (e) => {
+        e.preventDefault();
+        piholeChange("disable", "0");
+    });
+$("#pihole-disable-10s")
+    .on("click", (e) => {
+        e.preventDefault();
+        piholeChange("disable", "10");
+        setTimeout(function() {
+            piholeChanged("enabled");
+        }, 10000);
+    });
+$("#pihole-disable-30s")
+    .on("click", (e) => {
+        e.preventDefault();
+        piholeChange("disable", "30");
+        setTimeout(function() {
+            piholeChanged("enabled");
+        }, 30000);
+    });
+$("#pihole-disable-5m")
+    .on("click", (e) => {
+        e.preventDefault();
+        piholeChange("disable", "300");
+        setTimeout(function() {
+            piholeChanged("enabled");
+        }, 300000);
+    });
 
-var piholeVersion = $("#piholeVersion").html();
-var webVersion = $("#webVersion").html();
+var piholeVersion = $("#piholeVersion")
+    .html();
+var webVersion = $("#webVersion")
+    .html();
 
 // Credit for following function: https://gist.github.com/alexey-bass/1115557
 // Modified to discard any possible "v" in the string
@@ -130,15 +146,21 @@ function versionCompare(left, right) {
 $.getJSON("https://api.github.com/repos/pi-hole/pi-hole/releases/latest", function(json) {
     if (versionCompare(piholeVersion, json.tag_name.slice(1)) < 0) {
         // Alert user
-        $("#piholeVersion").html($("#piholeVersion").text() + "<a class=\"alert-link\" href=\"https://github.com/pi-hole/pi-hole/releases\">(Update available!)</a>");
-        $("#alPiholeUpdate").show();
+        $("#piholeVersion")
+            .html($("#piholeVersion")
+                .text() + "<a class=\"alert-link\" href=\"https://github.com/pi-hole/pi-hole/releases\">(Update available!)</a>");
+        $("#alPiholeUpdate")
+            .show();
     }
 });
 $.getJSON("https://api.github.com/repos/pi-hole/AdminLTE/releases/latest", function(json) {
     if (versionCompare(webVersion, json.tag_name.slice(1)) < 0) {
         // Alert user
-        $("#webVersion").html($("#webVersion").text() + "<a class=\"alert-link\" href=\"https://github.com/pi-hole/adminLTE/releases\">(Update available!)</a>");
-        $("#alWebUpdate").show();
+        $("#webVersion")
+            .html($("#webVersion")
+                .text() + "<a class=\"alert-link\" href=\"https://github.com/pi-hole/adminLTE/releases\">(Update available!)</a>");
+        $("#alWebUpdate")
+            .show();
     }
 });
 
@@ -151,7 +173,8 @@ if (versionCompare(piholeVersion, "v2.7") < 0) {
 }
 
 // Session timer
-var sessionvalidity = parseInt(document.getElementById("sessiontimercounter").textContent);
+var sessionvalidity = parseInt(document.getElementById("sessiontimercounter")
+    .textContent);
 var start = new Date;
 
 function updateSessionTimer() {
@@ -181,25 +204,33 @@ if (sessionvalidity > 0) {
         }
 
         if (totalseconds > 0) {
-            document.getElementById("sessiontimercounter").textContent = minutes + ":" + seconds;
+            document.getElementById("sessiontimercounter")
+                .textContent = minutes + ":" + seconds;
         } else {
-            document.getElementById("sessiontimercounter").textContent = "-- : --";
+            document.getElementById("sessiontimercounter")
+                .textContent = "-- : --";
         }
 
     }, 1000);
 } else {
-    document.getElementById("sessiontimer").style.display = "none";
+    document.getElementById("sessiontimer")
+        .style.display = "none";
 }
 
 // Hide "exact match" button on queryads.php page if version is 2.9.5 or lower
 if (versionCompare(piholeVersion, "v2.9.5") < 1) {
-    $("#btnSearchExact").hide();
+    $("#btnSearchExact")
+        .hide();
 }
 
 // Handle Strg + Enter button on Login page
-$(document).keypress(function(e) {
-    if ((e.keyCode === 10 || e.keyCode === 13) && e.ctrlKey && $("#loginpw").is(":focus")) {
-        $("#loginform").attr("action", "settings.php");
-        $("#loginform").submit();
-    }
-});
+$(document)
+    .keypress(function(e) {
+        if ((e.keyCode === 10 || e.keyCode === 13) && e.ctrlKey && $("#loginpw")
+            .is(":focus")) {
+            $("#loginform")
+                .attr("action", "settings.php");
+            $("#loginform")
+                .submit();
+        }
+    });

@@ -4,8 +4,10 @@ $.ajaxSetup({
 });
 
 // Get PHP info
-var token = $("#token").html();
-var listType = $("#list-type").html();
+var token = $("#token")
+    .html();
+var listType = $("#list-type")
+    .html();
 var fullName = listType === "white" ? "Whitelist" : "Blacklist";
 
 function sub(index, entry) {
@@ -59,15 +61,17 @@ function refresh(fade) {
                     );
 
                     // Handle button
-                    $("#list #" + index + "").on("click", "button", function() {
-                        sub(index, entry);
-                    });
+                    $("#list #" + index + "")
+                        .on("click", "button", function() {
+                            sub(index, entry);
+                        });
                 });
             }
             list.fadeIn("fast");
         },
         error: function(jqXHR, exception) {
-            $("#alFailure").show();
+            $("#alFailure")
+                .show();
         }
     });
 }
@@ -76,7 +80,8 @@ window.onload = refresh(false);
 
 function add() {
     var domain = $("#domain");
-    if (domain.val().length === 0) {
+    if (domain.val()
+        .length === 0) {
         return;
     }
 
@@ -98,32 +103,38 @@ function add() {
             if (response.indexOf("not a valid argument") >= 0 ||
                 response.indexOf("is not a valid domain") >= 0) {
                 alFailure.show();
-                alFailure.delay(1000).fadeOut(2000, function() {
-                    alFailure.hide();
-                });
-                alInfo.delay(1000).fadeOut(2000, function() {
-                    alInfo.hide();
-                });
+                alFailure.delay(1000)
+                    .fadeOut(2000, function() {
+                        alFailure.hide();
+                    });
+                alInfo.delay(1000)
+                    .fadeOut(2000, function() {
+                        alInfo.hide();
+                    });
             } else {
                 alSuccess.show();
-                alSuccess.delay(1000).fadeOut(2000, function() {
-                    alSuccess.hide();
-                });
-                alInfo.delay(1000).fadeOut(2000, function() {
-                    alInfo.hide();
-                });
+                alSuccess.delay(1000)
+                    .fadeOut(2000, function() {
+                        alSuccess.hide();
+                    });
+                alInfo.delay(1000)
+                    .fadeOut(2000, function() {
+                        alInfo.hide();
+                    });
                 domain.val("");
                 refresh(true);
             }
         },
         error: function(jqXHR, exception) {
             alFailure.show();
-            alFailure.delay(1000).fadeOut(2000, function() {
-                alFailure.hide();
-            });
-            alInfo.delay(1000).fadeOut(2000, function() {
-                alInfo.hide();
-            });
+            alFailure.delay(1000)
+                .fadeOut(2000, function() {
+                    alFailure.hide();
+                });
+            alInfo.delay(1000)
+                .fadeOut(2000, function() {
+                    alInfo.hide();
+                });
         }
     });
 }
@@ -131,24 +142,32 @@ function add() {
 
 
 // Handle enter button for adding domains
-$(document).keypress(function(e) {
-    if (e.which === 13 && $("#domain").is(":focus")) {
-        // Enter was pressed, and the input has focus
-        add();
-    }
-});
+$(document)
+    .keypress(function(e) {
+        if (e.which === 13 && $("#domain")
+            .is(":focus")) {
+            // Enter was pressed, and the input has focus
+            add();
+        }
+    });
 
 // Handle buttons
-$("#btnAdd").on("click", function() {
-    add();
-});
-$("#btnRefresh").on("click", function() {
-    refresh(true);
-});
+$("#btnAdd")
+    .on("click", function() {
+        add();
+    });
+$("#btnRefresh")
+    .on("click", function() {
+        refresh(true);
+    });
 
 // Handle hiding of alerts
 $(function() {
-    $("[data-hide]").on("click", function() {
-        $(this).closest("." + $(this).attr("data-hide")).hide();
-    });
+    $("[data-hide]")
+        .on("click", function() {
+            $(this)
+                .closest("." + $(this)
+                    .attr("data-hide"))
+                .hide();
+        });
 });

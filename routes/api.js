@@ -13,14 +13,16 @@ router.get("/data", function(req, res) {
         };
         res.json(testData);
     }
-    if (req.query.summaryRaw !== undefined) {
+    if ("summaryRaw" in req.query) {
         res.write("BBBBB");
     }
-    if (req.query.overTimeData !== undefined) {}
+    if ("overTimeData" in req.query) {}
     if ("overTimeData10mins" in req.query) {
-        var lineReader = require("readline").createInterface({
-            input: require("fs").createReadStream(req.app.locals.settings.logFile)
-        });
+        var lineReader = require("readline")
+            .createInterface({
+                input: require("fs")
+                    .createReadStream(req.app.locals.settings.logFile)
+            });
         var data = {
             domains_over_time: {},
             ads_over_time: {}
@@ -51,29 +53,33 @@ router.get("/data", function(req, res) {
             res.json(data);
         });
     }
-    if (req.query.topItems !== undefined) {}
-    if (req.query.recentItems !== undefined) {}
-    if (req.query.getQueryTypes !== undefined) {}
-    if (req.query.getForwardDestinations !== undefined) {}
-    if (req.query.getQuerySources !== undefined) {}
+    if ("topItems" in req.query) {}
+    if ("recentItems" in req.query) {}
+    if ("getQueryTypes" in req.query) {}
+    if ("getForwardDestinations" in req.query) {}
+    if ("getQuerySources" in req.query) {}
     if ("getAllQueries" in req.query) {
-        var lineReader = require("readline").createInterface({
-            input: require("fs").createReadStream(req.app.locals.settings.logFile)
-        });
+        var lineReader = require("readline")
+            .createInterface({
+                input: require("fs")
+                    .createReadStream(req.app.locals.settings.logFile)
+            });
         var lines = [];
         lineReader.on("line", function(line) {
             if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
                 return;
             } else {
                 var _time = line.substring(0, 16);
-                var expl = line.trim().split(" ");
+                var expl = line.trim()
+                    .split(" ");
                 var _domain = expl[expl.length - 3];
                 var tmp = expl[expl.length - 4];
-                var _status = Math.random() < 0.5 ? "Pi-holed" : "OK"
+                var _status = Math.random() < 0.5 ? "Pi-holed" : "OK";
                 var _type = tmp.substring(6, tmp.length - 1);
                 var _client = expl[expl.length - 1];
                 var data = {
-                    time: moment(_time, "MMM DD hh:mm:ss").toISOString(),
+                    time: moment(_time, "MMM DD hh:mm:ss")
+                        .toISOString(),
                     domain: _domain,
                     status: _status,
                     type: _type,
@@ -102,9 +108,11 @@ router.get("/list", function(req, res) {
                 res.sendStatus(500);
             } else {
                 var lines = [];
-                var lineReader = require("readline").createInterface({
-                    input: require("fs").createReadStream("/etc/pihole/" + req.query.list + "list.txt")
-                });
+                var lineReader = require("readline")
+                    .createInterface({
+                        input: require("fs")
+                            .createReadStream("/etc/pihole/" + req.query.list + "list.txt")
+                    });
                 lineReader.on("line", function(line) {
                     if (line === "") {
                         return;

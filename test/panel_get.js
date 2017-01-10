@@ -29,8 +29,10 @@ describe("Check endpoints", function() {
             chai.request(server.app)
                 .get("/")
                 .end(function(err, res) {
-                    expect(err).to.be.null;
-                    expect(res.status).to.be.equal(200);
+                    expect(err)
+                        .to.be.null;
+                    expect(res.status)
+                        .to.be.equal(200);
                     done();
                 });
         });
@@ -38,8 +40,10 @@ describe("Check endpoints", function() {
             chai.request(server.app)
                 .get("/home")
                 .end(function(err, res) {
-                    expect(err).to.be.null;
-                    expect(res.status).to.be.equal(200);
+                    expect(err)
+                        .to.be.null;
+                    expect(res.status)
+                        .to.be.equal(200);
                     done();
                 });
         });
@@ -49,8 +53,10 @@ describe("Check endpoints", function() {
                     chai.request(server.app)
                         .get("/login")
                         .end(function(err, res) {
-                            expect(err).to.be.null;
-                            expect(res.status).to.be.equal(200);
+                            expect(err)
+                                .to.be.null;
+                            expect(res.status)
+                                .to.be.equal(200);
                             done();
                         });
                 });
@@ -64,8 +70,10 @@ describe("Check endpoints", function() {
                             pw: "password"
                         })
                         .end(function(err, res) {
-                            expect(err).to.be.null;
-                            expect(res.status).to.be.equal(200);
+                            expect(err)
+                                .to.be.null;
+                            expect(res.status)
+                                .to.be.equal(200);
                             done();
                         });
                 });
@@ -77,8 +85,10 @@ describe("Check endpoints", function() {
                             pw: "passworda"
                         })
                         .end(function(err, res) {
-                            expect(err).to.not.be.null;
-                            expect(res.status).to.equal(401);
+                            expect(err)
+                                .to.not.be.null;
+                            expect(res.status)
+                                .to.equal(401);
                             done();
                         });
                 });
@@ -90,8 +100,10 @@ describe("Check endpoints", function() {
                             pwa: "password"
                         })
                         .end(function(err, res) {
-                            expect(err).to.not.be.null;
-                            expect(res.status).to.equal(400);
+                            expect(err)
+                                .to.not.be.null;
+                            expect(res.status)
+                                .to.equal(400);
                             done();
                         });
                 });
@@ -113,8 +125,10 @@ describe("Check endpoints", function() {
                     chai.request(server.app)
                         .get("/api/list")
                         .end(function(err, res) {
-                            expect(err).to.not.be.null;
-                            expect(res.status).to.equal(401);
+                            expect(err)
+                                .to.not.be.null;
+                            expect(res.status)
+                                .to.equal(401);
                             done();
                         });
                 });
@@ -125,8 +139,10 @@ describe("Check endpoints", function() {
                         chai.request(server.app)
                             .get("/api/data?summary")
                             .end(function(err, res) {
-                                expect(err).to.be.null;
-                                expect(res.status).to.equal(200);
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
                                 done();
                             });
                     });

@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 
 var frontEnd = {
     queries: {
-        get: function(req, res) {
+        get(req, res) {
             if (req.user.authenticated) {
                 res.render("queries_layout.pug", {
                     PCONFIG: {
@@ -20,7 +20,7 @@ var frontEnd = {
         }
     },
     login: {
-        get: function(req, res) {
+        get(req, res) {
             res.render("login_layout.pug", {
                 PCONFIG: {
                     boxedLayout: false,
@@ -30,7 +30,7 @@ var frontEnd = {
                 }
             });
         },
-        post: function(req, res) {
+        post(req, res) {
             var token = req.body.pw;
             if (token) {
                 var tokenHash = helper.hashPassword(token);
@@ -60,7 +60,7 @@ var frontEnd = {
                                         authenticated: false,
                                         activePage: "login"
                                     }
-                                })
+                                });
                             }
                         });
                     return;
@@ -81,7 +81,7 @@ var frontEnd = {
         }
     },
     list: {
-        get: function(req, res) {
+        get(req, res) {
             if (!req.user.authenticated) {
                 res.redirect("/login");
                 return;
@@ -120,13 +120,13 @@ var frontEnd = {
         }
     },
     logout: {
-        get: function(req, res) {
+        get(req, res) {
             res.clearCookie("auth");
             res.redirect("/home");
         }
     },
     home: {
-        get: function(req, res) {
+        get(req, res) {
             res.render("main_layout.pug", {
                 PCONFIG: {
                     boxedLayout: false,

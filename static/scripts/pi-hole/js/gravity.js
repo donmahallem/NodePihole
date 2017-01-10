@@ -20,22 +20,30 @@ function eventsource() {
 
     // Will be called when script has finished
     source.addEventListener("error", function(e) {
-        alInfo.delay(1000).fadeOut(2000, function() {
-            alInfo.hide();
-        });
+        alInfo.delay(1000)
+            .fadeOut(2000, function() {
+                alInfo.hide();
+            });
         source.close();
-        $("#gravityBtn").removeAttr("disabled");
+        $("#gravityBtn")
+            .removeAttr("disabled");
     }, false);
 }
 
-$("#gravityBtn").on("click", () => {
-    $("#gravityBtn").attr("disabled", true);
-    eventsource();
-});
+$("#gravityBtn")
+    .on("click", () => {
+        $("#gravityBtn")
+            .attr("disabled", true);
+        eventsource();
+    });
 
 // Handle hiding of alerts
 $(function() {
-    $("[data-hide]").on("click", function() {
-        $(this).closest("." + $(this).attr("data-hide")).hide();
-    });
+    $("[data-hide]")
+        .on("click", function() {
+            $(this)
+                .closest("." + $(this)
+                    .attr("data-hide"))
+                .hide();
+        });
 });

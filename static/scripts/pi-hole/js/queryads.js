@@ -4,7 +4,8 @@ function eventsource() {
     var ta = $("#output");
     var domain = $("#domain");
     var q = $("#quiet");
-    if (domain.val().length === 0) {
+    if (domain.val()
+        .length === 0) {
         return;
     }
 
@@ -15,7 +16,8 @@ function eventsource() {
     }
 
     var host = window.location.host;
-    var source = new EventSource("http://" + host + "/admin/scripts/pi-hole/php/queryads.php?domain=" + domain.val().toLowerCase() + "&" + exact);
+    var source = new EventSource("http://" + host + "/admin/scripts/pi-hole/php/queryads.php?domain=" + domain.val()
+        .toLowerCase() + "&" + exact);
 
     // Reset and show field
     ta.empty();
@@ -47,20 +49,24 @@ function eventsource() {
 }
 
 // Handle enter button
-$(document).keypress(function(e) {
-    if (e.which === 13 && $("#domain").is(":focus")) {
-        // Enter was pressed, and the input has focus
+$(document)
+    .keypress(function(e) {
+        if (e.which === 13 && $("#domain")
+            .is(":focus")) {
+            // Enter was pressed, and the input has focus
+            exact = "";
+            eventsource();
+        }
+    });
+// Handle button
+$("#btnSearch")
+    .on("click", function() {
         exact = "";
         eventsource();
-    }
-});
-// Handle button
-$("#btnSearch").on("click", function() {
-    exact = "";
-    eventsource();
-});
+    });
 // Handle exact button
-$("#btnSearchExact").on("click", function() {
-    exact = "exact";
-    eventsource();
-});
+$("#btnSearchExact")
+    .on("click", function() {
+        exact = "exact";
+        eventsource();
+    });

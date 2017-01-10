@@ -80,27 +80,10 @@ function updateQueriesOverTime() {
         for (var timeInterval = smallest; timeInterval < largest; timeInterval++) {
             var h = timeInterval;
             var d = new Date().setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0);
-            console.log(timeInterval, h, d);
-            if (!(timeInterval in data.domains_over_time) && !(timeInterval in data.ads_over_time) && skipTimeInterval) {
-                console.log(timeInterval + " not in log");
-                continue;
-            }
-            skipTimeInterval = false;
             timeLineChart.data.labels.push(d);
             timeLineChart.data.datasets[0].data.push((timeInterval in data.domains_over_time) ? data.domains_over_time[timeInterval] : 0);
             timeLineChart.data.datasets[1].data.push((timeInterval in data.ads_over_time) ? data.ads_over_time[timeInterval] : 0);
         }
-        /*
-        for (var hour in data.ads_over_time) {
-        if ({}.hasOwnProperty.call(data.ads_over_time[0], hour)) {
-        var h = parseInt(data.domains_over_time[0][hour]);
-        var d = new Date().setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0);
-
-        timeLineChart.data.labels.push(d);
-        timeLineChart.data.datasets[0].data.push(data.domains_over_time[1][hour]);
-        timeLineChart.data.datasets[1].data.push(data.ads_over_time[1][hour]);
-        }
-        }*/
         $("#queries-over-time .overlay").remove();
         timeLineChart.update();
     }).done(function () {

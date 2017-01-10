@@ -1,4 +1,4 @@
-﻿var tableApi;
+var tableApi;
 
 function escapeRegex(text) {
     var map = {

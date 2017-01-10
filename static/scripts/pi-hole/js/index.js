@@ -1,4 +1,4 @@
-﻿// Define global variables
+// Define global variables
 var timeLineChart, queryTypeChart, forwardDestinationChart;
 
 function padNumber(num) {

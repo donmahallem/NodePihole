@@ -1,4 +1,4 @@
-﻿var serveStatic = require("serve-static");
+var serveStatic = require("serve-static");
 var express = require("express");
 const crypto = require("crypto");
 var jwt = require("jsonwebtoken");

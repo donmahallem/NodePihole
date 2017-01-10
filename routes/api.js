@@ -1,4 +1,4 @@
-﻿var express = require("express");
+var express = require("express");
 const readline = require("readline");
 const moment = require("moment");
 

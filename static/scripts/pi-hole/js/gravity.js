@@ -1,4 +1,4 @@
-﻿function eventsource() {
+function eventsource() {
     var alInfo = $("#alInfo");
     var alSuccess = $("#alSuccess");
     var ta = $("#output");

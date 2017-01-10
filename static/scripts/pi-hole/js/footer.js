@@ -1,4 +1,4 @@
-﻿// User menu toggle
+// User menu toggle
 $("#dropdown-menu a").on("click", function(event) {
     $(this).parent().toggleClass("open");
 });

@@ -1,4 +1,4 @@
-﻿// IE likes to cache too much :P
+// IE likes to cache too much :P
 $.ajaxSetup({
     cache: false
 });

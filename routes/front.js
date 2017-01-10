@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const helper = require("./../helper.js");
 const jwt = require("jsonwebtoken");
 

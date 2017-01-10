@@ -1,4 +1,4 @@
-﻿$(function() {
+$(function() {
     $("[data-mask]").inputmask();
 });
 

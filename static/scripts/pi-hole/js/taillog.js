@@ -1,4 +1,4 @@
-﻿var offset, timer, pre, scrolling = true;
+var offset, timer, pre, scrolling = true;
 
 // Check every 200msec for fresh data
 var interval = 200;

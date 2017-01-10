@@ -1,4 +1,4 @@
-﻿var exact = "";
+var exact = "";
 
 function eventsource() {
     var ta = $("#output");

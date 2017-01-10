@@ -71,9 +71,35 @@ app.get("/api/data", function (req, res) {
     }
     if (req.query.overTimeData !== undefined) {}
     if ("overTimeData10mins" in req.query) {
-		var byTimeDomains = [];
-        var byTimeAds = [];
-        res.json([byTimeDomains,byTimeAds]);
+        var lineReader = require("readline").createInterface({
+                input : require("fs").createReadStream("/var/log/pihole.log")
+            });
+        var data = {domains_over_time:{},ads_over_time:{}};
+        lineReader.on("line", function (line) {
+            if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
+                return;
+            } else {
+                var time=moment(line.substring(0, 16), "MMM DD hh:mm:ss");
+				var hour=time.hour();
+				var minute=time.minute();
+				time=(minute-minute%10)/10 + 6*hour;
+				if(Math.random()<0.5){
+					if(time in data.ads_over_time){
+						data.ads_over_time[time]++;
+					}else{
+						data.ads_over_time[time]=1;
+					}
+				}
+				if( time in data.domains_over_time){
+					data.domains_over_time[time]++;
+				}else{
+					data.domains_over_time[time]=1;
+				}
+            }
+        });
+        lineReader.on("close", function () {
+            res.json(data);
+        });
 	}
     if (req.query.topItems !== undefined) {}
     if (req.query.recentItems !== undefined) {}
@@ -112,8 +138,6 @@ app.get("/api/data", function (req, res) {
                 data : lines
             });
         });
-    } else {
-        res.end();
     }
 });
 app.get("/api/list", function (req, res) {

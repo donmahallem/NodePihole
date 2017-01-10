@@ -48,4 +48,14 @@ describe("Checking Gets", function () {
             done();
         });
     });
+    it("get /api/list", function (done) {
+        chai.request(server)
+        .get("/api/list")
+        .end(function (err, res) {
+            if (err)
+                done(err);
+            res.status.should.equal(401);
+            done();
+        });
+    });
 });

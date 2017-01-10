@@ -71,16 +71,16 @@ describe("Check endpoints", function () {
                     done();
                 });
             });
-			/*
+            /*
             it("get /api/data?overTimeData10mins", function (done) {
-                chai.request(server)
-                .get("/api/data?overTimeData10mins")
-                .end(function (err, res) {
-                    if (err)
-                        done(err);
-                    res.status.should.equal(200);
-                    done();
-                });
+            chai.request(server)
+            .get("/api/data?overTimeData10mins")
+            .end(function (err, res) {
+            if (err)
+            done(err);
+            res.status.should.equal(200);
+            done();
+            });
             });*/
             it("get /api/data?summary", function (done) {
                 chai.request(server)

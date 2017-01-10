@@ -7,7 +7,7 @@ var sinon = require("sinon");
 var should = chai.should();
 
 chai.use(chaiHttp);
-const appDefaults = require('./../defaults.js');
+const appDefaults = require("./../defaults.js");
 
 var sandbox;
 beforeEach(function () {

@@ -15,7 +15,6 @@ var frontEnd = {
                     }
                 });
             } else {
-                console.log("Unauthorized request to /queries");
                 res.redirect("/login");
             }
         }
@@ -34,7 +33,7 @@ var frontEnd = {
         post: function(req, res) {
             var token = req.body.pw;
             if (token) {
-                tokenHash = helper.hashPassword(token);
+                var tokenHash = helper.hashPassword(token);
                 if (tokenHash === req.app.locals.piHoleConfig.WEBPASSWORD) {
                     jwt.sign({
                             foo: "bar"

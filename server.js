@@ -13,11 +13,8 @@ const readline = require("readline");
 const moment = require("moment");
 const apiRoute = require("./routes/api.js");
 const frontEnd = require("./routes/front.js");
+const helper = require("./helper.js");
 
-function cr(pwd) {
-    hash1 = crypto.createHash("sha256", "utf8").update(pwd).digest("hex");
-    return crypto.createHash("sha256", "utf8").update(hash1).digest("hex");
-}
 
 var PiServer = function() {
     this.app = express();
@@ -28,8 +25,8 @@ var PiServer = function() {
         extended: true
     }));
 
-    var secret = cr(cr(cr("" + (Math.random() * Date.now()))));
-    var cookieSecret = cr(cr(cr("" + (Math.random() * Date.now())) + secret));
+    var secret = helper.hashPassword(helper.hashPassword(helper.hashPassword("" + (Math.random() * Date.now()))));
+    var cookieSecret = helper.hashPassword(helper.hashPassword(helper.hashPassword("" + (Math.random() * Date.now())) + secret));
 
     this.app.use("/static", serveStatic(__dirname + "/static"))
     this.app.use(cookieParser(cookieSecret))

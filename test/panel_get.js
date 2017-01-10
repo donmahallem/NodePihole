@@ -1,13 +1,13 @@
 process.env.NODE_ENV = "test";
 
-var chai = require("chai");
-var chaiHttp = require("chai-http");
-var backend = require("../server.js");
-var sinon = require("sinon");
-var should = chai.should();
-var expect = chai.expect;
+const chai = require("chai");
+const chaiHttp = require("chai-http");
+const Backend = require("../server.js");
+const sinon = require("sinon");
+const should = chai.should();
+const expect = chai.expect;
 
-var server = new backend();
+var server = new Backend();
 chai.use(chaiHttp);
 const appDefaults = require("./../defaults.js");
 
@@ -29,9 +29,8 @@ describe("Check endpoints", function() {
             chai.request(server.app)
                 .get("/")
                 .end(function(err, res) {
-                    if (err)
-                        done(err);
-                    res.status.should.equal(200);
+                    expect(err).to.be.null;
+                    expect(res.status).to.be.equal(200);
                     done();
                 });
         });
@@ -39,9 +38,8 @@ describe("Check endpoints", function() {
             chai.request(server.app)
                 .get("/home")
                 .end(function(err, res) {
-                    if (err)
-                        done(err);
-                    res.status.should.equal(200);
+                    expect(err).to.be.null;
+                    expect(res.status).to.be.equal(200);
                     done();
                 });
         });
@@ -51,9 +49,8 @@ describe("Check endpoints", function() {
                     chai.request(server.app)
                         .get("/login")
                         .end(function(err, res) {
-                            if (err)
-                                done(err);
-                            res.status.should.equal(200);
+                            expect(err).to.be.null;
+                            expect(res.status).to.be.equal(200);
                             done();
                         });
                 });

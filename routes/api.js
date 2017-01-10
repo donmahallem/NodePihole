@@ -101,12 +101,12 @@ router.get("/list", function(req, res) {
             if (err) {
                 res.sendStatus(500);
             } else {
-                lines = [];
+                var lines = [];
                 var lineReader = require("readline").createInterface({
                     input: require("fs").createReadStream("/etc/pihole/" + req.query.list + "list.txt")
                 });
                 lineReader.on("line", function(line) {
-                    if (line === undefined || line === "") {
+                    if (line === "") {
                         return;
                     }
                     lines.push(line);

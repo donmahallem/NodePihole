@@ -12,6 +12,9 @@ const spawn = require("child_process").spawn;
 const exec = require("child_process").exec;
 const readline = require("readline");
 const moment = require("moment");
+
+var DEFAULTS=require("./defaults.js");
+
 app.set("view engine", "pug");
 app.use(bodyParser.urlencoded({
         extended : true
@@ -22,7 +25,7 @@ function cr(pwd) {
     return crypto.createHash("sha256", "utf8").update(hash1).digest("hex");
 }
 
-var CONFIG = ini.parse(fs.readFileSync("/etc/pihole/setupVars.conf", "utf-8"));
+var CONFIG = ini.parse(fs.readFileSync(DEFAULTS.setupVars, "utf-8"));
 
 var secret = cr(cr(cr("" + (Math.random() * Date.now()))));
 var cookieSecret = cr(cr(cr("" + (Math.random() * Date.now())) + secret));
@@ -72,7 +75,7 @@ app.get("/api/data", function (req, res) {
     if (req.query.overTimeData !== undefined) {}
     if ("overTimeData10mins" in req.query) {
         var lineReader = require("readline").createInterface({
-                input : require("fs").createReadStream("/var/log/pihole.log")
+                input : require("fs").createReadStream(DEFAULTS.logFile)
             });
         var data = {
             domains_over_time : {},
@@ -111,7 +114,7 @@ app.get("/api/data", function (req, res) {
     if (req.query.getQuerySources !== undefined) {}
     if ("getAllQueries" in req.query) {
         var lineReader = require("readline").createInterface({
-                input : require("fs").createReadStream("/var/log/pihole.log")
+                input : require("fs").createReadStream(DEFAULTS.logFile)
             });
         var lines = [];
         lineReader.on("line", function (line) {

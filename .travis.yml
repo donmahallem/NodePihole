@@ -5,5 +5,3 @@ node_js:
   - "5.11"
   - "iojs"
 before_install:
-- sudo mkdir -p /etc/pihole/
-- sudo cp -n ./test/setupVars.conf /etc/pihole/setupVars.conf

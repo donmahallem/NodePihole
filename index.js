@@ -74,33 +74,36 @@ app.get("/api/data", function (req, res) {
         var lineReader = require("readline").createInterface({
                 input : require("fs").createReadStream("/var/log/pihole.log")
             });
-        var data = {domains_over_time:{},ads_over_time:{}};
+        var data = {
+            domains_over_time : {},
+            ads_over_time : {}
+
+        };
         lineReader.on("line", function (line) {
             if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
                 return;
+            }
+            var time = moment(line.substring(0, 16), "MMM DD hh:mm:ss");
+            var hour = time.hour();
+            var minute = time.minute();
+            time = (minute - minute % 10) / 10 + 6 * hour;
+            if (Math.random() < 0.5) {
+                if (time in data.ads_over_time) {
+                    data.ads_over_time[time]++;
+                } else {
+                    data.ads_over_time[time] = 1;
+                }
+            }
+            if (time in data.domains_over_time) {
+                data.domains_over_time[time]++;
             } else {
-                var time=moment(line.substring(0, 16), "MMM DD hh:mm:ss");
-				var hour=time.hour();
-				var minute=time.minute();
-				time=(minute-minute%10)/10 + 6*hour;
-				if(Math.random()<0.5){
-					if(time in data.ads_over_time){
-						data.ads_over_time[time]++;
-					}else{
-						data.ads_over_time[time]=1;
-					}
-				}
-				if( time in data.domains_over_time){
-					data.domains_over_time[time]++;
-				}else{
-					data.domains_over_time[time]=1;
-				}
+                data.domains_over_time[time] = 1;
             }
         });
         lineReader.on("close", function () {
             res.json(data);
         });
-	}
+    }
     if (req.query.topItems !== undefined) {}
     if (req.query.recentItems !== undefined) {}
     if (req.query.getQueryTypes !== undefined) {}
@@ -145,32 +148,30 @@ app.get("/api/list", function (req, res) {
         res.sendStatus(401);
         return;
     }
-    if (req.query.list !== undefined) {
-        if (req.query.list === "white" || req.query.list === "black") {
-            const filepath = "/etc/pihole/" + req.query.list + "list.txt";
-            fs.access(filepath, fs.constants.F_OK | fs.constants.R_OK, function (err) {
-                if (err) {
-                    res.sendStatus(500);
-                } else {
-                    lines = [];
-                    var lineReader = require("readline").createInterface({
-                            input : require("fs").createReadStream("/etc/pihole/" + req.query.list + "list.txt")
-                        });
-                    lineReader.on("line", function (line) {
-                        if (line === undefined || line === "") {
-                            return;
-                        }
-                        lines.push(line);
+    if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
+        const filepath = "/etc/pihole/" + req.query.list + "list.txt";
+        fs.access(filepath, fs.constants.F_OK | fs.constants.R_OK, function (err) {
+            if (err) {
+                res.sendStatus(500);
+            } else {
+                lines = [];
+                var lineReader = require("readline").createInterface({
+                        input : require("fs").createReadStream("/etc/pihole/" + req.query.list + "list.txt")
                     });
-                    lineReader.on("close", function () {
-                        res.json(lines);
-                    });
-                }
-            });
-            return;
-        }
+                lineReader.on("line", function (line) {
+                    if (line === undefined || line === "") {
+                        return;
+                    }
+                    lines.push(line);
+                });
+                lineReader.on("close", function () {
+                    res.json(lines);
+                });
+            }
+        });
+    } else {
+        res.sendStatus(404);
     }
-    res.sendStatus(404);
 });
 
 app.post("/scripts/pi-hole/php/add.php", function (req, res) {

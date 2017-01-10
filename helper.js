@@ -2,9 +2,10 @@
 
 var helper = {};
 
+// creates the default hash of the password for the admin panel
 helper.hashPassword = function(pwd) {
-    hash1 = crypto.createHash("sha256", "utf8").update(pwd).digest("hex");
-    return crypto.createHash("sha256", "utf8").update(hash1).digest("hex");
+    const tempHash = crypto.createHash("sha256", "utf8").update(pwd).digest("hex");
+    return crypto.createHash("sha256", "utf8").update(tempHash).digest("hex");
 };
 
 module.exports = helper;

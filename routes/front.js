@@ -27,8 +27,8 @@ var frontEnd = {
             }
         }
     },
-	settings:{
-		get(req,res){
+    settings: {
+        get(req, res) {
             if (req.user.authenticated) {
                 res.render("settings_layout.pug", {
                     PCONFIG: {
@@ -49,8 +49,8 @@ var frontEnd = {
                     }
                 });
             }
-		}
-	},
+        }
+    },
     login: {
         get(req, res) {
             res.render("login_layout.pug", {

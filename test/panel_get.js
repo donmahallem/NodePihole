@@ -108,6 +108,59 @@ describe("Check endpoints", function() {
                 });
             });
         });
+        describe("/settings", function() {
+            describe("get unauth", function() {
+                it("should fail", function(done) {
+                    chai.request(server.app)
+                        .get("/settings")
+                        .end(function(err, res) {
+                            expect(err)
+                                .to.not.be.null;
+                            expect(res.status)
+                                .to.be.equal(401);
+                            done();
+                        });
+                });
+                it("should fail", function(done) {
+                    chai.request(server.app)
+                        .get("/settings")
+                        .set("Cookie", "auth=kasdfasfasldfkasödfkasdf")
+                        .end(function(err, res) {
+                            expect(err)
+                                .to.not.be.null;
+                            expect(res.status)
+                                .to.be.equal(401);
+                            done();
+                        });
+                });
+            });
+            describe("get auth", function() {
+                var verifyCookieStub;
+                beforeEach(function() {
+                    verifyCookieStub = sandbox.stub(helper, "verifyAuthCookie", function(req, res, next) {
+                        req.user = {
+                            authenticated: true
+                        }
+                        next();
+                    });
+                });
+                afterEach(function() {
+                    sinon.assert.calledOnce(verifyCookieStub);
+                    verifyCookieStub.restore();
+                });
+                it("should succeed", function(done) {
+                    chai.request(server.app)
+                        .get("/settings")
+                        .end(function(err, res) {
+                            expect(err)
+                                .to.be.null;
+                            expect(res.status)
+                                .to.be.equal(200);
+                            done();
+                        });
+                });
+            });
+        });
         describe("/login", function() {
             describe("get", function() {
                 it("should succeed", function(done) {
@@ -193,7 +246,7 @@ describe("Check endpoints", function() {
                         verifyCookieStub = sandbox.stub(helper, "verifyAuthCookie", function(req, res, next) {
                             req.user = {
                                 authenticated: true
-                            }
+                            };
                             next();
                         });
                     });

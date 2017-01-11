@@ -3,19 +3,21 @@ process.env.NODE_ENV = "test";
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const Backend = require("../server.js");
+const jwt = require("jsonwebtoken");
 const sinon = require("sinon");
 const should = chai.should();
 const expect = chai.expect;
+const helper = require("./../helper.js");
 
-var server = new Backend();
 chai.use(chaiHttp);
 const appDefaults = require("./../defaults.js");
-
+var server = new Backend();;
 var sandbox;
 beforeEach(function() {
     sandbox = sinon.sandbox.create();
     const logFileStub = sandbox.stub(appDefaults, "logFile", __dirname + "/../test/pihole.log");
     const setupVarsStub = sandbox.stub(appDefaults, "setupVars", __dirname + "/../test/setupVars.conf");
+
     server.load();
 });
 
@@ -52,7 +54,7 @@ describe("Check endpoints", function() {
             });
         });
         describe("/queries", function() {
-            describe("get", function() {
+            describe("get unauth", function() {
                 it("should fail", function(done) {
                     chai.request(server.app)
                         .get("/queries")
@@ -61,6 +63,32 @@ describe("Check endpoints", function() {
                                 .to.not.be.null;
                             expect(res.status)
                                 .to.be.equal(401);
+                            done();
+                        });
+                });
+            });
+            describe("get auth", function() {
+                var verifyCookieStub;
+                beforeEach(function() {
+                    verifyCookieStub = sandbox.stub(helper, "verifyAuthCookie", function(req, res, next) {
+                        req.user = {
+                            authenticated: true
+                        }
+                        next();
+                    });
+                });
+                afterEach(function() {
+                    sinon.assert.calledOnce(verifyCookieStub);
+                    verifyCookieStub.restore();
+                });
+                it("should fail", function(done) {
+                    chai.request(server.app)
+                        .get("/queries")
+                        .end(function(err, res) {
+                            expect(err)
+                                .to.be.null;
+                            expect(res.status)
+                                .to.be.equal(200);
                             done();
                         });
                 });

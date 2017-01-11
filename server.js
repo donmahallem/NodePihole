@@ -34,31 +34,7 @@ var PiServer = function() {
     this.app.use("/static", serveStatic(__dirname + "/static"));
     this.app.use(cookieParser(cookieSecret));
 
-    this.app.use(function(req, res, next) {
-        if (req.signedCookies.auth) {
-            jwt.verify(req.signedCookies.auth, "secret", {
-                subject: "admin",
-                issuer: "pihole",
-                audience: "piholeuser"
-            }, function(err, decoded) {
-                if (decoded) {
-                    req.user = {
-                        authenticated: true
-                    };
-                } else {
-                    req.user = {
-                        authenticated: false
-                    };
-                }
-                next();
-            });
-        } else {
-            req.user = {
-                authenticated: false
-            };
-            next();
-        }
-    });
+    this.app.use(helper.verifyAuthCookie);
     this.app.use("/api", apiRoute);
     this.app.get("/", frontEnd.home.get);
     this.app.get("/home", frontEnd.home.get);

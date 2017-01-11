@@ -109,7 +109,7 @@ router.get("/list", function(req, res) {
         } else {
             filepath = req.app.locals.settings.blackListFile;
         }
-        fs.access(filepath, fs.constants.F_OK | fs.constants.R_OK, function(err) {
+        fs.access(filepath, fs.F_OK | fs.R_OK, function(err) {
             if (err) {
                 res.status(500);
 				res.send("Could not open "+req.query.list+"list file");

@@ -1,6 +1,7 @@
 var express = require("express");
 const readline = require("readline");
 const moment = require("moment");
+const fs = require("fs");
 
 var router = express.Router();
 router.get("/data", function(req, res) {
@@ -102,7 +103,12 @@ router.get("/list", function(req, res) {
         return;
     }
     if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
-        const filepath = "/etc/pihole/" + req.query.list + "list.txt";
+        var filepath;
+		if(req.query.list==="white"){
+			filepath=req.app.locals.settings.whiteListFile;
+		}else{
+			filepath=req.app.locals.settings.blackListFile;
+		}
         fs.access(filepath, fs.constants.F_OK | fs.constants.R_OK, function(err) {
             if (err) {
                 res.sendStatus(500);
@@ -111,7 +117,7 @@ router.get("/list", function(req, res) {
                 var lineReader = require("readline")
                     .createInterface({
                         input: require("fs")
-                            .createReadStream("/etc/pihole/" + req.query.list + "list.txt")
+                            .createReadStream(filepath)
                     });
                 lineReader.on("line", function(line) {
                     if (line === "") {

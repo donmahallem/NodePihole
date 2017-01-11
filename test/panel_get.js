@@ -215,7 +215,9 @@ describe("Check endpoints", function() {
                     it("should succeed", function(done) {
                         chai.request(server.app)
                             .get("/api/list")
-							.query({"list":"white"})
+                            .query({
+                                "list": "white"
+                            })
                             .end(function(err, res) {
                                 expect(err)
                                     .to.be.null;
@@ -227,21 +229,27 @@ describe("Check endpoints", function() {
                     it("should succeed", function(done) {
                         chai.request(server.app)
                             .get("/api/list")
-							.query({"list":"black"})
+                            .query({
+                                "list": "black"
+                            })
                             .end(function(err, res) {
                                 expect(err)
                                     .to.be.null;
                                 expect(res.status)
                                     .to.equal(200);
-								expect(res.header["content-type"]).to.not.be.null;
-								expect(res.header["content-type"]).to.contain("application/json");
+                                expect(res.header["content-type"])
+                                    .to.not.be.null;
+                                expect(res.header["content-type"])
+                                    .to.contain("application/json");
                                 done();
                             });
                     });
                     it("should not succeed", function(done) {
                         chai.request(server.app)
                             .get("/api/list")
-							.query({"list":"unknown"})
+                            .query({
+                                "list": "unknown"
+                            })
                             .end(function(err, res) {
                                 expect(err)
                                     .to.not.be.null;

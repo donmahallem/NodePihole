@@ -104,11 +104,11 @@ router.get("/list", function(req, res) {
     }
     if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
         var filepath;
-		if(req.query.list==="white"){
-			filepath=req.app.locals.settings.whiteListFile;
-		}else{
-			filepath=req.app.locals.settings.blackListFile;
-		}
+        if (req.query.list === "white") {
+            filepath = req.app.locals.settings.whiteListFile;
+        } else {
+            filepath = req.app.locals.settings.blackListFile;
+        }
         fs.access(filepath, fs.constants.F_OK | fs.constants.R_OK, function(err) {
             if (err) {
                 res.sendStatus(500);

@@ -60,7 +60,6 @@ var frontEnd = {
                                 });
                                 res.redirect("/home");
                             } else {
-                                console.log("error occured");
                                 res.render("login_layout.pug", {
                                     PCONFIG: {
                                         boxedLayout: false,

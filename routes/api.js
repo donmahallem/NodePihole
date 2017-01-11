@@ -112,7 +112,7 @@ router.get("/list", function(req, res) {
         fs.access(filepath, fs.F_OK | fs.R_OK, function(err) {
             if (err) {
                 res.status(500);
-				res.send("Could not open "+req.query.list+"list file");
+                res.send("Could not open " + req.query.list + "list file");
             } else {
                 var lines = [];
                 var lineReader = require("readline")

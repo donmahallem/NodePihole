@@ -1,9 +1,9 @@
-var serveStatic = require("serve-static");
-var express = require("express");
+const serveStatic = require("serve-static");
+const express = require("express");
 const crypto = require("crypto");
-var jwt = require("jsonwebtoken");
-var socketIo = require("socket.io");
-var bodyParser = require("body-parser");
+const jwt = require("jsonwebtoken");
+const socketIo = require("socket.io");
+const bodyParser = require("body-parser");
 const fs = require("fs");
 const ini = require("ini");
 const cookieParser = require("cookie-parser");
@@ -73,6 +73,13 @@ var PiServer = function() {
         res.sendStatus(404);
 
     });
+
+    this.io = socketIo(this.server);
+
+    this.io.on('connection', function(socket) {
+        console.log('a user connected');
+    });
+
 };
 
 PiServer.prototype.load = function() {
@@ -81,10 +88,14 @@ PiServer.prototype.load = function() {
 };
 
 PiServer.prototype.start = function() {
-    this.app.listen(this.app.locals.settings.port, function() {
+    this.server.listen(this.app.locals.settings.port, function() {
             console.log("Server listening on port " + this.app.locals.settings.port + "!");
         }
         .bind(this));
+    /*this.app.listen(this.app.locals.settings.port, function() {
+            console.log("Server listening on port " + this.app.locals.settings.port + "!");
+        }
+        .bind(this));*/
 };
 
 module.exports = PiServer;

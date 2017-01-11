@@ -1,4 +1,4 @@
-﻿var offset, timer, pre, scrolling = true;
+var offset, timer, pre, scrolling = true;
 
 // Check every 200msec for fresh data
 var interval = 200;
@@ -27,11 +27,15 @@ $(function() {
     reloadData();
 });
 
-$("#chk1").click(function() {
-    $("#chk2").prop("checked", this.checked);
-    scrolling = this.checked;
-});
-$("#chk2").click(function() {
-    $("#chk1").prop("checked", this.checked);
-    scrolling = this.checked;
-});
+$("#chk1")
+    .click(function() {
+        $("#chk2")
+            .prop("checked", this.checked);
+        scrolling = this.checked;
+    });
+$("#chk2")
+    .click(function() {
+        $("#chk1")
+            .prop("checked", this.checked);
+        scrolling = this.checked;
+    });

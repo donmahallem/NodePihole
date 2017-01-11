@@ -1,10 +1,10 @@
-﻿const express = require("express");
+const express = require("express");
 const helper = require("./../helper.js");
 const jwt = require("jsonwebtoken");
 
 var frontEnd = {
     queries: {
-        get: function(req, res) {
+        get(req, res) {
             if (req.user.authenticated) {
                 res.render("queries_layout.pug", {
                     PCONFIG: {
@@ -15,13 +15,20 @@ var frontEnd = {
                     }
                 });
             } else {
-                console.log("Unauthorized request to /queries");
-                res.redirect("/login");
+                res.status(401);
+                res.render("login_layout.pug", {
+                    PCONFIG: {
+                        boxedLayout: false,
+                        wrongPassword: false,
+                        authenticated: false,
+                        activePage: "login"
+                    }
+                });
             }
         }
     },
     login: {
-        get: function(req, res) {
+        get(req, res) {
             res.render("login_layout.pug", {
                 PCONFIG: {
                     boxedLayout: false,
@@ -31,10 +38,10 @@ var frontEnd = {
                 }
             });
         },
-        post: function(req, res) {
+        post(req, res) {
             var token = req.body.pw;
             if (token) {
-                tokenHash = helper.hashPassword(token);
+                var tokenHash = helper.hashPassword(token);
                 if (tokenHash === req.app.locals.piHoleConfig.WEBPASSWORD) {
                     jwt.sign({
                             foo: "bar"
@@ -53,7 +60,6 @@ var frontEnd = {
                                 });
                                 res.redirect("/home");
                             } else {
-                                console.log("error occured");
                                 res.render("login_layout.pug", {
                                     PCONFIG: {
                                         boxedLayout: false,
@@ -61,7 +67,7 @@ var frontEnd = {
                                         authenticated: false,
                                         activePage: "login"
                                     }
-                                })
+                                });
                             }
                         });
                     return;
@@ -82,7 +88,7 @@ var frontEnd = {
         }
     },
     list: {
-        get: function(req, res) {
+        get(req, res) {
             if (!req.user.authenticated) {
                 res.redirect("/login");
                 return;
@@ -121,13 +127,13 @@ var frontEnd = {
         }
     },
     logout: {
-        get: function(req, res) {
+        get(req, res) {
             res.clearCookie("auth");
             res.redirect("/home");
         }
     },
     home: {
-        get: function(req, res) {
+        get(req, res) {
             res.render("main_layout.pug", {
                 PCONFIG: {
                     boxedLayout: false,

@@ -1,4 +1,4 @@
-﻿var serveStatic = require("serve-static");
+var serveStatic = require("serve-static");
 var express = require("express");
 const crypto = require("crypto");
 var jwt = require("jsonwebtoken");
@@ -7,57 +7,35 @@ var bodyParser = require("body-parser");
 const fs = require("fs");
 const ini = require("ini");
 const cookieParser = require("cookie-parser");
-const spawn = require("child_process").spawn;
-const exec = require("child_process").exec;
+const spawn = require("child_process")
+    .spawn;
+const exec = require("child_process")
+    .exec;
 const readline = require("readline");
 const moment = require("moment");
 const apiRoute = require("./routes/api.js");
 const frontEnd = require("./routes/front.js");
+const helper = require("./helper.js");
 
-function cr(pwd) {
-    hash1 = crypto.createHash("sha256", "utf8").update(pwd).digest("hex");
-    return crypto.createHash("sha256", "utf8").update(hash1).digest("hex");
-}
 
 var PiServer = function() {
     this.app = express();
-    this.server = require("http").Server(this.app);
+    this.server = require("http")
+        .Server(this.app);
     this.io = socketIo(this.server);
     this.app.set("view engine", "pug");
     this.app.use(bodyParser.urlencoded({
         extended: true
     }));
 
-    var secret = cr(cr(cr("" + (Math.random() * Date.now()))));
-    var cookieSecret = cr(cr(cr("" + (Math.random() * Date.now())) + secret));
+    var secret = helper.hashPassword(helper.hashPassword(helper.hashPassword("" + (Math.random() * Date.now()))));
+    var cookieSecret = helper.hashPassword(helper.hashPassword(helper.hashPassword("" + (Math.random() * Date.now())) + secret));
 
-    this.app.use("/static", serveStatic(__dirname + "/static"))
-    this.app.use(cookieParser(cookieSecret))
+    this.app.use("/static", serveStatic(__dirname + "/static"));
+    this.app.use(cookieParser(cookieSecret));
 
     this.app.use(function(req, res, next) {
-        if (req.signedCookies.auth) {
-            jwt.verify(req.signedCookies.auth, "secret", {
-                subject: "admin",
-                issuer: "pihole",
-                audience: "piholeuser"
-            }, function(err, decoded) {
-                if (decoded) {
-                    req.user = {
-                        authenticated: true
-                    };
-                } else {
-                    req.user = {
-                        authenticated: false
-                    };
-                }
-                next();
-            });
-        } else {
-            req.user = {
-                authenticated: false
-            };
-            next();
-        }
+        helper.verifyAuthCookie(req, res, next);
     });
     this.app.use("/api", apiRoute);
     this.app.get("/", frontEnd.home.get);
@@ -102,7 +80,7 @@ PiServer.prototype.load = function() {
 
 PiServer.prototype.start = function() {
     this.app.listen(this.app.locals.settings.port, function() {
-            console.log("Server listening on port " + this.app.locals.settings.port + "!")
+            console.log("Server listening on port " + this.app.locals.settings.port + "!");
         }
         .bind(this));
 };

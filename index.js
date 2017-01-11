@@ -1,5 +1,5 @@
-﻿var server = require("./server.js");
+var Server = require("./server.js");
 
-var appa = new server();
+var appa = new Server();
 appa.load();
 appa.start();

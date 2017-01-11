@@ -18,7 +18,7 @@
 						i.fa.fa-times-circle-o
 						|  Wrong password!
 		.panel-body
-			form#loginform(action='', method='post')
+			form#loginform(action='/login', method='post')
 				.form-group.has-feedback(class=PCONFIG.wrongPassword?"has-error":"")
 					input#loginpw.form-control(type='password', name='pw', placeholder='Password', autofocus='')
 					span.glyphicon.glyphicon-lock.form-control-feedback

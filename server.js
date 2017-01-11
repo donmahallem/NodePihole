@@ -41,6 +41,7 @@ var PiServer = function() {
     this.app.get("/", frontEnd.home.get);
     this.app.get("/home", frontEnd.home.get);
     this.app.get("/settings", frontEnd.settings.get);
+    this.app.get("/taillog", frontEnd.taillog.get);
     this.app.get("/login", frontEnd.login.get);
     this.app.post("/login", frontEnd.login.post);
     this.app.get("/logout", frontEnd.logout.get);

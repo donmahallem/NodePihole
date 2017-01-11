@@ -34,7 +34,9 @@ var PiServer = function() {
     this.app.use("/static", serveStatic(__dirname + "/static"));
     this.app.use(cookieParser(cookieSecret));
 
-    this.app.use(helper.verifyAuthCookie);
+    this.app.use(function(req, res, next) {
+        helper.verifyAuthCookie(req, res, next);
+    });
     this.app.use("/api", apiRoute);
     this.app.get("/", frontEnd.home.get);
     this.app.get("/home", frontEnd.home.get);

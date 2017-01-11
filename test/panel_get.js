@@ -233,6 +233,7 @@ describe("Check endpoints", function() {
                                 "list": "black"
                             })
                             .end(function(err, res) {
+								console.log(err,res);
                                 expect(err)
                                     .to.be.null;
                                 expect(res.status)

@@ -11,7 +11,7 @@ const helper = require("./../helper.js");
 
 chai.use(chaiHttp);
 const appDefaults = require("./../defaults.js");
-var server = new Backend();;
+var server = new Backend();
 var sandbox;
 beforeEach(function() {
     sandbox = sinon.sandbox.create();

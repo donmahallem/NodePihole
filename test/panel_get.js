@@ -17,6 +17,8 @@ beforeEach(function() {
     sandbox = sinon.sandbox.create();
     const logFileStub = sandbox.stub(appDefaults, "logFile", __dirname + "/../test/pihole.log");
     const setupVarsStub = sandbox.stub(appDefaults, "setupVars", __dirname + "/../test/setupVars.conf");
+    const whiteListStub = sandbox.stub(appDefaults, "whiteListFile", __dirname + "/../test/whitelist.txt");
+    const blackListStub = sandbox.stub(appDefaults, "blackListFile", __dirname + "/../test/blacklist.txt");
 
     server.load();
 });
@@ -66,6 +68,18 @@ describe("Check endpoints", function() {
                             done();
                         });
                 });
+                it("should fail", function(done) {
+                    chai.request(server.app)
+                        .get("/queries")
+                        .set("Cookie", "auth=kasdfasfasldfkasödfkasdf")
+                        .end(function(err, res) {
+                            expect(err)
+                                .to.not.be.null;
+                            expect(res.status)
+                                .to.be.equal(401);
+                            done();
+                        });
+                });
             });
             describe("get auth", function() {
                 var verifyCookieStub;
@@ -81,7 +95,7 @@ describe("Check endpoints", function() {
                     sinon.assert.calledOnce(verifyCookieStub);
                     verifyCookieStub.restore();
                 });
-                it("should fail", function(done) {
+                it("should succeed", function(done) {
                     chai.request(server.app)
                         .get("/queries")
                         .end(function(err, res) {
@@ -173,16 +187,82 @@ describe("Check endpoints", function() {
         });
         describe("/api", function() {
             describe("/list", function() {
-                it("should succeed", function(done) {
-                    chai.request(server.app)
-                        .get("/api/list")
-                        .end(function(err, res) {
-                            expect(err)
-                                .to.not.be.null;
-                            expect(res.status)
-                                .to.equal(401);
-                            done();
+                describe("get - authenticated", function() {
+                    var verifyCookieStub;
+                    beforeEach(function() {
+                        verifyCookieStub = sandbox.stub(helper, "verifyAuthCookie", function(req, res, next) {
+                            req.user = {
+                                authenticated: true
+                            }
+                            next();
                         });
+                    });
+                    afterEach(function() {
+                        sinon.assert.calledOnce(verifyCookieStub);
+                        verifyCookieStub.restore();
+                    });
+                    it("should not succeed", function(done) {
+                        chai.request(server.app)
+                            .get("/api/list")
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(400);
+                                done();
+                            });
+                    });
+                    it("should succeed", function(done) {
+                        chai.request(server.app)
+                            .get("/api/list")
+							.query({"list":"white"})
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
+                                done();
+                            });
+                    });
+                    it("should succeed", function(done) {
+                        chai.request(server.app)
+                            .get("/api/list")
+							.query({"list":"black"})
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
+								expect(res.header["content-type"]).to.not.be.null;
+								expect(res.header["content-type"]).to.contain("application/json");
+                                done();
+                            });
+                    });
+                    it("should not succeed", function(done) {
+                        chai.request(server.app)
+                            .get("/api/list")
+							.query({"list":"unknown"})
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(400);
+                                done();
+                            });
+                    });
+                });
+                describe("get - unauthenticated", function() {
+                    it("should succeed", function(done) {
+                        chai.request(server.app)
+                            .get("/api/list")
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                done();
+                            });
+                    });
                 });
             });
             describe("/data", function() {

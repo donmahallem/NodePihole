@@ -1,8 +1,8 @@
 const serveStatic = require("serve-static");
-const Express = require("express");
+const express = require("express");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const SocketIo = require("socket.io");
+const socketIo = require("socket.io");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const ini = require("ini");
@@ -11,7 +11,7 @@ const spawn = require("child_process")
     .spawn;
 const exec = require("child_process")
     .exec;
-const Server = require("http")
+const server = require("http")
     .Server;
 const readline = require("readline");
 const moment = require("moment");
@@ -20,13 +20,13 @@ const frontEnd = require("./routes/front.js");
 const helper = require("./helper.js");
 const csp = require("csp-header");
 const appDefaults = require("./defaults.js");
-const Tail = require('tail')
+const Tail = require("tail")
     .Tail;
 
 var PiServer = function() {
-    this.app = Express();
-    this.http = Server(this.app);
-    this.io = SocketIo(this.http);
+    this.app = express();
+    this.http = server(this.app);
+    this.io = socketIo(this.http);
     this.app.set("view engine", "pug");
     this.app.use(bodyParser.urlencoded({
         extended: true
@@ -119,7 +119,7 @@ PiServer.prototype.start = function() {
             hello: true
         });
     }.bind(this), 1000);
-    tail = new Tail(appDefaults.logFile);
+    var tail = new Tail(appDefaults.logFile);
 
     tail.on("line", function(data) {
         console.log(data);
@@ -127,7 +127,7 @@ PiServer.prototype.start = function() {
     }.bind(this));
 
     tail.on("error", function(error) {
-        console.log('ERROR: ', error);
+        console.log("ERROR: ", error);
     });
 };
 

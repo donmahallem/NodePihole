@@ -10,7 +10,6 @@ function escapeRegex(text) {
         return map[m];
     });
 }
-
 // stores if the table is already displaying a loading indicator
 var tableIsLoading = true;
 // shows loading indicator above table
@@ -37,7 +36,6 @@ function refreshData() {
 
 function add(row) {
     var rowData = row.data();
-
     var token = $("#token")
         .html();
     var alInfo = $("#alInfo");
@@ -46,7 +44,6 @@ function add(row) {
     alDomain.html(rowData.domain);
     var alSuccess = $("#alSuccess");
     var alFailure = $("#alFailure");
-
     if (rowData.status === "Pi-holed") {
         list = "white";
         alList.html("Whitelist");
@@ -111,10 +108,8 @@ function add(row) {
         }
     });
 }
-
 $(document)
     .ready(function() {
-
         // Do we want to filter queries?
         var GETDict = {};
         location.search.substr(1)
@@ -122,17 +117,13 @@ $(document)
             .forEach(function(item) {
                 GETDict[item.split("=")[0]] = item.split("=")[1];
             });
-
         var APIstring = "/api/data?getAllQueries";
-
         if ("from" in GETDict) {
             APIstring += "&from=" + GETDict["from"];
         }
-
         if ("until" in GETDict) {
             APIstring += "&until=" + GETDict["until"];
         }
-
         tableApi = $("#all-queries")
             .DataTable({
                 "rowCallback": function(row, data, index) {
@@ -147,7 +138,6 @@ $(document)
                         $("td:eq(5)", row)
                             .html("<button style=\"color:red;\"><i class=\"fa fa-ban\"></i> Blacklist</button>");
                     }
-
                 },
                 "initComplete": function(settings, json) {
                     setTableLoading(false);
@@ -198,7 +188,6 @@ $(document)
                     .parents("tr"));
                 add(row);
             });
-
         if ("client" in GETDict) {
             // Search in third column (zero indexed)
             // Use regular expression to only show exact matches, i.e.

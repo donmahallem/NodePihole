@@ -8,21 +8,17 @@ function eventsource() {
         .length === 0) {
         return;
     }
-
     var quiet = false;
     if (q.val() === "yes") {
         quiet = true;
         exact = "exact";
     }
-
     var host = window.location.host;
     var source = new EventSource("http://" + host + "/admin/scripts/pi-hole/php/queryads.php?domain=" + domain.val()
         .toLowerCase() + "&" + exact);
-
     // Reset and show field
     ta.empty();
     ta.show();
-
     source.addEventListener("message", function(e) {
         if (!quiet) {
             ta.append(e.data);
@@ -38,16 +34,13 @@ function eventsource() {
             }
         }
     }, false);
-
     // Will be called when script has finished
     source.addEventListener("error", function(e) {
         source.close();
     }, false);
-
     // Reset exact variable
     exact = "";
 }
-
 // Handle enter button
 $(document)
     .keypress(function(e) {

@@ -27,7 +27,6 @@ router.get("/data", function(req, res) {
         var data = {
             domains_over_time: {},
             ads_over_time: {}
-
         };
         lineReader.on("line", function(line) {
             if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
@@ -86,7 +85,6 @@ router.get("/data", function(req, res) {
                     type: _type,
                     client: _client
                 };
-
                 lines.push(data);
             }
         });
@@ -133,5 +131,4 @@ router.get("/list", function(req, res) {
         res.sendStatus(400);
     }
 });
-
 module.exports = router;

@@ -1,5 +1,4 @@
 process.env.NODE_ENV = "test";
-
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const Backend = require("../server.js");
@@ -8,7 +7,6 @@ const sinon = require("sinon");
 const should = chai.should();
 const expect = chai.expect;
 const helper = require("./../helper.js");
-
 chai.use(chaiHttp);
 const appDefaults = require("./../defaults.js");
 var server = new Backend();
@@ -19,14 +17,11 @@ beforeEach(function() {
     const setupVarsStub = sandbox.stub(appDefaults, "setupVars", __dirname + "/../test/setupVars.conf");
     const whiteListStub = sandbox.stub(appDefaults, "whiteListFile", __dirname + "/../test/whitelist.txt");
     const blackListStub = sandbox.stub(appDefaults, "blackListFile", __dirname + "/../test/blacklist.txt");
-
     server.load();
 });
-
 afterEach(function() {
     sandbox.restore();
 });
-
 describe("Check endpoints", function() {
     describe("not authenticated", function() {
         it("get /", function(done) {

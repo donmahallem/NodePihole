@@ -1,6 +1,6 @@
 var express = require("express");
 const readline = require("readline");
-const moment = require("moment");
+const Moment = require("moment");
 const fs = require("fs");
 
 var router = express.Router();
@@ -33,7 +33,7 @@ router.get("/data", function(req, res) {
             if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
                 return;
             }
-            var time = moment(line.substring(0, 16), "MMM DD hh:mm:ss");
+            var time = Moment(line.substring(0, 16), "MMM DD hh:mm:ss");
             var hour = time.hour();
             var minute = time.minute();
             time = (minute - minute % 10) / 10 + 6 * hour;
@@ -79,7 +79,7 @@ router.get("/data", function(req, res) {
                 var _type = tmp.substring(6, tmp.length - 1);
                 var _client = expl[expl.length - 1];
                 var data = {
-                    time: moment(_time, "MMM DD hh:mm:ss")
+                    time: Moment(_time, "MMM DD hh:mm:ss")
                         .toISOString(),
                     domain: _domain,
                     status: _status,

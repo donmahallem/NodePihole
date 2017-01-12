@@ -1,8 +1,8 @@
-var express = require("express");
+const express = require("express");
 const readline = require("readline");
 const moment = require("moment");
 const fs = require("fs");
-
+const appDefaults=require("./../defaults.js");
 var router = express.Router();
 router.get("/data", function(req, res) {
     if ("summary" in req.query) {
@@ -22,7 +22,7 @@ router.get("/data", function(req, res) {
         var lineReader = require("readline")
             .createInterface({
                 input: require("fs")
-                    .createReadStream(req.app.locals.settings.logFile)
+                    .createReadStream(appDefaults.logFile)
             });
         var data = {
             domains_over_time: {},
@@ -63,7 +63,7 @@ router.get("/data", function(req, res) {
         var lineReader = require("readline")
             .createInterface({
                 input: require("fs")
-                    .createReadStream(req.app.locals.settings.logFile)
+                    .createReadStream(appDefaults.logFile)
             });
         var lines = [];
         lineReader.on("line", function(line) {
@@ -100,12 +100,12 @@ router.get("/data", function(req, res) {
 router.get("/list", function(req, res) {
     if (!req.user.authenticated) {
         res.sendStatus(401);
-    }else if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
+    } else if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
         var filepath;
         if (req.query.list === "white") {
-            filepath = req.app.locals.settings.whiteListFile;
+            filepath = appDefaults.whiteListFile;
         } else {
-            filepath = req.app.locals.settings.blackListFile;
+            filepath = appDefaults.blackListFile;
         }
         fs.access(filepath, fs.F_OK | fs.R_OK, function(err) {
             if (err) {

@@ -19,6 +19,7 @@ const apiRoute = require("./routes/api.js");
 const frontEnd = require("./routes/front.js");
 const helper = require("./helper.js");
 const csp = require("csp-header");
+const appDefaults = require("./defaults.js");
 
 var PiServer = function() {
     this.app = Express();
@@ -29,11 +30,8 @@ var PiServer = function() {
         extended: true
     }));
 
-    var secret = helper.hashPassword(helper.hashPassword(helper.hashPassword("" + (Math.random() * Date.now()))));
-    var cookieSecret = helper.hashPassword(helper.hashPassword(helper.hashPassword("" + (Math.random() * Date.now())) + secret));
-
     this.app.use("/static", serveStatic(__dirname + "/static"));
-    this.app.use(cookieParser(cookieSecret));
+    this.app.use(cookieParser(appDefaults.cookieSecret));
 
     this.app.use(function(req, res, next) {
         helper.verifyAuthCookie(req, res, next);
@@ -102,8 +100,7 @@ var PiServer = function() {
 };
 
 PiServer.prototype.load = function() {
-    this.app.locals.settings = require("./defaults.js");
-    this.app.locals.piHoleConfig = ini.parse(fs.readFileSync(this.app.locals.settings.setupVars, "utf-8"));
+    this.app.locals.piHoleConfig = ini.parse(fs.readFileSync(appDefaults.setupVars, "utf-8"));
 };
 
 PiServer.prototype.start = function() {
@@ -111,8 +108,8 @@ PiServer.prototype.start = function() {
         return;
     }
     this.started = true;
-    this.http.listen(this.app.locals.settings.port, function() {
-            console.log("Server listening on port " + this.app.locals.settings.port + "!");
+    this.http.listen(appDefaults.port, function() {
+            console.log("Server listening on port " + appDefaults.port + "!");
         }
         .bind(this));
     setInterval(function() {

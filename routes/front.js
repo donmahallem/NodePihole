@@ -1,6 +1,7 @@
 const express = require("express");
 const helper = require("./../helper.js");
 const jwt = require("jsonwebtoken");
+const appDefaults = require("./../defaults.js");
 
 var frontEnd = {
     queries: {
@@ -93,7 +94,7 @@ var frontEnd = {
                 if (tokenHash === req.app.locals.piHoleConfig.WEBPASSWORD) {
                     jwt.sign({
                             foo: "bar"
-                        }, "secret", {
+                        }, appDefaults.jwtSecret, {
                             expiresIn: "1h",
                             subject: "admin",
                             issuer: "pihole",

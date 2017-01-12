@@ -87,7 +87,7 @@ describe("Check endpoints", function() {
                     verifyCookieStub = sandbox.stub(helper, "verifyAuthCookie", function(req, res, next) {
                         req.user = {
                             authenticated: true
-                        }
+                        };
                         next();
                     });
                 });

@@ -19,6 +19,7 @@
     "pug": "^2.0.0-beta6",
     "serve-static": "^1.11.1",
     "socket.io": "^1.7.2",
+    "socketio-jwt": "^4.5.0",
     "tail": "^1.2.1"
   },
   "devDependencies": {

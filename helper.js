@@ -16,24 +16,25 @@ helper.hashPassword = function(pwd) {
 helper.verifyAuthCookie = function(req, res, next) {
     if (req.signedCookies.auth) {
         jwt.verify(req.signedCookies.auth, appDefaults.jwtSecret, {
-            subject: "admin",
-            issuer: "pihole",
-            audience: "piholeuser"
+            "subject": "admin",
+            "issuer": "pihole",
+            "audience": "piholeuser"
         }, function(err, decoded) {
             if (decoded) {
                 req.user = {
-                    authenticated: true
+                    "authenticated": true,
+                    "token": req.signedCookies.auth
                 };
             } else {
                 req.user = {
-                    authenticated: false
+                    "authenticated": false
                 };
             }
             next();
         });
     } else {
         req.user = {
-            authenticated: false
+            "authenticated": false
         };
         next();
     }

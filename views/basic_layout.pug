@@ -42,8 +42,9 @@ html
 				label(for='js-hide') Close
 		// /JS Warning
 		script(src='static/scripts/pi-hole/js/header.js')
-		// Send token to JS
-		#token(hidden='')
+		if PCONFIG.user.authenticated
+			// Send token to JS
+			#token(hidden='')= PCONFIG.user.token
 		.wrapper
 			include header.pug
 			// Left side column. contains the logo and sidebar

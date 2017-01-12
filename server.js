@@ -22,11 +22,14 @@ const csp = require("csp-header");
 const appDefaults = require("./defaults.js");
 const Tail = require("tail")
     .Tail;
+const socketioJwt = require("socketio-jwt");
 
 var PiServer = function() {
     this.app = express();
     this.http = server(this.app);
-    this.io = socketIo(this.http);
+    this.socketIo = {
+        "io": socketIo(this.http)
+    }
     this.app.set("view engine", "pug");
     this.app.use(bodyParser.urlencoded({
         extended: true
@@ -92,7 +95,18 @@ var PiServer = function() {
 
     });
 
-    this.io.on("connection", function(socket) {
+    // Socket IO setup
+    this.socketIo.privateSocket = this.socketIo.io.of('/private');
+    this.socketIo.publicSocket = this.socketIo.io.of('/public');
+    this.socketIo.privateSocket.on('connection', socketioJwt.authorize({
+            secret: appDefaults.jwtSecret,
+            timeout: 15000 // 15 seconds to send the authentication message
+        }))
+        .on('authenticated', function(socket) {
+            //this socket is authenticated, we are good to handle more events from it.
+            console.log('hello! ' + socket.decoded_token.name);
+        });
+    this.socketIo.publicSocket.on("connection", function(socket) {
         console.log("a user connected");
         socket.on("disconnect", function() {
             console.log("a user disconnected");
@@ -106,29 +120,29 @@ PiServer.prototype.load = function() {
 };
 
 PiServer.prototype.start = function() {
-    if (this.started) {
-        return;
-    }
-    this.started = true;
-    this.http.listen(appDefaults.port, function() {
-            console.log("Server listening on port " + appDefaults.port + "!");
-        }
-        .bind(this));
-    setInterval(function() {
-        this.io.emit("deny", {
-            hello: true
+    if (!this.started) {
+        this.started = true;
+        this.http.listen(appDefaults.port, function() {
+                console.log("Server listening on port " + appDefaults.port + "!");
+            }
+            .bind(this));
+        var tail = new Tail(appDefaults.logFile);
+
+        tail.on("line", function(data) {
+            console.log(data);
+            this.socketIo.privateSocket.emit("dnsevent", {
+                "type": "deny",
+                "domain": "test.com"
+            });
+            this.socketIo.publicSocket.emit("dnsevent", {
+                "type": "deny"
+            });
+        }.bind(this));
+
+        tail.on("error", function(error) {
+            console.log("ERROR: ", error);
         });
-    }.bind(this), 1000);
-    var tail = new Tail(appDefaults.logFile);
-
-    tail.on("line", function(data) {
-        console.log(data);
-        this.io.emit("deny", data);
-    }.bind(this));
-
-    tail.on("error", function(error) {
-        console.log("ERROR: ", error);
-    });
+    }
 };
 
 module.exports = PiServer;

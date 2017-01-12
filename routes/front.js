@@ -59,7 +59,7 @@ var frontEnd = {
                     PCONFIG: {
                         boxedLayout: false,
                         wrongPassword: false,
-                        authenticated: req.user.authenticated,
+                        user: req.user,
                         activePage: "queries"
                     }
                 });
@@ -69,7 +69,7 @@ var frontEnd = {
                     PCONFIG: {
                         boxedLayout: false,
                         wrongPassword: false,
-                        authenticated: false,
+                        user: req.user,
                         activePage: "login"
                     }
                 });

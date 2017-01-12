@@ -76,54 +76,6 @@ var frontEnd = {
             }
         }
     },
-    settings: {
-        get(req, res) {
-            if (req.user.authenticated) {
-                res.render("settings_layout.pug", {
-                    PCONFIG: {
-                        boxedLayout: false,
-                        wrongPassword: false,
-                        user: req.user,
-                        activePage: "queries"
-                    }
-                });
-            } else {
-                res.status(401);
-                res.render("login_layout.pug", {
-                    PCONFIG: {
-                        boxedLayout: false,
-                        wrongPassword: false,
-                        user: req.user,
-                        activePage: "login"
-                    }
-                });
-            }
-        }
-    },
-    taillog: {
-        get(req, res) {
-            if (req.user.authenticated) {
-                res.render("taillog_layout.pug", {
-                    PCONFIG: {
-                        boxedLayout: false,
-                        wrongPassword: false,
-                        user: req.user,
-                        activePage: "queries"
-                    }
-                });
-            } else {
-                res.status(401);
-                res.render("login_layout.pug", {
-                    PCONFIG: {
-                        boxedLayout: false,
-                        wrongPassword: false,
-                        user: req.user,
-                        activePage: "login"
-                    }
-                });
-            }
-        }
-    },
     login: {
         get(req, res) {
             res.render("login_layout.pug", {

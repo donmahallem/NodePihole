@@ -1,12 +1,61 @@
 const express = require("express");
 const helper = require("./../helper.js");
 const jwt = require("jsonwebtoken");
+const appDefaults = require("./../defaults.js");
 
 var frontEnd = {
     queries: {
         get(req, res) {
             if (req.user.authenticated) {
                 res.render("queries_layout.pug", {
+                    PCONFIG: {
+                        boxedLayout: false,
+                        wrongPassword: false,
+                        authenticated: req.user.authenticated,
+                        activePage: "queries"
+                    }
+                });
+            } else {
+                res.status(401);
+                res.render("login_layout.pug", {
+                    PCONFIG: {
+                        boxedLayout: false,
+                        wrongPassword: false,
+                        authenticated: false,
+                        activePage: "login"
+                    }
+                });
+            }
+        }
+    },
+    settings: {
+        get(req, res) {
+            if (req.user.authenticated) {
+                res.render("settings_layout.pug", {
+                    PCONFIG: {
+                        boxedLayout: false,
+                        wrongPassword: false,
+                        authenticated: req.user.authenticated,
+                        activePage: "queries"
+                    }
+                });
+            } else {
+                res.status(401);
+                res.render("login_layout.pug", {
+                    PCONFIG: {
+                        boxedLayout: false,
+                        wrongPassword: false,
+                        authenticated: false,
+                        activePage: "login"
+                    }
+                });
+            }
+        }
+    },
+    taillog: {
+        get(req, res) {
+            if (req.user.authenticated) {
+                res.render("taillog_layout.pug", {
                     PCONFIG: {
                         boxedLayout: false,
                         wrongPassword: false,
@@ -45,7 +94,7 @@ var frontEnd = {
                 if (tokenHash === req.app.locals.piHoleConfig.WEBPASSWORD) {
                     jwt.sign({
                             foo: "bar"
-                        }, "secret", {
+                        }, appDefaults.jwtSecret, {
                             expiresIn: "1h",
                             subject: "admin",
                             issuer: "pihole",
@@ -84,7 +133,7 @@ var frontEnd = {
                     authenticated: req.user.authenticated,
                     activePage: "login"
                 }
-            })
+            });
         }
     },
     list: {

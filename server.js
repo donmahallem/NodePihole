@@ -1,9 +1,9 @@
-var serveStatic = require("serve-static");
-var express = require("express");
+const serveStatic = require("serve-static");
+const express = require("express");
 const crypto = require("crypto");
-var jwt = require("jsonwebtoken");
-var socketIo = require("socket.io");
-var bodyParser = require("body-parser");
+const jwt = require("jsonwebtoken");
+const socketIo = require("socket.io");
+const bodyParser = require("body-parser");
 const fs = require("fs");
 const ini = require("ini");
 const cookieParser = require("cookie-parser");
@@ -11,35 +11,55 @@ const spawn = require("child_process")
     .spawn;
 const exec = require("child_process")
     .exec;
+const server = require("http")
+    .Server;
 const readline = require("readline");
 const moment = require("moment");
 const apiRoute = require("./routes/api.js");
 const frontEnd = require("./routes/front.js");
 const helper = require("./helper.js");
-
+const csp = require("csp-header");
+const appDefaults = require("./defaults.js");
+const Tail = require("tail")
+    .Tail;
 
 var PiServer = function() {
     this.app = express();
-    this.server = require("http")
-        .Server(this.app);
-    this.io = socketIo(this.server);
+    this.http = server(this.app);
+    this.io = socketIo(this.http);
     this.app.set("view engine", "pug");
     this.app.use(bodyParser.urlencoded({
         extended: true
     }));
 
-    var secret = helper.hashPassword(helper.hashPassword(helper.hashPassword("" + (Math.random() * Date.now()))));
-    var cookieSecret = helper.hashPassword(helper.hashPassword(helper.hashPassword("" + (Math.random() * Date.now())) + secret));
-
     this.app.use("/static", serveStatic(__dirname + "/static"));
-    this.app.use(cookieParser(cookieSecret));
+    this.app.use(cookieParser(appDefaults.cookieSecret));
 
     this.app.use(function(req, res, next) {
         helper.verifyAuthCookie(req, res, next);
     });
+
+    this.app.use(function(req, res, next) {
+        var cCsp = csp({
+            policies: {
+                "default-src": [csp.SELF],
+                "script-src": [csp.SELF, csp.INLINE],
+                "style-src": [csp.SELF, csp.INLINE],
+                "img-src": [csp.SELF],
+                "connect-src": [csp.SELF, "https://api.github.com", "ws:", "wss:"],
+                "worker-src": [csp.NONE],
+                "block-all-mixed-content": true
+            }
+        });
+        res.set("Content-Security-Policy", cCsp);
+        next();
+    });
+
     this.app.use("/api", apiRoute);
     this.app.get("/", frontEnd.home.get);
     this.app.get("/home", frontEnd.home.get);
+    this.app.get("/settings", frontEnd.settings.get);
+    this.app.get("/taillog", frontEnd.taillog.get);
     this.app.get("/login", frontEnd.login.get);
     this.app.post("/login", frontEnd.login.post);
     this.app.get("/logout", frontEnd.logout.get);
@@ -71,18 +91,44 @@ var PiServer = function() {
         res.sendStatus(404);
 
     });
+
+    this.io.on("connection", function(socket) {
+        console.log("a user connected");
+        socket.on("disconnect", function() {
+            console.log("a user disconnected");
+        });
+    });
+    this.started = false;
 };
 
 PiServer.prototype.load = function() {
-    this.app.locals.settings = require("./defaults.js");
-    this.app.locals.piHoleConfig = ini.parse(fs.readFileSync(this.app.locals.settings.setupVars, "utf-8"));
+    this.app.locals.piHoleConfig = ini.parse(fs.readFileSync(appDefaults.setupVars, "utf-8"));
 };
 
 PiServer.prototype.start = function() {
-    this.app.listen(this.app.locals.settings.port, function() {
-            console.log("Server listening on port " + this.app.locals.settings.port + "!");
+    if (this.started) {
+        return;
+    }
+    this.started = true;
+    this.http.listen(appDefaults.port, function() {
+            console.log("Server listening on port " + appDefaults.port + "!");
         }
         .bind(this));
+    setInterval(function() {
+        this.io.emit("deny", {
+            hello: true
+        });
+    }.bind(this), 1000);
+    var tail = new Tail(appDefaults.logFile);
+
+    tail.on("line", function(data) {
+        console.log(data);
+        this.io.emit("deny", data);
+    }.bind(this));
+
+    tail.on("error", function(error) {
+        console.log("ERROR: ", error);
+    });
 };
 
 module.exports = PiServer;

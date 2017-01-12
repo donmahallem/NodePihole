@@ -1,4 +1,4 @@
-var offset, timer, pre, scrolling = true;
+/*var offset, timer, pre, scrolling = true;
 
 // Check every 200msec for fresh data
 var interval = 200;
@@ -39,3 +39,8 @@ $("#chk2")
             .prop("checked", this.checked);
         scrolling = this.checked;
     });
+*/
+var socket = io();
+socket.on("deny", function(data) {
+    console.log(data);
+});

@@ -1,5 +1,6 @@
 const crypto = require("crypto");
-var jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
+const appDefaults = require("./defaults.js");
 var helper = {};
 
 // creates the default hash of the password for the admin panel
@@ -14,7 +15,7 @@ helper.hashPassword = function(pwd) {
 
 helper.verifyAuthCookie = function(req, res, next) {
     if (req.signedCookies.auth) {
-        jwt.verify(req.signedCookies.auth, "secret", {
+        jwt.verify(req.signedCookies.auth, appDefaults.jwtSecret, {
             subject: "admin",
             issuer: "pihole",
             audience: "piholeuser"

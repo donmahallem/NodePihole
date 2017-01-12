@@ -1,0 +1,302 @@
+section.content
+	style(type='text/css').
+		.tooltip-inner {
+		max-width: none;
+		white-space: nowrap;
+		}
+		@-webkit-keyframes Pulse{
+		from {color:#630030;-webkit-text-shadow:0 0 9px #333;}
+		50% {color:#e33100;-webkit-text-shadow:0 0 18px #e33100;}
+		to {color:#630030;-webkit-text-shadow:0 0 9px #333;}
+		}
+		p.lookatme {
+		-webkit-animation-name: Pulse;
+		-webkit-animation-duration: 2s;
+		-webkit-animation-iteration-count: infinite;
+		}
+	.row
+		.col-md-6
+			.box.box-warning
+				.box-header.with-border
+					h3.box-title Networking
+				.box-body
+					.form-group
+						label Pi-Hole Ethernet Interface
+						.input-group
+							.input-group-addon
+								i.fa.fa-plug
+							input.form-control(type='text', disabled='', value='eth0')
+					.form-group
+						label Pi-Hole IPv4 address
+						.input-group
+							.input-group-addon
+								i.fa.fa-plug
+							input.form-control(type='text', disabled='', value='1.1.1.1')
+					.form-group
+						label Pi-Hole IPv6 address
+						.input-group
+							.input-group-addon
+								i.fa.fa-plug
+							input.form-control(type='text', disabled='', value='::::::::::::::::::')
+					.form-group
+						label Pi-Hole hostname
+						.input-group
+							.input-group-addon
+								i.fa.fa-laptop
+							input.form-control(type='text', disabled='', value='raspberrypi')
+			.box.box-warning
+				.box-header.with-border
+					h3.box-title Pi-Hole DHCP Server
+				.box-body
+					form(role='form', method='post')
+						.col-md-6
+							.form-group
+								.checkbox
+									label
+										input#DHCPchk(type='checkbox', name='active')
+										|  DHCP server enabled
+						.col-md-6
+							p#dhcpnotice(hidden='')
+								| Make sure your router's DHCP server is disabled when using the Pi-hole DHCP server!
+						.col-md-12
+							label Range of IP addresses to hand out
+						.col-md-6
+							.form-group
+								.input-group
+									.input-group-addon From
+									input.form-control.DHCPgroup(type='text', name='from', value='1.1.1.1', data-inputmask="'alias': 'ip'", data-mask='', disabled='')
+						.col-md-6
+							.form-group
+								.input-group
+									.input-group-addon To
+									input.form-control.DHCPgroup(type='text', name='to', value='1.1.1.1', data-inputmask="'alias': 'ip'", data-mask='', disabled='')
+						.col-md-12
+							label Router (gateway) IP address
+							.form-group
+								.input-group
+									.input-group-addon Router
+									input.form-control.DHCPgroup(type='text', name='router', value='1.1.1.1', data-inputmask="'alias': 'ip'", data-mask='', disabled='')
+						.col-md-12
+							.box.box-warning.collapsed-box
+								.box-header.with-border
+									h3.box-title Advanced DHCP settings
+									.box-tools.pull-right
+										button.btn.btn-box-tool(type='button', data-widget='collapse')
+											i.fa.fa-plus
+								.box-body
+									.col-md-12
+										.form-group
+											.checkbox
+												label
+													input.DHCPgroup(type='checkbox', name='useIPv6', checked='', disabled='')
+													|  Enable IPv6 support (SLAAC + RA)
+									.col-md-12
+										label Pi-Hole domain name
+										.form-group
+											.input-group
+												.input-group-addon Domain
+												input.form-control.DHCPgroup(type='text', name='domain', value='local', disabled='')
+									.col-md-12
+										label DHCP lease time
+										.form-group
+											.input-group
+												.input-group-addon Lease time in hours
+												input#leasetime.form-control.DHCPgroup(type='text', name='leasetime', value='24', data-inputmask="'mask': '9', 'repeat': 7, 'greedy' : false", data-mask='', disabled='')
+										p
+											| Hint: 0 = infinite, 24 = one day, 168 = one week, 744 = one month, 8760 = one year
+				.box-footer
+					input(type='hidden', name='field', value='DHCP')
+					button.btn.btn-primary.pull-right(type='submit') Save
+			.box.box-warning
+				.box-header.with-border
+					h3.box-title Upstream DNS Servers
+				.box-body
+					form(role='form', method='post')
+						.col-lg-6
+							label Primary DNS Server
+							.form-group
+								.radio
+									label
+										input(type='radio', name='primaryDNS', value='Google', checked='')
+										| Google (8.8.8.8)
+								.radio
+									label
+										input(type='radio', name='primaryDNS', value='OpenDNS')
+										| OpenDNS (208.67.222.222)
+								.radio
+									label
+										input(type='radio', name='primaryDNS', value='Level3')
+										| Level3 (4.2.2.1)
+								.radio
+									label
+										input(type='radio', name='primaryDNS', value='Norton')
+										| Norton (199.85.126.10)
+								.radio
+									label
+										input(type='radio', name='primaryDNS', value='Comodo')
+										| Comodo (8.26.56.26)
+								label Custom
+								.input-group
+									.input-group-addon
+										input(type='radio', name='primaryDNS', value='Custom')
+									input.form-control(type='text', name='DNS1IP', data-inputmask="'alias': 'ip'", data-mask='')
+						.col-lg-6
+							label Secondary DNS Server
+							.form-group
+								.radio
+									label
+										input(type='radio', name='secondaryDNS', value='Google', checked='')
+										| Google (8.8.4.4)
+								.radio
+									label
+										input(type='radio', name='secondaryDNS', value='OpenDNS')
+										| OpenDNS (208.67.220.220)
+								.radio
+									label
+										input(type='radio', name='secondaryDNS', value='Level3')
+										| Level3 (4.2.2.2)
+								.radio
+									label
+										input(type='radio', name='secondaryDNS', value='Norton')
+										| Norton (199.85.127.10)
+								.radio
+									label
+										input(type='radio', name='secondaryDNS', value='Comodo')
+										| Comodo (8.20.247.20)
+								label Custom
+								.input-group
+									.input-group-addon
+										input(type='radio', name='secondaryDNS', value='Custom')
+									input.form-control(type='text', name='DNS2IP', data-inputmask="'alias': 'ip'", data-mask='')
+						.col-lg-12
+							.box.box-warning.collapsed-box
+								.box-header.with-border
+									h3.box-title Advanced DNS settings
+									.box-tools.pull-right
+										button.btn.btn-box-tool(type='button', data-widget='collapse')
+											i.fa.fa-plus
+								.box-body
+									.col-lg-12
+										.form-group
+											.checkbox
+												label
+													input(type='checkbox', name='DNSrequiresFQDN', checked='', title='domain-needed')
+													|  never forward non-FQDNs
+										.form-group
+											.checkbox
+												label
+													input(type='checkbox', name='DNSbogusPriv', checked='', title='bogus-priv')
+													|  never forward reverse lookups for private IP ranges
+										p
+											| Note that enabling these two options may increase your privacy slightly, but may also prevent you from being able to access local hostnames if the Pi-Hole is not used as DHCP server
+				.box-footer
+					input(type='hidden', name='field', value='DNS')
+					button.btn.btn-primary.pull-right(type='submit') Save
+		.col-md-6
+			.box.box-primary
+				.box-header.with-border
+					h3.box-title Query Logging (size of log 1.66 MB)
+				.box-body
+					p
+						| Current status:
+						| Enabled (recommended)
+					p Note that disabling will render graphs on the web user interface useless
+				.box-footer
+					form(role='form', method='post')
+						button.btn.btn-default.confirm-flushlogs(type='button') Flush logs
+						input(type='hidden', name='field', value='Logging')
+						input(type='hidden', name='action', value='Disable')
+						button.btn.btn-primary.pull-right(type='submit') Disable query logging
+			.box.box-success
+				.box-header.with-border
+					h3.box-title API
+				form(role='form', method='post')
+					.box-body
+						h4 Top Lists
+						p Exclude the following domains from being shown in
+						.col-lg-6
+							.form-group
+								label Top Domains / Top Advertisers
+								textarea.form-control(name='domains', rows='4', placeholder='Enter one domain per line')
+						.col-lg-6
+							.form-group
+								label Top Clients
+								textarea.form-control(name='clients', rows='4', placeholder='Enter one IP address per line')
+						h4 Reverse DNS lookup
+						p Try to determine the domain name via querying the Pi-hole for
+						.col-lg-6
+							.form-group
+								.checkbox
+									label
+										input(type='checkbox', name='resolve-forward')
+										|  Forward Destinations
+						.col-lg-6
+							.form-group
+								.checkbox
+									label
+										input(type='checkbox', name='resolve-clients')
+										|  Top Clients
+						h4 Query Log
+						.col-lg-6
+							.form-group
+								.checkbox
+									label
+										input(type='checkbox', name='querylog-permitted', checked='')
+										|  Show permitted queries
+						.col-lg-6
+							.form-group
+								.checkbox
+									label
+										input(type='checkbox', name='querylog-blocked', checked='')
+										|  Show blocked queries
+						h4 Privacy mode
+						.col-lg-12
+							.form-group
+								.checkbox
+									label
+										input(type='checkbox', name='privacyMode')
+										|  Don't show query results for permitted requests
+					.box-footer
+						input(type='hidden', name='field', value='API')
+						button.btn.btn-primary.pull-right(type='submit') Save
+			.box.box-success
+				.box-header.with-border
+					h3.box-title Web User Interface
+				form(role='form', method='post')
+					.box-body
+						h4 Interface appearance
+						.form-group
+							.checkbox
+								label
+									input(type='checkbox', name='boxedlayout', value='yes', checked='')
+									| Use boxed layout (helpful when working on large screens)
+						h4 CPU Temperature Unit
+						.form-group
+							.radio
+								label
+									input(type='radio', name='tempunit', value='C', checked='')
+									| Celsius
+							.radio
+								label
+									input(type='radio', name='tempunit', value='K')
+									| Kelvin
+							.radio
+								label
+									input(type='radio', name='tempunit', value='F')
+									| Fahrenheit
+					.box-footer
+						input(type='hidden', name='field', value='webUI')
+						button.btn.btn-primary.pull-right(type='submit') Save
+			.box.box-danger
+				.box-header.with-border
+					h3.box-title System Administration
+				.box-body
+					button.btn.btn-default.confirm-reboot(type='button') Restart system
+					button.btn.btn-default.confirm-restartdns(type='button') Restart DNS server
+					button.btn.btn-default.confirm-flushlogs(type='button') Flush logs
+					form#rebootform(role='form', method='post')
+						input(type='hidden', name='field', value='reboot')
+					form#restartdnsform(role='form', method='post')
+						input(type='hidden', name='field', value='restartdns')
+					form#flushlogsform(role='form', method='post')
+						input(type='hidden', name='field', value='flushlogs')

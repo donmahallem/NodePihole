@@ -1,8 +1,8 @@
 const serveStatic = require("serve-static");
-const express = require("express");
+const Express = require("express");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const socketIo = require("socket.io");
+const SocketIo = require("socket.io");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const ini = require("ini");
@@ -11,18 +11,19 @@ const spawn = require("child_process")
     .spawn;
 const exec = require("child_process")
     .exec;
+const Server = require("http")
+    .Server;
 const readline = require("readline");
 const moment = require("moment");
 const apiRoute = require("./routes/api.js");
 const frontEnd = require("./routes/front.js");
 const helper = require("./helper.js");
-
+const csp = require('csp-header');
 
 var PiServer = function() {
-    this.app = express();
-    this.server = require("http")
-        .Server(this.app);
-    this.io = socketIo(this.server);
+    this.app = Express();
+    this.http = Server(this.app);
+    this.io = SocketIo(this.http);
     this.app.set("view engine", "pug");
     this.app.use(bodyParser.urlencoded({
         extended: true
@@ -37,6 +38,23 @@ var PiServer = function() {
     this.app.use(function(req, res, next) {
         helper.verifyAuthCookie(req, res, next);
     });
+
+    this.app.use(function(req, res, next) {
+        var cCsp = csp({
+            policies: {
+                'default-src': [csp.SELF],
+                'script-src': [csp.SELF, csp.INLINE],
+                'style-src': [csp.SELF, csp.INLINE],
+                'img-src': [csp.SELF],
+                'connect-src': [csp.SELF, "https://api.github.com", "ws:", "wss:"],
+                'worker-src': [csp.NONE],
+                'block-all-mixed-content': true
+            }
+        });
+        res.set("Content-Security-Policy", cCsp);
+        next();
+    });
+
     this.app.use("/api", apiRoute);
     this.app.get("/", frontEnd.home.get);
     this.app.get("/home", frontEnd.home.get);
@@ -74,12 +92,13 @@ var PiServer = function() {
 
     });
 
-    this.io = socketIo(this.server);
-
     this.io.on('connection', function(socket) {
         console.log('a user connected');
+        socket.on('disconnect', function() {
+            console.log("a user disconnected");
+        });
     });
-
+    this.started = false;
 };
 
 PiServer.prototype.load = function() {
@@ -88,14 +107,19 @@ PiServer.prototype.load = function() {
 };
 
 PiServer.prototype.start = function() {
-    this.server.listen(this.app.locals.settings.port, function() {
+    if (this.started) {
+        return;
+    }
+    this.started = true;
+    this.http.listen(this.app.locals.settings.port, function() {
             console.log("Server listening on port " + this.app.locals.settings.port + "!");
         }
         .bind(this));
-    /*this.app.listen(this.app.locals.settings.port, function() {
-            console.log("Server listening on port " + this.app.locals.settings.port + "!");
-        }
-        .bind(this));*/
+    setInterval(function() {
+        this.io.emit("deny", {
+            hello: true
+        });
+    }.bind(this), 1000);
 };
 
 module.exports = PiServer;

@@ -41,3 +41,6 @@ $("#chk2")
     });
 */
 var socket = io();
+socket.on("deny", function(data) {
+    console.log(data);
+});

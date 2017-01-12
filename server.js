@@ -18,7 +18,7 @@ const moment = require("moment");
 const apiRoute = require("./routes/api.js");
 const frontEnd = require("./routes/front.js");
 const helper = require("./helper.js");
-const csp = require('csp-header');
+const csp = require("csp-header");
 
 var PiServer = function() {
     this.app = Express();
@@ -42,13 +42,13 @@ var PiServer = function() {
     this.app.use(function(req, res, next) {
         var cCsp = csp({
             policies: {
-                'default-src': [csp.SELF],
-                'script-src': [csp.SELF, csp.INLINE],
-                'style-src': [csp.SELF, csp.INLINE],
-                'img-src': [csp.SELF],
-                'connect-src': [csp.SELF, "https://api.github.com", "ws:", "wss:"],
-                'worker-src': [csp.NONE],
-                'block-all-mixed-content': true
+                "default-src": [csp.SELF],
+                "script-src": [csp.SELF, csp.INLINE],
+                "style-src": [csp.SELF, csp.INLINE],
+                "img-src": [csp.SELF],
+                "connect-src": [csp.SELF, "https://api.github.com", "ws:", "wss:"],
+                "worker-src": [csp.NONE],
+                "block-all-mixed-content": true
             }
         });
         res.set("Content-Security-Policy", cCsp);
@@ -92,9 +92,9 @@ var PiServer = function() {
 
     });
 
-    this.io.on('connection', function(socket) {
-        console.log('a user connected');
-        socket.on('disconnect', function() {
+    this.io.on("connection", function(socket) {
+        console.log("a user connected");
+        socket.on("disconnect", function() {
             console.log("a user disconnected");
         });
     });

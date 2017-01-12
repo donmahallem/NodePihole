@@ -1,6 +1,6 @@
 var express = require("express");
 const readline = require("readline");
-const Moment = require("moment");
+const moment = require("moment");
 const fs = require("fs");
 
 var router = express.Router();
@@ -33,7 +33,7 @@ router.get("/data", function(req, res) {
             if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
                 return;
             }
-            var time = Moment(line.substring(0, 16), "MMM DD hh:mm:ss");
+            var time = moment(line.substring(0, 16), "MMM DD hh:mm:ss");
             var hour = time.hour();
             var minute = time.minute();
             time = (minute - minute % 10) / 10 + 6 * hour;
@@ -79,7 +79,7 @@ router.get("/data", function(req, res) {
                 var _type = tmp.substring(6, tmp.length - 1);
                 var _client = expl[expl.length - 1];
                 var data = {
-                    time: Moment(_time, "MMM DD hh:mm:ss")
+                    time: moment(_time, "MMM DD hh:mm:ss")
                         .toISOString(),
                     domain: _domain,
                     status: _status,
@@ -100,9 +100,7 @@ router.get("/data", function(req, res) {
 router.get("/list", function(req, res) {
     if (!req.user.authenticated) {
         res.sendStatus(401);
-        return;
-    }
-    if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
+    }else if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
         var filepath;
         if (req.query.list === "white") {
             filepath = req.app.locals.settings.whiteListFile;

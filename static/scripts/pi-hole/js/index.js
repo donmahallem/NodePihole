@@ -1,3 +1,5 @@
+/* globals io */
+
 // Define global variables
 var timeLineChart, queryTypeChart, forwardDestinationChart, publicSocket;
 var summaryData = {
@@ -32,7 +34,7 @@ function updateSummaryData(runOnce) {
             setTimeout(updateSummaryData, timeInSeconds * 1000);
         }
     };
-    var updateView = function() {
+    const updateView = function() {
         ["ads_blocked_today", "dns_queries_today", "domains_being_blocked", "ads_percentage_today"].forEach(function(header, idx) {
             var textData = idx === 3 ? summaryData[header] + "%" : summaryData[header];
             $("h3#" + header)
@@ -445,10 +447,10 @@ $(document)
                 return false;
             });
         publicSocket = io("/public");
-        publicSocket.on('connect_error', function() {
+        publicSocket.on("connect_error", function() {
             console.log("connect_error");
         });
-        publicSocket.on('error', function(data) {
+        publicSocket.on("error", function(data) {
             console.log("connect_error" + data);
         });
     });

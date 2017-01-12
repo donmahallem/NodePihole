@@ -1,32 +1,24 @@
-/*var offset, timer, pre, scrolling = true;
-
-// Check every 200msec for fresh data
-var interval = 200;
-
-// Function that asks the API for new data
-function reloadData() {
-    clearTimeout(timer);
-    $.getJSON("api.php?tailLog=" + offset, function(data) {
-        offset = data["offset"];
-        pre.append(data["lines"]);
-    });
-
-    if (scrolling) {
-        window.scrollTo(0, document.body.scrollHeight);
-    }
-    timer = setTimeout(reloadData, interval);
-}
-
+var offset, timer, pre, scrolling = true,
+    token;
 $(function() {
-    // Get offset at first loading of page
-    $.getJSON("api.php?tailLog", function(data) {
-        offset = data["offset"];
-    });
+    token = $("token")
+        .html();
+    var socket = io("/private");
     pre = $("#output");
-    // Trigger function that looks for new data
-    reloadData();
+    socket.on('connect_error', function() {
+        console.log("connect_error");
+    });
+    socket.on('error', function(data) {
+        console.log("connect_error" + data);
+    });
+    socket.on("dnsevent", function(data) {
+        console.log(data);
+        pre.append(data);
+        if (scrolling) {
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+    });
 });
-
 $("#chk1")
     .click(function() {
         $("#chk2")
@@ -39,8 +31,3 @@ $("#chk2")
             .prop("checked", this.checked);
         scrolling = this.checked;
     });
-*/
-var socket = io();
-socket.on("deny", function(data) {
-    console.log(data);
-});

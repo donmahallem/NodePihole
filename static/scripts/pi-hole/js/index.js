@@ -1,19 +1,24 @@
+/* globals io */
+
 // Define global variables
-var timeLineChart, queryTypeChart, forwardDestinationChart;
+var timeLineChart, queryTypeChart, forwardDestinationChart, publicSocket;
+var summaryData = {
+    "ads_blocked_today": -1,
+    "dns_queries_today": -1,
+    "domains_being_blocked": -1,
+    "ads_percentage_today": -1
+};
 
 function padNumber(num) {
     return ("00" + num)
         .substr(-2, 2);
 }
-
 // Helper function needed for converting the Objects to Arrays
-
 function objectToArray(p) {
     var keys = Object.keys(p);
     keys.sort(function(a, b) {
         return a - b;
     });
-
     var arr = [],
         idx = [];
     for (var i = 0; i < keys.length; i++) {
@@ -22,43 +27,42 @@ function objectToArray(p) {
     }
     return [idx, arr];
 }
-
 // Functions to update data in page
-
-
 function updateSummaryData(runOnce) {
     var setTimer = function(timeInSeconds) {
         if (!runOnce) {
             setTimeout(updateSummaryData, timeInSeconds * 1000);
         }
     };
+    const updateView = function() {
+        ["ads_blocked_today", "dns_queries_today", "domains_being_blocked", "ads_percentage_today"].forEach(function(header, idx) {
+            var textData = idx === 3 ? summaryData[header] + "%" : summaryData[header];
+            $("h3#" + header)
+                .text(textData);
+        });
+    };
     $.getJSON("/api/data?summary", function LoadSummaryData(data) {
-
-            ["ads_blocked_today", "dns_queries_today", "ads_percentage_today"].forEach(function(today) {
-                var todayElement = $("h3#" + today);
-                todayElement.text() !== data[today] && todayElement.addClass("glow");
-            });
-
-            window.setTimeout(function() {
-                ["ads_blocked_today", "dns_queries_today", "domains_being_blocked", "ads_percentage_today"].forEach(function(header, idx) {
-                    var textData = idx === 3 ? data[header] + "%" : data[header];
-                    $("h3#" + header)
-                        .text(textData);
-                });
-                $("h3.statistic.glow")
-                    .removeClass("glow");
-            }, 500);
-
-            updateSessionTimer();
+            summaryData = data;
+            updateView();
         })
         .done(function() {
-            setTimer(10);
+            //setTimer(10);
+            publicSocket.on("dnsevent", function(data) {
+                if (data.type === "blocked") {
+                    summaryData["ads_blocked_today"]++;
+                    summaryData["dns_queries_today"]++;
+                } else {
+                    summaryData["dns_queries_today"]++;
+                }
+                summaryData["ads_percentage_today"] = (summaryData["ads_blocked_today"] / summaryData["dns_queries_today"] * 100)
+                    .toFixed(2);
+                updateView();
+            });
         })
         .fail(function() {
             setTimer(300);
         });
 }
-
 var failures = 0;
 
 function updateQueriesOverTime() {
@@ -72,7 +76,6 @@ function updateQueriesOverTime() {
             timeLineChart.data.labels = [];
             timeLineChart.data.datasets[0].data = [];
             timeLineChart.data.datasets[1].data = [];
-
             // get all keys of ads datapoints
             var adsKeys = Object.keys(data.ads_over_time)
                 .sort();
@@ -83,7 +86,6 @@ function updateQueriesOverTime() {
             var largest = Math.max(adsKeys[adsKeys.length - 1], domainKeys[domainKeys.length - 1]);
             // get the smallest datapoint key
             var smallest = Math.max(adsKeys[0], domainKeys[0]);
-
             // Add data for each hour that is available
             for (var timeInterval = smallest; timeInterval < largest; timeInterval++) {
                 var h = timeInterval;
@@ -141,7 +143,6 @@ function updateQueryTypes() {
         queryTypeChart.update();
     });
 }
-
 // Credit: http://stackoverflow.com/questions/1787322/htmlspecialchars-equivalent-in-javascript/4835406#4835406
 function escapeHtml(text) {
     var map = {
@@ -151,7 +152,6 @@ function escapeHtml(text) {
         "\"": "&quot;",
         "\'": "&#039;"
     };
-
     return text.replace(/[&<>"']/g, function(m) {
         return map[m];
     });
@@ -165,9 +165,7 @@ function updateTopClientsChart() {
             percentage,
             domainname;
         for (domain in data.top_sources) {
-
             if ({}
-
                 .hasOwnProperty.call(data.top_sources, domain)) {
                 // Sanitize domain
                 domain = escapeHtml(domain);
@@ -176,16 +174,13 @@ function updateTopClientsChart() {
                 } else {
                     domainname = domain;
                 }
-
                 var url = "<a href=\"queries.php?client=" + domain + "\">" + domainname + "</a>";
                 percentage = data.top_sources[domain] / data.dns_queries_today * 100;
                 clienttable.append("<tr> <td>" + url +
                     "</td> <td>" + data.top_sources[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-blue\" style=\"width: " +
                     percentage + "%\"></div> </div> </td> </tr> ");
             }
-
         }
-
         $("#client-frequency .overlay")
             .remove();
     });
@@ -235,7 +230,6 @@ function updateTopLists() {
             percentage;
         for (domain in data.top_queries) {
             if ({}
-
                 .hasOwnProperty.call(data.top_queries, domain)) {
                 // Sanitize domain
                 domain = escapeHtml(domain);
@@ -250,17 +244,14 @@ function updateTopLists() {
                     percentage + "%\"></div> </div> </td> </tr> ");
             }
         }
-
         // Remove table if there are no results (e.g. privacy mode enabled)
         if (jQuery.isEmptyObject(data.top_queries)) {
             $("#domain-frequency")
                 .parent()
                 .remove();
         }
-
         for (domain in data.top_ads) {
             if ({}
-
                 .hasOwnProperty.call(data.top_ads, domain)) {
                 // Sanitize domain
                 domain = escapeHtml(domain);
@@ -271,17 +262,14 @@ function updateTopLists() {
                     percentage + "%\"></div> </div> </td> </tr> ");
             }
         }
-
         $("#domain-frequency .overlay")
             .remove();
         $("#ad-frequency .overlay")
             .remove();
     });
 }
-
 $(document)
     .ready(function() {
-
         var isMobile = {
             Windows: function() {
                 return /IEMobile/i.test(navigator.userAgent);
@@ -299,7 +287,6 @@ $(document)
                 return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Windows());
             }
         };
-
         var ctx = document.getElementById("queryOverTimeChart")
             .getContext("2d");
         timeLineChart = new Chart(ctx, {
@@ -382,13 +369,9 @@ $(document)
                 maintainAspectRatio: false
             }
         });
-
         // Pull in data via AJAX
-
         updateSummaryData();
-
         updateQueriesOverTime();
-
         // Create / load "Query Types" only if authorized
         if (document.getElementById("queryTypeChart")) {
             ctx = document.getElementById("queryTypeChart")
@@ -413,7 +396,6 @@ $(document)
             });
             updateQueryTypes();
         }
-
         // Create / load "Forward Destinations" only if authorized
         if (document.getElementById("forwardDestinationChart")) {
             ctx = document.getElementById("forwardDestinationChart")
@@ -438,28 +420,23 @@ $(document)
             });
             updateForwardDestinations();
         }
-
         // Create / load "Top Domains" and "Top Advertisers" only if authorized
         if (document.getElementById("domain-frequency") &&
             document.getElementById("ad-frequency")) {
             updateTopLists();
         }
-
         // Create / load "Top Clients" only if authorized
         if (document.getElementById("client-frequency")) {
             updateTopClientsChart();
         }
-
         $("#queryOverTimeChart")
             .click(function(evt) {
                 var activePoints = timeLineChart.getElementAtEvent(evt);
                 if (activePoints.length > 0) {
                     //get the internal index of slice in pie chart
                     var clickedElementindex = activePoints[0]["_index"];
-
                     //get specific label by index
                     var label = timeLineChart.data.labels[clickedElementindex];
-
                     //get value by index
                     //var value = timeLineChart.data.datasets[0].data[clickedElementindex];
                     var time = new Date(label);
@@ -469,4 +446,11 @@ $(document)
                 }
                 return false;
             });
+        publicSocket = io("/public");
+        publicSocket.on("connect_error", function() {
+            console.log("connect_error");
+        });
+        publicSocket.on("error", function(data) {
+            console.log("connect_error" + data);
+        });
     });

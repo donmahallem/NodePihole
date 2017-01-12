@@ -2,7 +2,6 @@ $(function() {
     $("[data-mask]")
         .inputmask();
 });
-
 $(".confirm-reboot")
     .confirm({
         text: "Are you sure you want to send a reboot command to your Pi-Hole?",
@@ -21,7 +20,6 @@ $(".confirm-reboot")
         cancelButtonClass: "btn-success",
         dialogClass: "modal-dialog modal-mg" // Bootstrap classes for mid-size modal
     });
-
 $(".confirm-restartdns")
     .confirm({
         text: "Are you sure you want to send a restart command to your DNS server?",
@@ -40,7 +38,6 @@ $(".confirm-restartdns")
         cancelButtonClass: "btn-success",
         dialogClass: "modal-dialog modal-mg"
     });
-
 $(".confirm-flushlogs")
     .confirm({
         text: "By default, the log is flushed at the end of the day via cron, but a very large log file can slow down the Web interface, so flushing it can be useful. Note that your statistics will be reset and you lose the statistics up to this point. Are you sure you want to flush your logs?",
@@ -59,7 +56,6 @@ $(".confirm-flushlogs")
         cancelButtonClass: "btn-success",
         dialogClass: "modal-dialog modal-mg"
     });
-
 $("#DHCPchk")
     .click(function() {
         $("input.DHCPgroup")
@@ -68,7 +64,6 @@ $("#DHCPchk")
             .prop("hidden", !this.checked)
             .addClass("lookatme");
     });
-
 var leasetable;
 $(document)
     .ready(function() {
@@ -90,7 +85,6 @@ $(document)
                 });
         }
     });
-
 // Handle hiding of alerts
 $(function() {
     $("[data-hide]")
@@ -101,7 +95,6 @@ $(function() {
                 .hide();
         });
 });
-
 // DHCP leases tooltips
 $(document)
     .ready(function() {

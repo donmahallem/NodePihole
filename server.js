@@ -22,23 +22,22 @@ const csp = require("csp-header");
 const appDefaults = require("./defaults.js");
 const Tail = require("tail")
     .Tail;
-
+const socketioJwt = require("socketio-jwt");
 var PiServer = function() {
     this.app = express();
     this.http = server(this.app);
-    this.io = socketIo(this.http);
+    this.socketIo = {
+        "io": socketIo(this.http)
+    }
     this.app.set("view engine", "pug");
     this.app.use(bodyParser.urlencoded({
         extended: true
     }));
-
     this.app.use("/static", serveStatic(__dirname + "/static"));
     this.app.use(cookieParser(appDefaults.cookieSecret));
-
     this.app.use(function(req, res, next) {
         helper.verifyAuthCookie(req, res, next);
     });
-
     this.app.use(function(req, res, next) {
         var cCsp = csp({
             policies: {
@@ -54,7 +53,6 @@ var PiServer = function() {
         res.set("Content-Security-Policy", cCsp);
         next();
     });
-
     this.app.use("/api", apiRoute);
     this.app.get("/", frontEnd.home.get);
     this.app.get("/home", frontEnd.home.get);
@@ -65,7 +63,6 @@ var PiServer = function() {
     this.app.get("/logout", frontEnd.logout.get);
     this.app.get("/queries", frontEnd.queries.get);
     this.app.get("/list", frontEnd.list.get);
-
     this.app.post("/scripts/pi-hole/php/add.php", function(req, res) {
         if (!req.user.authenticated) {
             res.sendStatus(401);
@@ -89,10 +86,19 @@ var PiServer = function() {
             }
         }
         res.sendStatus(404);
-
     });
-
-    this.io.on("connection", function(socket) {
+    // Socket IO setup
+    // https://github.com/socketio/engine.io-client/pull/379
+    this.socketIo.privateSocket = this.socketIo.io.of("/private");
+    this.socketIo.publicSocket = this.socketIo.io.of("/public");
+    this.socketIo.privateSocket.use(helper.socketIo.authMiddleware);
+    this.socketIo.privateSocket.on("connection", function(socket) {
+        console.log("an authenticated user connected, ");
+        socket.on("disconnect", function() {
+            console.log("an authenticated user disconnected");
+        });
+    });
+    this.socketIo.publicSocket.on("connection", function(socket) {
         console.log("a user connected");
         socket.on("disconnect", function() {
             console.log("a user disconnected");
@@ -100,35 +106,30 @@ var PiServer = function() {
     });
     this.started = false;
 };
-
 PiServer.prototype.load = function() {
     this.app.locals.piHoleConfig = ini.parse(fs.readFileSync(appDefaults.setupVars, "utf-8"));
 };
-
 PiServer.prototype.start = function() {
-    if (this.started) {
-        return;
-    }
-    this.started = true;
-    this.http.listen(appDefaults.port, function() {
-            console.log("Server listening on port " + appDefaults.port + "!");
-        }
-        .bind(this));
-    setInterval(function() {
-        this.io.emit("deny", {
-            hello: true
+    if (!this.started) {
+        this.started = true;
+        this.http.listen(appDefaults.port, function() {
+                console.log("Server listening on port " + appDefaults.port + "!");
+            }
+            .bind(this));
+        var tail = new Tail(appDefaults.logFile);
+        tail.on("line", function(data) {
+            console.log(data);
+            this.socketIo.privateSocket.emit("dnsevent", {
+                "type": "blocked",
+                "domain": "test.com"
+            });
+            this.socketIo.publicSocket.emit("dnsevent", {
+                "type": "blocked"
+            });
+        }.bind(this));
+        tail.on("error", function(error) {
+            console.log("ERROR: ", error);
         });
-    }.bind(this), 1000);
-    var tail = new Tail(appDefaults.logFile);
-
-    tail.on("line", function(data) {
-        console.log(data);
-        this.io.emit("deny", data);
-    }.bind(this));
-
-    tail.on("error", function(error) {
-        console.log("ERROR: ", error);
-    });
+    }
 };
-
 module.exports = PiServer;

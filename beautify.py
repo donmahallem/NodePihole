@@ -8,6 +8,8 @@ opts.indent_size = 4
 opts.jslint_happy = False
 opts.end_with_newline = True
 opts.break_chained_methods = True
+opts.preserve_newlines = True
+opts.max_preserve_newlines = 2
 
 excludedDirs=["node_modules",".git","vendor"]
 

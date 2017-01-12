@@ -2,7 +2,6 @@
 $.ajaxSetup({
     cache: false
 });
-
 // Get PHP info
 var token = $("#token")
     .html();
@@ -49,7 +48,6 @@ function refresh(fade) {
         },
         success: function(data) {
             list.html("");
-
             if (data.length === 0) {
                 list.html("<div class=\"alert alert-info\" role=\"alert\">Your " + fullName + " is empty!</div>");
             } else {
@@ -59,7 +57,6 @@ function refresh(fade) {
                         "<button class=\"btn btn-danger btn-xs pull-right\" type=\"button\">" +
                         "<span class=\"glyphicon glyphicon-trash\"></span></button></li>"
                     );
-
                     // Handle button
                     $("#list #" + index + "")
                         .on("click", "button", function() {
@@ -75,7 +72,6 @@ function refresh(fade) {
         }
     });
 }
-
 window.onload = refresh(false);
 
 function add() {
@@ -84,7 +80,6 @@ function add() {
         .length === 0) {
         return;
     }
-
     var alInfo = $("#alInfo");
     var alSuccess = $("#alSuccess");
     var alFailure = $("#alFailure");
@@ -138,9 +133,6 @@ function add() {
         }
     });
 }
-
-
-
 // Handle enter button for adding domains
 $(document)
     .keypress(function(e) {
@@ -150,7 +142,6 @@ $(document)
             add();
         }
     });
-
 // Handle buttons
 $("#btnAdd")
     .on("click", function() {
@@ -160,7 +151,6 @@ $("#btnRefresh")
     .on("click", function() {
         refresh(true);
     });
-
 // Handle hiding of alerts
 $(function() {
     $("[data-hide]")

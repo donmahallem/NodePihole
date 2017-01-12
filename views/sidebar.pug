@@ -29,13 +29,13 @@ aside.main-sidebar
 				a(href='/home')
 					i.fa.fa-home
 					span Main Page
-			if !PCONFIG.authenticated
+			if !PCONFIG.user.authenticated
 				// Login
 				li(class=PCONFIG.activePage=='login'?'active':'')
 					a(href='/login')
 						i.fa.fa-user
 						span Login
-			if PCONFIG.authenticated
+			if PCONFIG.user.authenticated
 				// Query Log
 				li(class=PCONFIG.activePage=='queries'?'active':'')
 					a(href='/queries')

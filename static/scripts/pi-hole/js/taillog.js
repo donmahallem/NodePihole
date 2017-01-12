@@ -1,23 +1,15 @@
 var offset, timer, pre, scrolling = true,
     token;
 $(function() {
-    var socket = io("/private");
     token = $("token")
         .html();
+    var socket = io("/private");
     pre = $("#output");
-
-    socket.on('connect', function() {
-        socket
-            .emit('authenticate', {
-                "token": token
-            }) //send the jwt
-            .on('authenticated', function() {
-                console.log("authenticated");
-            })
-            .on('unauthorized', function(msg) {
-                console.log("unauthorized: " + JSON.stringify(msg.data));
-                throw new Error(msg.data.type);
-            })
+    socket.on('connect_error', function() {
+        console.log("connect_error");
+    });
+    socket.on('error', function(data) {
+        console.log("connect_error" + data);
     });
     socket.on("dnsevent", function(data) {
         console.log(data);

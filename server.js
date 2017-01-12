@@ -96,16 +96,35 @@ var PiServer = function() {
     });
 
     // Socket IO setup
-    this.socketIo.privateSocket = this.socketIo.io.of('/private');
-    this.socketIo.publicSocket = this.socketIo.io.of('/public');
-    this.socketIo.privateSocket.on('connection', socketioJwt.authorize({
-            secret: appDefaults.jwtSecret,
-            timeout: 15000 // 15 seconds to send the authentication message
-        }))
-        .on('authenticated', function(socket) {
-            //this socket is authenticated, we are good to handle more events from it.
-            console.log('hello! ' + socket.decoded_token.name);
+    // https://github.com/socketio/engine.io-client/pull/379
+    this.socketIo.privateSocket = this.socketIo.io.of("/private");
+    this.socketIo.publicSocket = this.socketIo.io.of("/public");
+    this.socketIo.privateSocket.use(function(socket, next) {
+        if (socket.request.headers.cookie) {
+            cookie = require("cookie");
+            cookies = cookieParser.signedCookies(cookie.parse(socket.request.headers.cookie), appDefaults.cookieSecret);
+            if ("auth" in cookies) {
+                helper.jwtVerify(cookies.auth, function(err, decoded) {
+                    if (err) {
+                        next(new Error("Authentication error"));
+                    } else {
+                        next();
+                    }
+                });
+            } else {
+                next(new Error("Authentication error"));
+            }
+        } else {
+            console.log("No cookies");
+            next(new Error("Authentication error"));
+        }
+    });
+    this.socketIo.privateSocket.on("connection", function(socket) {
+        console.log("an authenticated user connected, ");
+        socket.on("disconnect", function() {
+            console.log("an authenticated user disconnected");
         });
+    });
     this.socketIo.publicSocket.on("connection", function(socket) {
         console.log("a user connected");
         socket.on("disconnect", function() {

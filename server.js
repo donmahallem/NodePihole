@@ -20,6 +20,8 @@ const frontEnd = require("./routes/front.js");
 const helper = require("./helper.js");
 const csp = require("csp-header");
 const appDefaults = require("./defaults.js");
+const Tail = require('tail')
+    .Tail;
 
 var PiServer = function() {
     this.app = Express();
@@ -117,6 +119,16 @@ PiServer.prototype.start = function() {
             hello: true
         });
     }.bind(this), 1000);
+    tail = new Tail(appDefaults.logFile);
+
+    tail.on("line", function(data) {
+        console.log(data);
+        this.io.emit("deny", data);
+    }.bind(this));
+
+    tail.on("error", function(error) {
+        console.log('ERROR: ', error);
+    });
 };
 
 module.exports = PiServer;

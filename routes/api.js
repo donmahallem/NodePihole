@@ -2,7 +2,7 @@ const express = require("express");
 const readline = require("readline");
 const moment = require("moment");
 const fs = require("fs");
-const appDefaults=require("./../defaults.js");
+const appDefaults = require("./../defaults.js");
 var router = express.Router();
 router.get("/data", function(req, res) {
     if ("summary" in req.query) {

@@ -4,6 +4,7 @@ const moment = require("moment");
 const fs = require("fs");
 const appDefaults = require("./../defaults.js");
 var router = express.Router();
+
 router.get("/data", function(req, res) {
     if ("summary" in req.query) {
         var testData = {
@@ -95,6 +96,7 @@ router.get("/data", function(req, res) {
         });
     }
 });
+
 router.get("/list", function(req, res) {
     if (!req.user.authenticated) {
         res.sendStatus(401);
@@ -131,4 +133,5 @@ router.get("/list", function(req, res) {
         res.sendStatus(400);
     }
 });
+
 module.exports = router;

@@ -2,17 +2,12 @@
 
 // Define global variables
 var timeLineChart, queryTypeChart, forwardDestinationChart, publicSocket;
-var summaryData = {
-    "ads_blocked_today": -1,
-    "dns_queries_today": -1,
-    "domains_being_blocked": -1,
-    "ads_percentage_today": -1
-};
 
 function padNumber(num) {
     return ("00" + num)
         .substr(-2, 2);
 }
+
 // Helper function needed for converting the Objects to Arrays
 function objectToArray(p) {
     var keys = Object.keys(p);
@@ -27,42 +22,66 @@ function objectToArray(p) {
     }
     return [idx, arr];
 }
-// Functions to update data in page
-function updateSummaryData(runOnce) {
-    var setTimer = function(timeInSeconds) {
-        if (!runOnce) {
-            setTimeout(updateSummaryData, timeInSeconds * 1000);
-        }
-    };
-    const updateView = function() {
+
+// Class handling summary updates
+var summaryUpdater = {
+    summaryData : {
+        "ads_blocked_today": -1,
+        "dns_queries_today": -1,
+        "domains_being_blocked": -1,
+        "ads_percentage_today": -1
+    },
+    updateView() {
         ["ads_blocked_today", "dns_queries_today", "domains_being_blocked", "ads_percentage_today"].forEach(function(header, idx) {
-            var textData = idx === 3 ? summaryData[header] + "%" : summaryData[header];
+            var textData = idx === 3 ? this.summaryData[header] + "%" : this.summaryData[header];
             $("h3#" + header)
                 .text(textData);
-        });
-    };
-    $.getJSON("/api/data?summary", function LoadSummaryData(data) {
-            summaryData = data;
-            updateView();
-        })
-        .done(function() {
-            //setTimer(10);
-            publicSocket.on("dnsevent", function(data) {
-                if (data.type === "blocked") {
-                    summaryData["ads_blocked_today"]++;
-                    summaryData["dns_queries_today"]++;
-                } else {
-                    summaryData["dns_queries_today"]++;
+        }.bind(this));
+        $("#toprow-stats .overlay")
+            .each(function(idx, overlay) {
+                if ($(overlay)
+                    .is(":visible")) {
+                    $(overlay)
+                        .hide();
                 }
-                summaryData["ads_percentage_today"] = (summaryData["ads_blocked_today"] / summaryData["dns_queries_today"] * 100)
-                    .toFixed(2);
-                updateView();
             });
-        })
-        .fail(function() {
-            setTimer(300);
-        });
-}
+    },
+    pollData() {
+        $.getJSON("/api/data?summary", function LoadSummaryData(data) {
+                this.summaryData = data;
+                this.updateView();
+            }.bind(this))
+            .done(function() {
+                //setTimer(10);
+
+            })
+            .fail(function() {
+				// retry again in 300ms
+                setTimer(300);
+            });
+    },
+    subscribeSocket() {
+        publicSocket.on("dnsevent", this.socketUpdate);
+    },
+    unsubscribeSocket() {
+        publicSocket.off("dnsevent", this.socketUpdate);
+    },
+    socketUpdate(data) {
+        if (data.type === "blocked") {
+            this.summaryData["ads_blocked_today"]++;
+            this.summaryData["dns_queries_today"]++;
+        } else {
+            this.summaryData["dns_queries_today"]++;
+        }
+        this.summaryData["ads_percentage_today"] = (this.summaryData["ads_blocked_today"] / this.summaryData["dns_queries_today"] * 100)
+            .toFixed(2);
+        updateView();
+    },
+	start(){
+		this.pollData();
+	}
+};
+
 var failures = 0;
 
 function updateQueriesOverTime() {
@@ -143,6 +162,7 @@ function updateQueryTypes() {
         queryTypeChart.update();
     });
 }
+
 // Credit: http://stackoverflow.com/questions/1787322/htmlspecialchars-equivalent-in-javascript/4835406#4835406
 function escapeHtml(text) {
     var map = {
@@ -268,6 +288,7 @@ function updateTopLists() {
             .remove();
     });
 }
+
 $(document)
     .ready(function() {
         var isMobile = {
@@ -370,7 +391,7 @@ $(document)
             }
         });
         // Pull in data via AJAX
-        updateSummaryData();
+		summaryUpdater.start();
         updateQueriesOverTime();
         // Create / load "Query Types" only if authorized
         if (document.getElementById("queryTypeChart")) {
@@ -447,10 +468,10 @@ $(document)
                 return false;
             });
         publicSocket = io("/public");
-        publicSocket.on("connect_error", function() {
-            console.log("connect_error");
+        publicSocket.on("connect", function() {
+            console.log("connect");
         });
-        publicSocket.on("error", function(data) {
+        publicSocket.on("connect_error", function(data) {
             console.log("connect_error" + data);
         });
     });

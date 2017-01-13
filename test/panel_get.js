@@ -407,7 +407,7 @@ describe("Check endpoints", function() {
                     };
                     for (var query in supportedDataQueries) {
                         (function(arg, authRequired) {
-                            it("should " + (authRequired ? "not" : "") + "succeed ?" + arg, function(done) {
+                            it("should " + (authRequired ? "not " : "") + "succeed ?" + arg, function(done) {
                                 chai.request(server.app)
                                     .get("/api/data?" + arg)
                                     .end(function(err, res) {

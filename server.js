@@ -121,10 +121,14 @@ PiServer.prototype.start = function() {
             console.log(data);
             this.socketIo.privateSocket.emit("dnsevent", {
                 "type": "blocked",
-                "domain": "test.com"
+                "domain": "test.com",
+                "timestamp": new Date()
+                    .toISOString()
             });
             this.socketIo.publicSocket.emit("dnsevent", {
-                "type": "blocked"
+                "type": "blocked",
+                "timestamp": new Date()
+                    .toISOString()
             });
         }.bind(this));
         tail.on("error", function(error) {

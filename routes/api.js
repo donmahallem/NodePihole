@@ -31,7 +31,7 @@ if (typeof Object.assign != 'function') {
         return target;
     };
 }
-/////
+///// for node 5 and below
 // Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
 if (!Array.prototype.includes) {
     Object.defineProperty(Array.prototype, 'includes', {
@@ -125,7 +125,6 @@ router.get("/data", function(req, res) {
     if ("getAllQueries" in req.query) {
         promises.push(logHelper.getAllQueries());
     }
-    console.log(Promise);
     Promise.all(promises)
         .then(function(values) {
             var data = {};

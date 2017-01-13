@@ -9,6 +9,7 @@ const expect = chai.expect;
 const helper = require("./../helper.js");
 chai.use(chaiHttp);
 const appDefaults = require("./../defaults.js");
+const logHelper = require("./../logHelper.js");
 var server = new Backend();
 var sandbox;
 beforeEach(function() {
@@ -322,31 +323,90 @@ describe("Check endpoints", function() {
                 });
             });
             describe("/data", function() {
-                describe("?summary", function() {
-                    it("should succeed", function(done) {
-                        chai.request(server.app)
-                            .get("/api/data?summary")
-                            .end(function(err, res) {
-                                expect(err)
-                                    .to.be.null;
-                                expect(res.status)
-                                    .to.equal(200);
-                                done();
+                var stubs = [];
+                before(function() {
+                    stubs.push(sandbox.stub(logHelper, "getOverTimeData10mins", function() {
+                        return new Promise(function(resolve, reject) {
+                            resolve({});
+                        });
+                    }));
+                    stubs.push(sandbox.stub(logHelper, "getQueryTypes", function() {
+                        return new Promise(function(resolve, reject) {
+                            resolve({});
+                        });
+                    }));
+                    stubs.push(sandbox.stub(logHelper, "getForwardDestinations", function() {
+                        return new Promise(function(resolve, reject) {
+                            resolve({});
+                        });
+                    }));
+                    stubs.push(sandbox.stub(logHelper, "getTopItems", function() {
+                        return new Promise(function(resolve, reject) {
+                            resolve({});
+                        });
+                    }));
+                    stubs.push(sandbox.stub(logHelper, "getAllQueries", function() {
+                        return new Promise(function(resolve, reject) {
+                            resolve({});
+                        });
+                    }));
+                });
+                after(function() {
+                    for (var i = 0; i < stubs.length; i++) {
+                        stubs[i].restore();
+                    }
+                });
+                describe("get unauthenticated", function() {
+                    var supportedDataQueries = ["summary", "summaryRaw", "overTimeData", "overTimeData10mins", "topItems", "recentItems", "getQueryTypes", "getForwardDestinations", "getAllQueries"];
+                    for (var i = 0; i < supportedDataQueries.length; i++) {
+                        (function(arg) {
+                            it("should succeed ?" + arg, function(done) {
+                                chai.request(server.app)
+                                    .get("/api/data?" + arg)
+                                    .end(function(err, res) {
+                                        expect(err)
+                                            .to.be.null;
+                                        expect(res.status)
+                                            .to.equal(200);
+                                        done();
+                                    });
                             });
+                        })(supportedDataQueries[i]);
+                    }
+                });
+            });
+            describe("?overTimeData10mins", function() {
+                var verifyCookieStub;
+                var overTimeData10minsStub;
+                beforeEach(function() {
+                    verifyCookieStub = sandbox.stub(helper, "verifyAuthCookie", function(req, res, next) {
+                        req.user = {
+                            authenticated: true
+                        }
+                        next();
+                    });
+                    overTimeData10minsStub = sandbox.stub(logHelper, "getOverTimeData10mins", function() {
+                        return new Promise(function(resolve, reject) {
+                            resolve({});
+                        });
                     });
                 });
-                describe("?overTimeData10mins", function() {
-                    it("should succeed", function(done) {
-                        chai.request(server.app)
-                            .get("/api/data?overTimeData10mins")
-                            .end(function(err, res) {
-                                expect(err)
-                                    .to.be.null;
-                                expect(res.status)
-                                    .to.equal(200);
-                                done();
-                            });
-                    });
+                afterEach(function() {
+                    sinon.assert.calledOnce(verifyCookieStub);
+                    sinon.assert.calledOnce(overTimeData10minsStub);
+                    verifyCookieStub.restore();
+                    overTimeData10minsStub.restore();
+                });
+                it("should succeed", function(done) {
+                    chai.request(server.app)
+                        .get("/api/data?overTimeData10mins")
+                        .end(function(err, res) {
+                            expect(err)
+                                .to.be.null;
+                            expect(res.status)
+                                .to.equal(200);
+                            done();
+                        });
                 });
             });
         });

@@ -6,7 +6,35 @@ const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
 var router = express.Router();
 
-const supportedDataQueries = ["summary", "summaryRaw", "overTimeData", "overTimeData10mins", "topItems", "recentItems", "getQueryTypes", "getForwardDestinations", "getAllQueries"];
+const supportedDataQueries = {
+    "summary": {
+        "authRequired": false
+    },
+    "summaryRaw": {
+        "authRequired": false
+    },
+    "overTimeData": {
+        "authRequired": true
+    },
+    "overTimeData10mins": {
+        "authRequired": false
+    },
+    "topItems": {
+        "authRequired": true
+    },
+    "recentItems": {
+        "authRequired": true
+    },
+    "getQueryTypes": {
+        "authRequired": true
+    },
+    "getForwardDestinations": {
+        "authRequired": true
+    },
+    "getAllQueries": {
+        "authRequired": true
+    }
+};
 
 // Potential buildfail fix for node 5 and below
 // polyfill source: https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
@@ -79,7 +107,13 @@ router.get("/data", function(req, res) {
     // to cancel request early if no valid args were provided
     var numValidArgs = 0;
     for (var query in req.query) {
-        if (supportedDataQueries.includes(query)) {
+        // type check so someone can't query for example .toString()
+        if (query in supportedDataQueries && (typeof supportedDataQueries[query].authRequired === "boolean")) {
+            if (supportedDataQueries[query].authRequired && !req.user.authenticated) {
+                // User needs to be authenticated for this query
+                res.sendStatus(401);
+                return;
+            }
             args[query] = req.query[query];
             numValidArgs++;
         }
@@ -98,21 +132,18 @@ router.get("/data", function(req, res) {
     if ("summaryRaw" in args) {
         promises.push(logHelper.getSummaryRaw());
     }
-    if ("overTimeData" in req.query) {}
     if ("overTimeData10mins" in req.query) {
         promises.push(logHelper.getOverTimeData10mins());
     }
     if ("topItems" in req.query) {
         promises.push(logHelper.getTopItems());
     }
-    if ("recentItems" in req.query) {}
     if ("getQueryTypes" in req.query) {
         promises.push(logHelper.getQueryTypes());
     }
     if ("getForwardDestinations" in req.query) {
         promises.push(logHelper.getForwardDestinations());
     }
-    if ("getQuerySources" in req.query) {}
     if ("getAllQueries" in req.query) {
         promises.push(logHelper.getAllQueries());
     }

@@ -69,10 +69,8 @@ const summaryUpdater = {
     socketUpdate(data) {
         if (data.type === "blocked") {
             this.summaryData["ads_blocked_today"]++;
-            this.summaryData["dns_queries_today"]++;
-        } else {
-            this.summaryData["dns_queries_today"]++;
         }
+        this.summaryData["dns_queries_today"]++;
         this.summaryData["ads_percentage_today"] = (this.summaryData["ads_blocked_today"] / this.summaryData["dns_queries_today"] * 100)
             .toFixed(2);
         this.updateView();
@@ -85,42 +83,19 @@ const summaryUpdater = {
 
 var failures = 0;
 
+//WHY IS IT SO HARD FOR YOU JAVASCRIPT ?????
+const sortNumberAsc = function(a, b) {
+    return a - b;
+}
+
 const queryTimelineUpdater = {
     timeLineChart,
     pollData() {
         self = this;
         $.getJSON("/api/data?overTimeData10mins", function(data) {
-                // convert received objects to arrays
-                //data.domains_over_time = objectToArray(data.domains_over_time);
-                //data.ads_over_time = objectToArray(data.ads_over_time);
-                // remove last data point since it not representative
-                //data.ads_over_time[0].splice(-1,1);
                 // Remove possibly already existing data
-                self.timeLineChart.data.labels = [];
-                self.timeLineChart.data.datasets[0].data = [];
-                self.timeLineChart.data.datasets[1].data = [];
-                // get all keys of ads datapoints
-                var adsKeys = Object.keys(data.ads_over_time)
-                    .sort();
-                // get all keys of domain datapoints
-                var domainKeys = Object.keys(data.domains_over_time)
-                    .sort();
-                // get the largest datapoint key
-                var largest = Math.max(adsKeys[adsKeys.length - 1], domainKeys[domainKeys.length - 1]);
-                // get the smallest datapoint key
-                var smallest = Math.max(adsKeys[0], domainKeys[0]);
-                // Add data for each hour that is available
-                for (var timeInterval = smallest; timeInterval < largest; timeInterval++) {
-                    var h = timeInterval;
-                    var d = new Date()
-                        .setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0);
-                    self.timeLineChart.data.labels.push(d);
-                    self.timeLineChart.data.datasets[0].data.push((timeInterval in data.domains_over_time) ? data.domains_over_time[timeInterval] : 0);
-                    self.timeLineChart.data.datasets[1].data.push((timeInterval in data.ads_over_time) ? data.ads_over_time[timeInterval] : 0);
-                }
-                $("#queries-over-time .overlay")
-                    .remove();
-                self.timeLineChart.update();
+                self.tableData = data;
+                self.updateTable();
             })
             .done(function() {
                 // Reload graph after 10 minutes
@@ -136,6 +111,35 @@ const queryTimelineUpdater = {
                 }
             });
     },
+    updateTable() {
+        self.timeLineChart.data.labels = [];
+        self.timeLineChart.data.datasets[0].data = [];
+        self.timeLineChart.data.datasets[1].data = [];
+        // get all keys of ads datapoints
+        var adsKeys = Object.keys(this.tableData.ads_over_time)
+            .map(Number)
+            .sort(sortNumberAsc);
+        // get all keys of domain datapoints
+        var domainKeys = Object.keys(this.tableData.domains_over_time)
+            .map(Number)
+            .sort(sortNumberAsc);
+        // get the largest datapoint key
+        var largest = Math.max(adsKeys[adsKeys.length - 1], domainKeys[domainKeys.length - 1]);
+        // get the smallest datapoint key
+        var smallest = Math.min(adsKeys[0], domainKeys[0]);
+        // Add data for each hour that is available
+        for (var timeInterval = smallest; timeInterval <= largest; timeInterval++) {
+            var h = timeInterval;
+            var d = new Date()
+                .setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0);
+            self.timeLineChart.data.labels.push(d);
+            self.timeLineChart.data.datasets[0].data.push((timeInterval in this.tableData.domains_over_time) ? this.tableData.domains_over_time[timeInterval] : 0);
+            self.timeLineChart.data.datasets[1].data.push((timeInterval in this.tableData.ads_over_time) ? this.tableData.ads_over_time[timeInterval] : 0);
+        }
+        $("#queries-over-time .overlay")
+            .remove();
+        self.timeLineChart.update();
+    },
     subscribeSocket() {
         publicSocket.on("dnsevent", this.socketUpdate.bind(this));
     },
@@ -148,7 +152,19 @@ const queryTimelineUpdater = {
         var hour = timestamp.getHours();
         var minute = timestamp.getMinutes();
         var timestampIdx = (minute - minute % 10) / 10 + 6 * hour;
-        console.log(timestampIdx);
+        if (data.type === "blocked") {
+            if (timestampIdx in this.tableData.ads_over_time) {
+                this.tableData.ads_over_time[timestampIdx]++;
+            } else {
+                this.tableData.ads_over_time[timestampIdx] = 1;
+            }
+        }
+        if (timestampIdx in this.tableData.domains_over_time) {
+            this.tableData.domains_over_time[timestampIdx]++;
+        } else {
+            this.tableData.domains_over_time[timestampIdx] = 1;
+        }
+        this.updateTable();
     },
     start() {
         var ctx = document.getElementById("queryOverTimeChart")

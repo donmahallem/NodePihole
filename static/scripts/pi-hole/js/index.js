@@ -299,7 +299,7 @@ function escapeHtml(text) {
 }
 
 function updateTopClientsChart() {
-    $.getJSON("api.php?summaryRaw&getQuerySources", function(data) {
+    $.getJSON("/api/data?summaryRaw&getQuerySources", function(data) {
         var clienttable = $("#client-frequency")
             .find("tbody:last");
         var domain,
@@ -361,7 +361,7 @@ function updateForwardDestinations() {
 }
 
 function updateTopLists() {
-    $.getJSON("api.php?summaryRaw&topItems", function(data) {
+    $.getJSON("/api/data?summaryRaw&topItems", function(data) {
         var domaintable = $("#domain-frequency")
             .find("tbody:last");
         var adtable = $("#ad-frequency")

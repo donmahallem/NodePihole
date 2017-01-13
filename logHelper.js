@@ -1,67 +1,171 @@
 const appDefaults = require("./defaults.js");
 const fs = require("fs");
+const moment = require("moment");
 var logHelper = {
 
-}
+};
 
-logHelper.getQueryTypes = function(callback) {
-    fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
-        if (err) {
-            callback(err, false);
+logHelper.getSummary = function() {
+    return new Promise(function(resolve, reject) {
+        if (true) {
+            resolve({
+                ads_blocked_today: 10,
+                dns_queries_today: 200,
+                ads_percentage_today: 10.2,
+                domains_being_blocked: 20
+            });
         } else {
-            var queryTypes = {};
-            var lineReader = require("readline")
-                .createInterface({
-                    input: require("fs")
-                        .createReadStream(appDefaults.logFile)
-                });
-            lineReader.on("line", function(line) {
-                if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
-                    return;
-                }
-                var info = line.split(": ")[1].trim();
-                var queryType = info.split(" ")[0];
-                if (queryType in queryTypes) {
-                    queryTypes[queryType]++;
-                } else {
-                    queryTypes[queryType] = 1;
-                }
-            });
-            lineReader.on("close", function() {
-                callback(false, queryTypes);
-            });
+            reject(Error("It broke"));
         }
     });
-}
-
-logHelper.getForwardDestinations = function(callback) {
-    fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
-        if (err) {
-            callback(err, false);
+};
+logHelper.getSummaryRaw = function() {
+    return new Promise(function(resolve, reject) {
+        if (true) {
+            resolve({
+                ads_blocked_today: 10,
+                dns_queries_today: 200,
+                ads_percentage_today: 10.2,
+                domains_being_blocked: 20
+            });
         } else {
-            var destinations = {};
-            var lineReader = require("readline")
-                .createInterface({
-                    input: require("fs")
-                        .createReadStream(appDefaults.logFile)
-                });
-            lineReader.on("line", function(line) {
-                if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": forwarded") === -1) {
-                    return;
-                }
-                var info = line.trim()
-                    .split(" ");
-                var destination = info[info.length - 1];
-                if (destination in destinations) {
-                    destinations[destination]++;
-                } else {
-                    destinations[destination] = 1;
-                }
-            });
-            lineReader.on("close", function() {
-                callback(false, destinations);
-            });
+            reject(Error("It broke"));
         }
+    });
+};
+
+logHelper.getQueryTypes = function() {
+    return new Promise(function(resolve, reject) {
+        fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                var queryTypes = {};
+                var lineReader = require("readline")
+                    .createInterface({
+                        input: require("fs")
+                            .createReadStream(appDefaults.logFile)
+                    });
+                lineReader.on("line", function(line) {
+                    if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
+                        return;
+                    }
+                    var info = line.split(": ")[1].trim();
+                    var queryType = info.split(" ")[0];
+                    if (queryType in queryTypes) {
+                        queryTypes[queryType]++;
+                    } else {
+                        queryTypes[queryType] = 1;
+                    }
+                });
+                lineReader.on("close", function() {
+                    resolve(queryTypes);
+                });
+            }
+        });
+    });
+};
+
+logHelper.getForwardDestinations = function() {
+    return new Promise(function(resolve, reject) {
+        fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                var destinations = {};
+                var lineReader = require("readline")
+                    .createInterface({
+                        input: require("fs")
+                            .createReadStream(appDefaults.logFile)
+                    });
+                lineReader.on("line", function(line) {
+                    if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": forwarded") === -1) {
+                        return;
+                    }
+                    var info = line.trim()
+                        .split(" ");
+                    var destination = info[info.length - 1];
+                    if (destination in destinations) {
+                        destinations[destination]++;
+                    } else {
+                        destinations[destination] = 1;
+                    }
+                });
+                lineReader.on("close", function() {
+                    resolve(destinations);
+                });
+            }
+        });
+    });
+};
+
+logHelper.getOverTimeData10mins = function() {
+    return new Promise(function(resolve, reject) {
+        var lineReader = require("readline")
+            .createInterface({
+                input: require("fs")
+                    .createReadStream(appDefaults.logFile)
+            });
+        var data = {
+            domains_over_time: {},
+            ads_over_time: {}
+        };
+        lineReader.on("line", function(line) {
+            if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
+                return;
+            }
+            var time = moment(line.substring(0, 16), "MMM DD hh:mm:ss");
+            var hour = time.hour();
+            var minute = time.minute();
+            time = (minute - minute % 10) / 10 + 6 * hour;
+            if (Math.random() < 0.5) {
+                if (time in data.ads_over_time) {
+                    data.ads_over_time[time]++;
+                } else {
+                    data.ads_over_time[time] = 1;
+                }
+            }
+            if (time in data.domains_over_time) {
+                data.domains_over_time[time]++;
+            } else {
+                data.domains_over_time[time] = 1;
+            }
+        });
+        lineReader.on("close", function() {
+            resolve(data);
+        });
+    });
+};
+
+logHelper.getTopItems = function(argument) {
+    return new Promise(function(resolve, reject) {
+        fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                var domains = {};
+                var lineReader = require("readline")
+                    .createInterface({
+                        input: require("fs")
+                            .createReadStream(appDefaults.logFile)
+                    });
+                lineReader.on("line", function(line) {
+                    if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
+                        return;
+                    }
+                    var info = line.split(" ");
+                    var domain = info[info.length - 3].trim();
+                    if (domain in domains) {
+                        domains[domain]++;
+                    } else {
+                        domains[domains] = 1;
+                    }
+                });
+                lineReader.on("close", function() {
+                    resolve(domains);
+                });
+            }
+        });
     });
 };
 

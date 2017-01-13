@@ -6,74 +6,46 @@ const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
 var router = express.Router();
 
+const supportedDataQueries = ["summary", "summaryRaw", "overTimeData", "overTimeData10mins", "topItems", "recentItems", "getQueryTypes", "getForwardDestinations"];
+
 router.get("/data", function(req, res) {
-    if ("summary" in req.query) {
-        var testData = {
-            ads_blocked_today: 10,
-            dns_queries_today: 200,
-            ads_percentage_today: 10.2,
-            domains_being_blocked: 20
-        };
-        res.json(testData);
+    // Filter query types so only valid ones pass
+    var args = {};
+    // to cancel request early if no valid args were provided
+    var numValidArgs = 0;
+    for (var query in req.query) {
+        if (supportedDataQueries.includes(query)) {
+            args[query] = req.query[query];
+            numValidArgs++;
+        }
     }
-    if ("summaryRaw" in req.query) {
-        res.write("BBBBB");
+    // cancel request because no valid args were provided
+    if (numValidArgs == 0) {
+        res.sendStatus(400);
+        return;
+    }
+
+    var data = {};
+    var promises = [];
+    if ("summary" in args) {
+        promises.push(logHelper.getSummary());
+    }
+    if ("summaryRaw" in args) {
+        promises.push(logHelper.getSummaryRaw());
     }
     if ("overTimeData" in req.query) {}
     if ("overTimeData10mins" in req.query) {
-        var lineReader = require("readline")
-            .createInterface({
-                input: require("fs")
-                    .createReadStream(appDefaults.logFile)
-            });
-        var data = {
-            domains_over_time: {},
-            ads_over_time: {}
-        };
-        lineReader.on("line", function(line) {
-            if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
-                return;
-            }
-            var time = moment(line.substring(0, 16), "MMM DD hh:mm:ss");
-            var hour = time.hour();
-            var minute = time.minute();
-            time = (minute - minute % 10) / 10 + 6 * hour;
-            if (Math.random() < 0.5) {
-                if (time in data.ads_over_time) {
-                    data.ads_over_time[time]++;
-                } else {
-                    data.ads_over_time[time] = 1;
-                }
-            }
-            if (time in data.domains_over_time) {
-                data.domains_over_time[time]++;
-            } else {
-                data.domains_over_time[time] = 1;
-            }
-        });
-        lineReader.on("close", function() {
-            res.json(data);
-        });
+        promises.push(logHelper.getOverTimeData10mins());
     }
-    if ("topItems" in req.query) {}
+    if ("topItems" in req.query) {
+        promises.push(logHelper.getTopItems());
+    }
     if ("recentItems" in req.query) {}
     if ("getQueryTypes" in req.query) {
-        logHelper.getQueryTypes(function(err, data) {
-            if (err) {
-                res.sendStatus(500);
-            } else {
-                res.json(data);
-            }
-        });
+        promises.push(logHelper.getQueryTypes());
     }
     if ("getForwardDestinations" in req.query) {
-        logHelper.getForwardDestinations(function(err, data) {
-            if (err) {
-                res.sendStatus(500);
-            } else {
-                res.json(data);
-            }
-        });
+        promises.push(logHelper.getForwardDestinations());
     }
     if ("getQuerySources" in req.query) {}
     if ("getAllQueries" in req.query) {
@@ -112,6 +84,18 @@ router.get("/data", function(req, res) {
             });
         });
     }
+    Promise.all(promises)
+        .then(function(values) {
+            var data = {};
+            for (var i = 0; i < values.length; i++) {
+                data = Object.assign(data, values[i]);
+            }
+            res.json(data);
+        })
+        .catch(function(err) {
+            console.log(err);
+            res.sendStatus(400);
+        });
 });
 
 router.get("/list", function(req, res) {

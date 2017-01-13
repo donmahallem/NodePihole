@@ -1,7 +1,10 @@
 // Main content
 section.content
 	// Small boxes (Stat box)
-	.row
+	.row#toprow-stats
+		style(type='text/css').
+			div#toprow-stats div.small-box div.overlay{position: absolute;width: 100%;height: 100%;top: 0; left: 0;z-index: 50;background: rgba(255,255,255,0.7);}
+			div#toprow-stats div.small-box div.overlay i{position: absolute;top: 50%;left: 50%;margin-left: -15px;margin-top: -15px;color: #000;font-size: 30px;}
 		.col-lg-3.col-xs-12
 			// small box
 			.small-box.bg-aqua
@@ -10,6 +13,9 @@ section.content
 					p DNS Queries Blocked Today
 				.icon
 					i.ion.ion-android-hand
+				.overlay
+					i.fa.fa-refresh.fa-spin
+
 		// ./col
 		.col-lg-3.col-xs-12
 			// small box
@@ -19,6 +25,8 @@ section.content
 					p DNS Queries Today
 				.icon
 					i.ion.ion-earth
+				.overlay
+					i.fa.fa-refresh.fa-spin
 		// ./col
 		.col-lg-3.col-xs-12
 			// small box
@@ -28,6 +36,8 @@ section.content
 					p Of Today's Queries Were Blocked
 				.icon
 					i.ion.ion-pie-graph
+				.overlay
+					i.fa.fa-refresh.fa-spin
 		// ./col
 		.col-lg-3.col-xs-12
 			// small box
@@ -37,6 +47,8 @@ section.content
 					p Domains Being Blocked
 				.icon
 					i.ion.ion-ios-list
+				.overlay
+					i.fa.fa-refresh.fa-spin
 		// ./col
 	.row
 		.col-md-12
@@ -49,7 +61,7 @@ section.content
 				.overlay
 					i.fa.fa-refresh.fa-spin
 				// /.box-body
-	if PCONFIG.authenticated
+	if PCONFIG.user.authenticated
 		.row
 			.col-md-6
 				#query-types.box

@@ -42,11 +42,11 @@ var PiServer = function() {
         var cCsp = csp({
             policies: {
                 "default-src": [csp.SELF],
-                "script-src": [csp.SELF, csp.INLINE],
+                "script-src": [csp.SELF, csp.INLINE, csp.EVAL],
                 "style-src": [csp.SELF, csp.INLINE],
                 "img-src": [csp.SELF],
                 "connect-src": [csp.SELF, "https://api.github.com", "ws:", "wss:"],
-                "worker-src": [csp.NONE],
+                //"worker-src": [csp.NONE],
                 "block-all-mixed-content": true
             }
         });
@@ -121,10 +121,14 @@ PiServer.prototype.start = function() {
             console.log(data);
             this.socketIo.privateSocket.emit("dnsevent", {
                 "type": "blocked",
-                "domain": "test.com"
+                "domain": "test.com",
+                "timestamp": new Date()
+                    .toISOString()
             });
             this.socketIo.publicSocket.emit("dnsevent", {
-                "type": "blocked"
+                "type": "blocked",
+                "timestamp": new Date()
+                    .toISOString()
             });
         }.bind(this));
         tail.on("error", function(error) {

@@ -2,99 +2,165 @@ const express = require("express");
 const readline = require("readline");
 const moment = require("moment");
 const fs = require("fs");
+const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
 var router = express.Router();
-router.get("/data", function(req, res) {
-    if ("summary" in req.query) {
-        var testData = {
-            ads_blocked_today: 10,
-            dns_queries_today: 200,
-            ads_percentage_today: 10.2,
-            domains_being_blocked: 20
-        };
-        res.json(testData);
+
+const supportedDataQueries = {
+    "summary": {
+        "authRequired": false
+    },
+    "summaryRaw": {
+        "authRequired": false
+    },
+    "overTimeData": {
+        "authRequired": true
+    },
+    "overTimeData10mins": {
+        "authRequired": false
+    },
+    "topItems": {
+        "authRequired": true
+    },
+    "recentItems": {
+        "authRequired": true
+    },
+    "getQueryTypes": {
+        "authRequired": true
+    },
+    "getForwardDestinations": {
+        "authRequired": true
+    },
+    "getAllQueries": {
+        "authRequired": true
     }
-    if ("summaryRaw" in req.query) {
-        res.write("BBBBB");
-    }
-    if ("overTimeData" in req.query) {}
-    if ("overTimeData10mins" in req.query) {
-        var lineReader = require("readline")
-            .createInterface({
-                input: require("fs")
-                    .createReadStream(appDefaults.logFile)
-            });
-        var data = {
-            domains_over_time: {},
-            ads_over_time: {}
-        };
-        lineReader.on("line", function(line) {
-            if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
-                return;
-            }
-            var time = moment(line.substring(0, 16), "MMM DD hh:mm:ss");
-            var hour = time.hour();
-            var minute = time.minute();
-            time = (minute - minute % 10) / 10 + 6 * hour;
-            if (Math.random() < 0.5) {
-                if (time in data.ads_over_time) {
-                    data.ads_over_time[time]++;
-                } else {
-                    data.ads_over_time[time] = 1;
+};
+
+// Potential buildfail fix for node 5 and below
+// polyfill source: https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+if (typeof Object.assign != "function") {
+    Object.assign = function(target) {
+        "use strict";
+        if (target == null) {
+            throw new TypeError("Cannot convert undefined or null to object");
+        }
+        target = Object(target);
+        for (var index = 1; index < arguments.length; index++) {
+            var source = arguments[index];
+            if (source != null) {
+                for (var key in source) {
+                    if (Object.prototype.hasOwnProperty.call(source, key)) {
+                        target[key] = source[key];
+                    }
                 }
             }
-            if (time in data.domains_over_time) {
-                data.domains_over_time[time]++;
-            } else {
-                data.domains_over_time[time] = 1;
+        }
+        return target;
+    };
+}
+///// for node 5 and below
+// Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
+if (!Array.prototype.includes) {
+    Object.defineProperty(Array.prototype, "includes", {
+        value: function(searchElement, fromIndex) {
+            // 1. Let O be ? ToObject(this value).
+            if (this == null) {
+                throw new TypeError("\"this\" is null or not defined");
             }
-        });
-        lineReader.on("close", function() {
-            res.json(data);
-        });
-    }
-    if ("topItems" in req.query) {}
-    if ("recentItems" in req.query) {}
-    if ("getQueryTypes" in req.query) {}
-    if ("getForwardDestinations" in req.query) {}
-    if ("getQuerySources" in req.query) {}
-    if ("getAllQueries" in req.query) {
-        var lineReader = require("readline")
-            .createInterface({
-                input: require("fs")
-                    .createReadStream(appDefaults.logFile)
-            });
-        var lines = [];
-        lineReader.on("line", function(line) {
-            if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
+            var o = Object(this);
+            // 2. Let len be ? ToLength(? Get(O, "length")).
+            var len = o.length >>> 0;
+            // 3. If len is 0, return false.
+            if (len === 0) {
+                return false;
+            }
+            // 4. Let n be ? ToInteger(fromIndex).
+            //    (If fromIndex is undefined, this step produces the value 0.)
+            var n = fromIndex | 0;
+            // 5. If n ≥ 0, then
+            //  a. Let k be n.
+            // 6. Else n < 0,
+            //  a. Let k be len + n.
+            //  b. If k < 0, let k be 0.
+            var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+            // 7. Repeat, while k < len
+            while (k < len) {
+                // a. Let elementK be the result of ? Get(O, ! ToString(k)).
+                // b. If SameValueZero(searchElement, elementK) is true, return true.
+                // c. Increase k by 1.
+                // NOTE: === provides the correct "SameValueZero" comparison needed here.
+                if (o[k] === searchElement) {
+                    return true;
+                }
+                k++;
+            }
+            // 8. Return false
+            return false;
+        }
+    });
+}
+/////////////////////////////////////////////
+
+router.get("/data", function(req, res) {
+    // Filter query types so only valid ones pass
+    var args = {};
+    // to cancel request early if no valid args were provided
+    var numValidArgs = 0;
+    for (var query in req.query) {
+        // type check so someone can't query for example .toString()
+        if (query in supportedDataQueries && (typeof supportedDataQueries[query].authRequired === "boolean")) {
+            if (supportedDataQueries[query].authRequired && !req.user.authenticated) {
+                // User needs to be authenticated for this query
+                res.sendStatus(401);
                 return;
-            } else {
-                var _time = line.substring(0, 16);
-                var expl = line.trim()
-                    .split(" ");
-                var _domain = expl[expl.length - 3];
-                var tmp = expl[expl.length - 4];
-                var _status = Math.random() < 0.5 ? "Pi-holed" : "OK";
-                var _type = tmp.substring(6, tmp.length - 1);
-                var _client = expl[expl.length - 1];
-                var data = {
-                    time: moment(_time, "MMM DD hh:mm:ss")
-                        .toISOString(),
-                    domain: _domain,
-                    status: _status,
-                    type: _type,
-                    client: _client
-                };
-                lines.push(data);
             }
-        });
-        lineReader.on("close", function() {
-            res.json({
-                data: lines
-            });
-        });
+            args[query] = req.query[query];
+            numValidArgs++;
+        }
     }
+    // cancel request because no valid args were provided
+    if (numValidArgs == 0) {
+        res.sendStatus(400);
+        return;
+    }
+
+    var data = {};
+    var promises = [];
+    if ("summary" in args) {
+        promises.push(logHelper.getSummary());
+    }
+    if ("summaryRaw" in args) {
+        promises.push(logHelper.getSummaryRaw());
+    }
+    if ("overTimeData10mins" in req.query) {
+        promises.push(logHelper.getOverTimeData10mins());
+    }
+    if ("topItems" in req.query) {
+        promises.push(logHelper.getTopItems());
+    }
+    if ("getQueryTypes" in req.query) {
+        promises.push(logHelper.getQueryTypes());
+    }
+    if ("getForwardDestinations" in req.query) {
+        promises.push(logHelper.getForwardDestinations());
+    }
+    if ("getAllQueries" in req.query) {
+        promises.push(logHelper.getAllQueries());
+    }
+    Promise.all(promises)
+        .then(function(values) {
+            var data = {};
+            for (var i = 0; i < values.length; i++) {
+                data = Object.assign(data, values[i]);
+            }
+            res.json(data);
+        })
+        .catch(function(err) {
+            console.log(err);
+            res.sendStatus(400);
+        });
 });
+
 router.get("/list", function(req, res) {
     if (!req.user.authenticated) {
         res.sendStatus(401);
@@ -131,4 +197,5 @@ router.get("/list", function(req, res) {
         res.sendStatus(400);
     }
 });
+
 module.exports = router;

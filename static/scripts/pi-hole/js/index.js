@@ -25,18 +25,19 @@ function objectToArray(p) {
 
 // Class handling summary updates
 var summaryUpdater = {
-    summaryData : {
+    summaryData: {
         "ads_blocked_today": -1,
         "dns_queries_today": -1,
         "domains_being_blocked": -1,
         "ads_percentage_today": -1
     },
     updateView() {
+        const self = this;
         ["ads_blocked_today", "dns_queries_today", "domains_being_blocked", "ads_percentage_today"].forEach(function(header, idx) {
-            var textData = idx === 3 ? this.summaryData[header] + "%" : this.summaryData[header];
+            var textData = idx === 3 ? self.summaryData[header] + "%" : self.summaryData[header];
             $("h3#" + header)
                 .text(textData);
-        }.bind(this));
+        });
         $("#toprow-stats .overlay")
             .each(function(idx, overlay) {
                 if ($(overlay)
@@ -47,17 +48,18 @@ var summaryUpdater = {
             });
     },
     pollData() {
+        const self = this;
         $.getJSON("/api/data?summary", function LoadSummaryData(data) {
-                this.summaryData = data;
-                this.updateView();
-            }.bind(this))
+                self.summaryData = data;
+                self.updateView();
+            })
             .done(function() {
                 //setTimer(10);
 
             })
             .fail(function() {
-				// retry again in 300ms
-                setTimer(300);
+                // retry again in 300ms
+                setTimeout(self.pollData, 300);
             });
     },
     subscribeSocket() {
@@ -75,11 +77,11 @@ var summaryUpdater = {
         }
         this.summaryData["ads_percentage_today"] = (this.summaryData["ads_blocked_today"] / this.summaryData["dns_queries_today"] * 100)
             .toFixed(2);
-        updateView();
+        this.updateView();
     },
-	start(){
-		this.pollData();
-	}
+    start() {
+        this.pollData();
+    }
 };
 
 var failures = 0;
@@ -391,7 +393,7 @@ $(document)
             }
         });
         // Pull in data via AJAX
-		summaryUpdater.start();
+        summaryUpdater.start();
         updateQueriesOverTime();
         // Create / load "Query Types" only if authorized
         if (document.getElementById("queryTypeChart")) {

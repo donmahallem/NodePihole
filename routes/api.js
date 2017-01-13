@@ -2,6 +2,7 @@ const express = require("express");
 const readline = require("readline");
 const moment = require("moment");
 const fs = require("fs");
+const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
 var router = express.Router();
 
@@ -56,8 +57,24 @@ router.get("/data", function(req, res) {
     }
     if ("topItems" in req.query) {}
     if ("recentItems" in req.query) {}
-    if ("getQueryTypes" in req.query) {}
-    if ("getForwardDestinations" in req.query) {}
+    if ("getQueryTypes" in req.query) {
+        logHelper.getQueryTypes(function(err, data) {
+            if (err) {
+                res.sendStatus(500);
+            } else {
+                res.json(data);
+            }
+        });
+    }
+    if ("getForwardDestinations" in req.query) {
+        logHelper.getForwardDestinations(function(err, data) {
+            if (err) {
+                res.sendStatus(500);
+            } else {
+                res.json(data);
+            }
+        });
+    }
     if ("getQuerySources" in req.query) {}
     if ("getAllQueries" in req.query) {
         var lineReader = require("readline")

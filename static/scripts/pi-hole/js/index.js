@@ -255,7 +255,7 @@ const queryTimelineUpdater = {
 };
 
 function updateQueryTypes() {
-    $.getJSON("api.php?getQueryTypes", function(data) {
+    $.getJSON("/api/data?getQueryTypes", function(data) {
         var colors = [];
         // Get colors from AdminLTE
         $.each($.AdminLTE.options.colors, function(key, value) {
@@ -328,7 +328,7 @@ function updateTopClientsChart() {
 }
 
 function updateForwardDestinations() {
-    $.getJSON("api.php?getForwardDestinations", function(data) {
+    $.getJSON("/api/data?getForwardDestinations", function(data) {
         var colors = [];
         // Get colors from AdminLTE
         $.each($.AdminLTE.options.colors, function(key, value) {

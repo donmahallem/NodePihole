@@ -335,6 +335,19 @@ describe("Check endpoints", function() {
                             });
                     });
                 });
+                describe("?overTimeData10mins", function() {
+                    it("should succeed", function(done) {
+                        chai.request(server.app)
+                            .get("/api/data?overTimeData10mins")
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
+                                done();
+                            });
+                    });
+                });
             });
         });
     });

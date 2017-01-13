@@ -6,33 +6,32 @@ const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
 var router = express.Router();
 
-const supportedDataQueries = ["summary", "summaryRaw", "overTimeData", "overTimeData10mins", "topItems", "recentItems", "getQueryTypes", "getForwardDestinations"];
+const supportedDataQueries = ["summary", "summaryRaw", "overTimeData", "overTimeData10mins", "topItems", "recentItems", "getQueryTypes", "getForwardDestinations", "getAllQueries"];
 
 // Potential buildfail fix for node 5 and below
 // polyfill source: https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
 if (typeof Object.assign != 'function') {
-  Object.assign = function(target) {
-    'use strict';
-    if (target == null) {
-      throw new TypeError('Cannot convert undefined or null to object');
-    }
-
-    target = Object(target);
-    for (var index = 1; index < arguments.length; index++) {
-      var source = arguments[index];
-      if (source != null) {
-        for (var key in source) {
-          if (Object.prototype.hasOwnProperty.call(source, key)) {
-            target[key] = source[key];
-          }
+    Object.assign = function(target) {
+        'use strict';
+        if (target == null) {
+            throw new TypeError('Cannot convert undefined or null to object');
         }
-      }
-    }
-    return target;
-  };
+
+        target = Object(target);
+        for (var index = 1; index < arguments.length; index++) {
+            var source = arguments[index];
+            if (source != null) {
+                for (var key in source) {
+                    if (Object.prototype.hasOwnProperty.call(source, key)) {
+                        target[key] = source[key];
+                    }
+                }
+            }
+        }
+        return target;
+    };
 }
 /////////////////////////////////////////////
-
 
 router.get("/data", function(req, res) {
     // Filter query types so only valid ones pass
@@ -75,41 +74,9 @@ router.get("/data", function(req, res) {
     }
     if ("getQuerySources" in req.query) {}
     if ("getAllQueries" in req.query) {
-        var lineReader = require("readline")
-            .createInterface({
-                input: require("fs")
-                    .createReadStream(appDefaults.logFile)
-            });
-        var lines = [];
-        lineReader.on("line", function(line) {
-            if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
-                return;
-            } else {
-                var _time = line.substring(0, 16);
-                var expl = line.trim()
-                    .split(" ");
-                var _domain = expl[expl.length - 3];
-                var tmp = expl[expl.length - 4];
-                var _status = Math.random() < 0.5 ? "Pi-holed" : "OK";
-                var _type = tmp.substring(6, tmp.length - 1);
-                var _client = expl[expl.length - 1];
-                var data = {
-                    time: moment(_time, "MMM DD hh:mm:ss")
-                        .toISOString(),
-                    domain: _domain,
-                    status: _status,
-                    type: _type,
-                    client: _client
-                };
-                lines.push(data);
-            }
-        });
-        lineReader.on("close", function() {
-            res.json({
-                data: lines
-            });
-        });
+        promises.push(logHelper.getAllQueries());
     }
+	console.log(Promise);
     Promise.all(promises)
         .then(function(values) {
             var data = {};

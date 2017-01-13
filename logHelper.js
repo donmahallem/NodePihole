@@ -19,6 +19,46 @@ logHelper.getSummary = function() {
         }
     });
 };
+
+logHelper.getAllQueries = function() {
+    return new Promise(function(resolve, reject) {
+        var lineReader = require("readline")
+            .createInterface({
+                input: require("fs")
+                    .createReadStream(appDefaults.logFile)
+            });
+        var lines = [];
+        lineReader.on("line", function(line) {
+            if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
+                return;
+            } else {
+                var _time = line.substring(0, 16);
+                var expl = line.trim()
+                    .split(" ");
+                var _domain = expl[expl.length - 3];
+                var tmp = expl[expl.length - 4];
+                var _status = Math.random() < 0.5 ? "Pi-holed" : "OK";
+                var _type = tmp.substring(6, tmp.length - 1);
+                var _client = expl[expl.length - 1];
+                var data = {
+                    time: moment(_time, "MMM DD hh:mm:ss")
+                        .toISOString(),
+                    domain: _domain,
+                    status: _status,
+                    type: _type,
+                    client: _client
+                };
+                lines.push(data);
+            }
+        });
+        lineReader.on("close", function() {
+            resolve({
+                "data": lines
+            });
+        });
+    });
+};
+
 logHelper.getSummaryRaw = function() {
     return new Promise(function(resolve, reject) {
         if (true) {

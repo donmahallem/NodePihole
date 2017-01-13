@@ -61,7 +61,7 @@ const summaryUpdater = {
             });
     },
     subscribeSocket() {
-        publicSocket.on("dnsevent", this.socketUpdate);
+        publicSocket.on("dnsevent", this.socketUpdate.bind(this));
     },
     unsubscribeSocket() {
         publicSocket.off("dnsevent", this.socketUpdate);
@@ -79,7 +79,7 @@ const summaryUpdater = {
     },
     start() {
         this.pollData();
-		this.subscribeSocket();
+        this.subscribeSocket();
     }
 };
 
@@ -137,19 +137,18 @@ const queryTimelineUpdater = {
             });
     },
     subscribeSocket() {
-        publicSocket.on("dnsevent", this.socketUpdate);
+        publicSocket.on("dnsevent", this.socketUpdate.bind(this));
     },
     unsubscribeSocket() {
         publicSocket.off("dnsevent", this.socketUpdate);
     },
     socketUpdate(data) {
-		//update chart
-		var timestamp=Date.parse(data.timestamp);
-		
-            var hour = timestamp.getHours();
-            var minute = timestamp.getMinutes();
+        //update chart
+        var timestamp = new Date(data.timestamp);
+        var hour = timestamp.getHours();
+        var minute = timestamp.getMinutes();
         var timestampIdx = (minute - minute % 10) / 10 + 6 * hour;
-		console.log(timestampIdx);
+        console.log(timestampIdx);
     },
     start() {
         var ctx = document.getElementById("queryOverTimeChart")
@@ -235,7 +234,7 @@ const queryTimelineUpdater = {
             }
         });
         this.pollData();
-		this.subscribeSocket();
+        this.subscribeSocket();
     }
 };
 

@@ -79,62 +79,79 @@ const summaryUpdater = {
     },
     start() {
         this.pollData();
+		this.subscribeSocket();
     }
 };
 
 var failures = 0;
 
-const queryTimelineUpdater={
-	timeLineChart,
-	pollData(){
-		self=this;
-		$.getJSON("/api/data?overTimeData10mins", function(data) {
-            // convert received objects to arrays
-            //data.domains_over_time = objectToArray(data.domains_over_time);
-            //data.ads_over_time = objectToArray(data.ads_over_time);
-            // remove last data point since it not representative
-            //data.ads_over_time[0].splice(-1,1);
-            // Remove possibly already existing data
-            self.timeLineChart.data.labels = [];
-            self.timeLineChart.data.datasets[0].data = [];
-            self.timeLineChart.data.datasets[1].data = [];
-            // get all keys of ads datapoints
-            var adsKeys = Object.keys(data.ads_over_time)
-                .sort();
-            // get all keys of domain datapoints
-            var domainKeys = Object.keys(data.domains_over_time)
-                .sort();
-            // get the largest datapoint key
-            var largest = Math.max(adsKeys[adsKeys.length - 1], domainKeys[domainKeys.length - 1]);
-            // get the smallest datapoint key
-            var smallest = Math.max(adsKeys[0], domainKeys[0]);
-            // Add data for each hour that is available
-            for (var timeInterval = smallest; timeInterval < largest; timeInterval++) {
-                var h = timeInterval;
-                var d = new Date()
-                    .setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0);
-                self.timeLineChart.data.labels.push(d);
-                self.timeLineChart.data.datasets[0].data.push((timeInterval in data.domains_over_time) ? data.domains_over_time[timeInterval] : 0);
-                self.timeLineChart.data.datasets[1].data.push((timeInterval in data.ads_over_time) ? data.ads_over_time[timeInterval] : 0);
-            }
-            $("#queries-over-time .overlay")
-                .remove();
-            self.timeLineChart.update();
-        })
-        .done(function() {
-            // Reload graph after 10 minutes
-            failures = 0;
-            setTimeout(updateQueriesOverTime, 600000);
-        })
-        .fail(function() {
-            failures++;
-            if (failures < 5) {
-                // Try again after 1 minute only if this has not failed more
-                // than five times in a row
-                setTimeout(updateQueriesOverTime, 60000);
-            }
-        });
-	},start(){
+const queryTimelineUpdater = {
+    timeLineChart,
+    pollData() {
+        self = this;
+        $.getJSON("/api/data?overTimeData10mins", function(data) {
+                // convert received objects to arrays
+                //data.domains_over_time = objectToArray(data.domains_over_time);
+                //data.ads_over_time = objectToArray(data.ads_over_time);
+                // remove last data point since it not representative
+                //data.ads_over_time[0].splice(-1,1);
+                // Remove possibly already existing data
+                self.timeLineChart.data.labels = [];
+                self.timeLineChart.data.datasets[0].data = [];
+                self.timeLineChart.data.datasets[1].data = [];
+                // get all keys of ads datapoints
+                var adsKeys = Object.keys(data.ads_over_time)
+                    .sort();
+                // get all keys of domain datapoints
+                var domainKeys = Object.keys(data.domains_over_time)
+                    .sort();
+                // get the largest datapoint key
+                var largest = Math.max(adsKeys[adsKeys.length - 1], domainKeys[domainKeys.length - 1]);
+                // get the smallest datapoint key
+                var smallest = Math.max(adsKeys[0], domainKeys[0]);
+                // Add data for each hour that is available
+                for (var timeInterval = smallest; timeInterval < largest; timeInterval++) {
+                    var h = timeInterval;
+                    var d = new Date()
+                        .setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0);
+                    self.timeLineChart.data.labels.push(d);
+                    self.timeLineChart.data.datasets[0].data.push((timeInterval in data.domains_over_time) ? data.domains_over_time[timeInterval] : 0);
+                    self.timeLineChart.data.datasets[1].data.push((timeInterval in data.ads_over_time) ? data.ads_over_time[timeInterval] : 0);
+                }
+                $("#queries-over-time .overlay")
+                    .remove();
+                self.timeLineChart.update();
+            })
+            .done(function() {
+                // Reload graph after 10 minutes
+                failures = 0;
+                setTimeout(self.pollData, 600000);
+            })
+            .fail(function() {
+                failures++;
+                if (failures < 5) {
+                    // Try again after 1 minute only if this has not failed more
+                    // than five times in a row
+                    setTimeout(self.pollData, 60000);
+                }
+            });
+    },
+    subscribeSocket() {
+        publicSocket.on("dnsevent", this.socketUpdate);
+    },
+    unsubscribeSocket() {
+        publicSocket.off("dnsevent", this.socketUpdate);
+    },
+    socketUpdate(data) {
+		//update chart
+		var timestamp=Date.parse(data.timestamp);
+		
+            var hour = timestamp.getHours();
+            var minute = timestamp.getMinutes();
+        var timestampIdx = (minute - minute % 10) / 10 + 6 * hour;
+		console.log(timestampIdx);
+    },
+    start() {
         var ctx = document.getElementById("queryOverTimeChart")
             .getContext("2d");
         this.timeLineChart = new Chart(ctx, {
@@ -217,8 +234,9 @@ const queryTimelineUpdater={
                 maintainAspectRatio: false
             }
         });
-		this.pollData();
-	}
+        this.pollData();
+		this.subscribeSocket();
+    }
 };
 
 function updateQueryTypes() {
@@ -379,6 +397,13 @@ function updateTopLists() {
 
 $(document)
     .ready(function() {
+        publicSocket = io("/public");
+        publicSocket.on("connect", function() {
+            console.log("connect");
+        });
+        publicSocket.on("connect_error", function(data) {
+            console.log("connect_error" + data);
+        });
         var isMobile = {
             Windows: function() {
                 return /IEMobile/i.test(navigator.userAgent);
@@ -473,11 +498,4 @@ $(document)
                 }
                 return false;
             });
-        publicSocket = io("/public");
-        publicSocket.on("connect", function() {
-            console.log("connect");
-        });
-        publicSocket.on("connect_error", function(data) {
-            console.log("connect_error" + data);
-        });
     });

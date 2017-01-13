@@ -24,7 +24,7 @@ function objectToArray(p) {
 }
 
 // Class handling summary updates
-var summaryUpdater = {
+const summaryUpdater = {
     summaryData: {
         "ads_blocked_today": -1,
         "dns_queries_today": -1,
@@ -51,11 +51,9 @@ var summaryUpdater = {
         const self = this;
         $.getJSON("/api/data?summary", function LoadSummaryData(data) {
                 self.summaryData = data;
-                self.updateView();
             })
             .done(function() {
-                //setTimer(10);
-
+                self.updateView();
             })
             .fail(function() {
                 // retry again in 300ms
@@ -86,17 +84,20 @@ var summaryUpdater = {
 
 var failures = 0;
 
-function updateQueriesOverTime() {
-    $.getJSON("/api/data?overTimeData10mins", function(data) {
+const queryTimelineUpdater={
+	timeLineChart,
+	pollData(){
+		self=this;
+		$.getJSON("/api/data?overTimeData10mins", function(data) {
             // convert received objects to arrays
             //data.domains_over_time = objectToArray(data.domains_over_time);
             //data.ads_over_time = objectToArray(data.ads_over_time);
             // remove last data point since it not representative
             //data.ads_over_time[0].splice(-1,1);
             // Remove possibly already existing data
-            timeLineChart.data.labels = [];
-            timeLineChart.data.datasets[0].data = [];
-            timeLineChart.data.datasets[1].data = [];
+            self.timeLineChart.data.labels = [];
+            self.timeLineChart.data.datasets[0].data = [];
+            self.timeLineChart.data.datasets[1].data = [];
             // get all keys of ads datapoints
             var adsKeys = Object.keys(data.ads_over_time)
                 .sort();
@@ -112,13 +113,13 @@ function updateQueriesOverTime() {
                 var h = timeInterval;
                 var d = new Date()
                     .setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0);
-                timeLineChart.data.labels.push(d);
-                timeLineChart.data.datasets[0].data.push((timeInterval in data.domains_over_time) ? data.domains_over_time[timeInterval] : 0);
-                timeLineChart.data.datasets[1].data.push((timeInterval in data.ads_over_time) ? data.ads_over_time[timeInterval] : 0);
+                self.timeLineChart.data.labels.push(d);
+                self.timeLineChart.data.datasets[0].data.push((timeInterval in data.domains_over_time) ? data.domains_over_time[timeInterval] : 0);
+                self.timeLineChart.data.datasets[1].data.push((timeInterval in data.ads_over_time) ? data.ads_over_time[timeInterval] : 0);
             }
             $("#queries-over-time .overlay")
                 .remove();
-            timeLineChart.update();
+            self.timeLineChart.update();
         })
         .done(function() {
             // Reload graph after 10 minutes
@@ -133,7 +134,92 @@ function updateQueriesOverTime() {
                 setTimeout(updateQueriesOverTime, 60000);
             }
         });
-}
+	},start(){
+        var ctx = document.getElementById("queryOverTimeChart")
+            .getContext("2d");
+        this.timeLineChart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Total DNS Queries",
+                    fill: true,
+                    backgroundColor: "rgba(220,220,220,0.5)",
+                    borderColor: "rgba(0, 166, 90,.8)",
+                    pointBorderColor: "rgba(0, 166, 90,.8)",
+                    pointRadius: 1,
+                    pointHoverRadius: 5,
+                    data: [],
+                    pointHitRadius: 5,
+                    cubicInterpolationMode: "monotone"
+                }, {
+                    label: "Blocked DNS Queries",
+                    fill: true,
+                    backgroundColor: "rgba(0,192,239,0.5)",
+                    borderColor: "rgba(0,192,239,1)",
+                    pointBorderColor: "rgba(0,192,239,1)",
+                    pointRadius: 1,
+                    pointHoverRadius: 5,
+                    data: [],
+                    pointHitRadius: 5,
+                    cubicInterpolationMode: "monotone"
+                }]
+            },
+            options: {
+                tooltips: {
+                    enabled: true,
+                    mode: "x-axis",
+                    callbacks: {
+                        title: function(tooltipItem, data) {
+                            var label = tooltipItem[0].xLabel;
+                            var time = label.match(/(\d?\d):?(\d?\d?)/);
+                            var h = parseInt(time[1], 10);
+                            var m = parseInt(time[2], 10) || 0;
+                            var from = padNumber(h) + ":" + padNumber(m) + ":00";
+                            var to = padNumber(h) + ":" + padNumber(m + 9) + ":59";
+                            return "Queries from " + from + " to " + to;
+                        },
+                        label: function(tooltipItems, data) {
+                            if (tooltipItems.datasetIndex === 1) {
+                                var percentage = 0.0;
+                                var total = parseInt(data.datasets[0].data[tooltipItems.index]);
+                                var blocked = parseInt(data.datasets[1].data[tooltipItems.index]);
+                                if (total > 0) {
+                                    percentage = 100.0 * blocked / total;
+                                }
+                                return data.datasets[tooltipItems.datasetIndex].label + ": " + tooltipItems.yLabel + " (" + percentage.toFixed(1) + "%)";
+                            } else {
+                                return data.datasets[tooltipItems.datasetIndex].label + ": " + tooltipItems.yLabel;
+                            }
+                        }
+                    }
+                },
+                legend: {
+                    display: false
+                },
+                scales: {
+                    xAxes: [{
+                        type: "time",
+                        time: {
+                            unit: "hour",
+                            displayFormats: {
+                                hour: "HH:mm"
+                            },
+                            tooltipFormat: "HH:mm"
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                },
+                maintainAspectRatio: false
+            }
+        });
+		this.pollData();
+	}
+};
 
 function updateQueryTypes() {
     $.getJSON("api.php?getQueryTypes", function(data) {
@@ -310,91 +396,9 @@ $(document)
                 return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Windows());
             }
         };
-        var ctx = document.getElementById("queryOverTimeChart")
-            .getContext("2d");
-        timeLineChart = new Chart(ctx, {
-            type: "line",
-            data: {
-                labels: [],
-                datasets: [{
-                    label: "Total DNS Queries",
-                    fill: true,
-                    backgroundColor: "rgba(220,220,220,0.5)",
-                    borderColor: "rgba(0, 166, 90,.8)",
-                    pointBorderColor: "rgba(0, 166, 90,.8)",
-                    pointRadius: 1,
-                    pointHoverRadius: 5,
-                    data: [],
-                    pointHitRadius: 5,
-                    cubicInterpolationMode: "monotone"
-                }, {
-                    label: "Blocked DNS Queries",
-                    fill: true,
-                    backgroundColor: "rgba(0,192,239,0.5)",
-                    borderColor: "rgba(0,192,239,1)",
-                    pointBorderColor: "rgba(0,192,239,1)",
-                    pointRadius: 1,
-                    pointHoverRadius: 5,
-                    data: [],
-                    pointHitRadius: 5,
-                    cubicInterpolationMode: "monotone"
-                }]
-            },
-            options: {
-                tooltips: {
-                    enabled: true,
-                    mode: "x-axis",
-                    callbacks: {
-                        title: function(tooltipItem, data) {
-                            var label = tooltipItem[0].xLabel;
-                            var time = label.match(/(\d?\d):?(\d?\d?)/);
-                            var h = parseInt(time[1], 10);
-                            var m = parseInt(time[2], 10) || 0;
-                            var from = padNumber(h) + ":" + padNumber(m) + ":00";
-                            var to = padNumber(h) + ":" + padNumber(m + 9) + ":59";
-                            return "Queries from " + from + " to " + to;
-                        },
-                        label: function(tooltipItems, data) {
-                            if (tooltipItems.datasetIndex === 1) {
-                                var percentage = 0.0;
-                                var total = parseInt(data.datasets[0].data[tooltipItems.index]);
-                                var blocked = parseInt(data.datasets[1].data[tooltipItems.index]);
-                                if (total > 0) {
-                                    percentage = 100.0 * blocked / total;
-                                }
-                                return data.datasets[tooltipItems.datasetIndex].label + ": " + tooltipItems.yLabel + " (" + percentage.toFixed(1) + "%)";
-                            } else {
-                                return data.datasets[tooltipItems.datasetIndex].label + ": " + tooltipItems.yLabel;
-                            }
-                        }
-                    }
-                },
-                legend: {
-                    display: false
-                },
-                scales: {
-                    xAxes: [{
-                        type: "time",
-                        time: {
-                            unit: "hour",
-                            displayFormats: {
-                                hour: "HH:mm"
-                            },
-                            tooltipFormat: "HH:mm"
-                        }
-                    }],
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
-                    }]
-                },
-                maintainAspectRatio: false
-            }
-        });
         // Pull in data via AJAX
         summaryUpdater.start();
-        updateQueriesOverTime();
+        queryTimelineUpdater.start();
         // Create / load "Query Types" only if authorized
         if (document.getElementById("queryTypeChart")) {
             ctx = document.getElementById("queryTypeChart")

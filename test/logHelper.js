@@ -21,7 +21,7 @@ describe("logHelper tests", function() {
             expect(result)
                 .to.deep.equal({
                     domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-20T21:21:15.000Z',
+                    timestamp: '2017-01-20T22:21:15.000Z',
                     client: '1111:1111:1111:1111:1111:1111:1111:1111',
                     type: 'query',
                     queryType: 'AAAA'
@@ -34,7 +34,7 @@ describe("logHelper tests", function() {
             expect(result)
                 .to.deep.equal({
                     domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-14T21:21:15.000Z',
+                    timestamp: '2017-01-14T22:21:15.000Z',
                     client: '127.0.0.1',
                     type: 'query',
                     queryType: 'AAAA'
@@ -47,7 +47,7 @@ describe("logHelper tests", function() {
             expect(result)
                 .to.deep.equal({
                     domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-01T21:21:15.000Z',
+                    timestamp: '2017-01-01T22:21:15.000Z',
                     client: '1111:1111:1111:1111:1111:1111:1111:1111',
                     type: 'query',
                     queryType: 'A'
@@ -60,7 +60,7 @@ describe("logHelper tests", function() {
             expect(result)
                 .to.deep.equal({
                     domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-12T21:21:15.000Z',
+                    timestamp: '2017-01-12T22:21:15.000Z',
                     client: '127.0.0.1',
                     type: 'query',
                     queryType: 'A'
@@ -87,7 +87,7 @@ describe("logHelper tests", function() {
             expect(result)
                 .to.deep.equal({
                     domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-14T21:04:52.000Z',
+                    timestamp: '2017-01-14T22:04:52.000Z',
                     list: '/etc/pihole/gravity.list',
                     type: 'block',
                 });
@@ -99,7 +99,7 @@ describe("logHelper tests", function() {
             expect(result)
                 .to.deep.equal({
                     domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-14T21:04:52.000Z',
+                    timestamp: '2017-01-14T22:04:52.000Z',
                     list: '/etc/pihole/gravity.list',
                     type: 'block',
                 });
@@ -111,7 +111,7 @@ describe("logHelper tests", function() {
             expect(result)
                 .to.deep.equal({
                     domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-14T21:04:52.000Z',
+                    timestamp: '2017-01-14T22:04:52.000Z',
                     list: '/etc/pihole/gravity.list',
                     type: 'block',
                 });

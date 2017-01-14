@@ -67,7 +67,7 @@ const summaryUpdater = {
         publicSocket.off("dnsevent", this.socketUpdate);
     },
     socketUpdate(data) {
-        if (data.type === "blocked") {
+        if (data.type === "block") {
             this.summaryData["ads_blocked_today"]++;
         }
         this.summaryData["dns_queries_today"]++;
@@ -152,7 +152,7 @@ const queryTimelineUpdater = {
         var hour = timestamp.getHours();
         var minute = timestamp.getMinutes();
         var timestampIdx = (minute - minute % 10) / 10 + 6 * hour;
-        if (data.type === "blocked") {
+        if (data.type === "block") {
             if (timestampIdx in this.tableData.ads_over_time) {
                 this.tableData.ads_over_time[timestampIdx]++;
             } else {

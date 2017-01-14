@@ -18,6 +18,7 @@ const moment = require("moment");
 const apiRoute = require("./routes/api.js");
 const frontEnd = require("./routes/front.js");
 const helper = require("./helper.js");
+const logHelper = require("./logHelper.js");
 const csp = require("csp-header");
 const appDefaults = require("./defaults.js");
 const Tail = require("tail")
@@ -118,17 +119,14 @@ PiServer.prototype.start = function() {
             .bind(this));
         var tail = new Tail(appDefaults.logFile);
         tail.on("line", function(data) {
-            console.log(data);
-            this.socketIo.privateSocket.emit("dnsevent", {
-                "type": "blocked",
-                "domain": "test.com",
-                "timestamp": new Date()
-                    .toISOString()
-            });
+            lineInfo = logHelper.parseLine(data);
+            if (lineInfo === false) {
+                return;
+            }
+            this.socketIo.privateSocket.emit("dnsevent", lineInfo);
             this.socketIo.publicSocket.emit("dnsevent", {
-                "type": "blocked",
-                "timestamp": new Date()
-                    .toISOString()
+                "type": lineInfo.type,
+                "timestamp": lineInfo.timestamp
             });
         }.bind(this));
         tail.on("error", function(error) {

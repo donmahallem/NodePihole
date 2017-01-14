@@ -5,6 +5,51 @@ var logHelper = {
 
 };
 
+logHelper.parseLine = function(line) {
+    if (typeof line === "undefined" || line.trim() === "") {
+        return false;
+    }
+    var time = line.substring(0, 16);
+    time = moment(time, "MMM DD hh:mm:ss")
+        .toISOString();
+    var infoStart = line.indexOf(": ");
+    if (infoStart < 0) {
+        return false;
+    }
+    var info = line.substring(infoStart + 2)
+        .replace(/ {2,}/g, " ")
+        .trim();
+    var split = info.split(" ");
+    if (info.startsWith("query[")) {
+        var domain = split[1];
+        var type = split[0].substring(6, split[0].length - 1);
+        var client = split[3];
+        return {
+            "domain": domain,
+            "timestamp": time,
+            "client": client,
+            "type": "query",
+            "queryType": type
+        };
+    } else if (split.length === 4 && split[0].match(/^(.*\/)gravity\.list$/)) {
+        return {
+            "domain": split[1],
+            "type": "block",
+            "timestamp": time,
+            "list": split[0]
+        };
+    } else if (split.length === 6 && split[2].match(/^(.*\/)gravity\.list$/)) {
+        return {
+            "domain": split[3],
+            "type": "block",
+            "timestamp": time,
+            "list": split[2]
+        };
+    } else {
+        return false;
+    }
+};
+
 logHelper.getSummary = function() {
     return new Promise(function(resolve, reject) {
         if (true) {

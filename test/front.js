@@ -141,10 +141,10 @@ describe("Check endpoints", function() {
                             next();
                         });
                     });
-					afterEach(function(){
+                    afterEach(function() {
                         sinon.assert.calledOnce(verifyCookieStub);
-						verifyCookieStub.reset();
-					});
+                        verifyCookieStub.reset();
+                    });
                     after(function() {
                         verifyCookieStub.restore();
                     });

@@ -119,7 +119,7 @@ PiServer.prototype.start = function() {
             .bind(this));
         var tail = new Tail(appDefaults.logFile);
         tail.on("line", function(data) {
-            lineInfo = logHelper.parseLine(data);
+            const lineInfo = logHelper.parseLine(data);
             if (lineInfo === false) {
                 return;
             }

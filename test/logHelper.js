@@ -20,11 +20,11 @@ describe("logHelper tests", function() {
                 .to.not.be.null;
             expect(result)
                 .to.deep.equal({
-                    domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-20T22:21:15.000Z',
-                    client: '1111:1111:1111:1111:1111:1111:1111:1111',
-                    type: 'query',
-                    queryType: 'AAAA'
+                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+                    timestamp: "2017-01-20T22:21:15.000Z",
+                    client: "1111:1111:1111:1111:1111:1111:1111:1111",
+                    type: "query",
+                    queryType: "AAAA"
                 });
         });
         it("should parse query successfull", function() {
@@ -33,11 +33,11 @@ describe("logHelper tests", function() {
                 .to.not.be.null;
             expect(result)
                 .to.deep.equal({
-                    domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-14T22:21:15.000Z',
-                    client: '127.0.0.1',
-                    type: 'query',
-                    queryType: 'AAAA'
+                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+                    timestamp: "2017-01-14T22:21:15.000Z",
+                    client: "127.0.0.1",
+                    type: "query",
+                    queryType: "AAAA"
                 });
         });
         it("should parse query successfull", function() {
@@ -46,11 +46,11 @@ describe("logHelper tests", function() {
                 .to.not.be.null;
             expect(result)
                 .to.deep.equal({
-                    domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-01T22:21:15.000Z',
-                    client: '1111:1111:1111:1111:1111:1111:1111:1111',
-                    type: 'query',
-                    queryType: 'A'
+                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+                    timestamp: "2017-01-01T22:21:15.000Z",
+                    client: "1111:1111:1111:1111:1111:1111:1111:1111",
+                    type: "query",
+                    queryType: "A"
                 });
         });
         it("should parse query successfull", function() {
@@ -59,11 +59,11 @@ describe("logHelper tests", function() {
                 .to.not.be.null;
             expect(result)
                 .to.deep.equal({
-                    domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-12T22:21:15.000Z',
-                    client: '127.0.0.1',
-                    type: 'query',
-                    queryType: 'A'
+                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+                    timestamp: "2017-01-12T22:21:15.000Z",
+                    client: "127.0.0.1",
+                    type: "query",
+                    queryType: "A"
                 });
         });
         it("should return false for invalid line", function() {
@@ -86,10 +86,10 @@ describe("logHelper tests", function() {
                 .to.not.be.null;
             expect(result)
                 .to.deep.equal({
-                    domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-14T22:04:52.000Z',
-                    list: '/etc/pihole/gravity.list',
-                    type: 'block',
+                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+                    timestamp: "2017-01-14T22:04:52.000Z",
+                    list: "/etc/pihole/gravity.list",
+                    type: "block",
                 });
         });
         it("should return block successfull", function() {
@@ -98,10 +98,10 @@ describe("logHelper tests", function() {
                 .to.not.be.null;
             expect(result)
                 .to.deep.equal({
-                    domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-14T22:04:52.000Z',
-                    list: '/etc/pihole/gravity.list',
-                    type: 'block',
+                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+                    timestamp: "2017-01-14T22:04:52.000Z",
+                    list: "/etc/pihole/gravity.list",
+                    type: "block",
                 });
         });
         it("should return block successfull", function() {
@@ -110,10 +110,10 @@ describe("logHelper tests", function() {
                 .to.not.be.null;
             expect(result)
                 .to.deep.equal({
-                    domain: 'aaaaaaaaaa.bbbbbb.ccccccccccc.net',
-                    timestamp: '2017-01-14T22:04:52.000Z',
-                    list: '/etc/pihole/gravity.list',
-                    type: 'block',
+                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+                    timestamp: "2017-01-14T22:04:52.000Z",
+                    list: "/etc/pihole/gravity.list",
+                    type: "block",
                 });
         });
         it("should return false for invalid block line", function() {

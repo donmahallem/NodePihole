@@ -92,7 +92,12 @@ logHelper.getFileLineCountWindows = function(filename, callback) {
         if (err || stderr !== "") {
             callback(0);
         } else {
-            callback(10);
+            var res = stdout.match(/[0-9]+(?=[\s\r\n]*$)/);
+            if (res) {
+                callback(parseInt(res[0]));
+            } else {
+                callback(0);
+            }
         }
     });
 };
@@ -129,7 +134,7 @@ logHelper.getFileLineCount = function(filename) {
 };
 
 logHelper.getGravityCount = function() {
-    return Promise.all([logHelper.getFileLineCount(appDefaults.gravityListName), logHelper.getFileLineCount(appDefaults.blackListFile)])
+    return Promise.all([logHelper.getFileLineCount(appDefaults.gravityListFile), logHelper.getFileLineCount(appDefaults.blackListFile)])
         .then(function(results) {
             return results.reduce(function(a, b) {
                 return a + b;

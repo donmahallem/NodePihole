@@ -28,38 +28,20 @@ describe("logHelper tests", function() {
     after(function() {
         sandbox.restore();
     });
-    describe("getGravityCount()", function() {
-        var tests = [{
-            args: ["gravity.list2", "gravity.list"],
-            expected: 15
-        }, {
-            args: ["gravity.list", "gravity.list"],
-            expected: 30
-        }, {
-            args: ["gravity.list", "gravity.list2"],
-            expected: 15
-        }, {
-            args: ["gravity.list2", "gravity.list2"],
+    describe("getFileLineCount()", function() {
+        const tests = [{
+            arg: "gravity.list2",
             expected: 0
+        }, {
+            arg: "gravity.list",
+            expected: 15
         }];
-        var gravityListNameStub;
-        var blackListNameStub;
-        var runner = 0;
-        beforeEach(function() {
-            gravityListNameStub = sandbox.stub(appDefaults, "gravityListName", __dirname + "/" + tests[runner].args[0]);
-            blackListNameStub = sandbox.stub(appDefaults, "blackListFile", __dirname + "/" + tests[runner].args[1]);
-        });
-        afterEach(function() {
-            gravityListNameStub.restore();
-            blackListNameStub.restore();
-            runner++;
-        });
         tests.forEach(function(test) {
-            it("should count " + tests[runner].expected + " lines with " + tests[runner].args, function(done) {
-                var gravityCount = logHelper.getGravityCount();
+            it("should count " + test.expected + " lines with " + test.arg, function(done) {
+                var gravityCount = logHelper.getFileLineCount(__dirname + "/" + test.arg);
                 gravityCount.then(function(result) {
                         expect(result)
-                            .to.be.equal(tests[runner].expected);
+                            .to.be.equal(test.expected);
                         done();
                     })
                     .catch(function(err) {
@@ -68,8 +50,29 @@ describe("logHelper tests", function() {
             });
         });
     });
+    describe("getGravityCount()", function() {
+        var gravityListFileStub, blackListFileStub;
+        before(function() {
+            gravityListFileStub = sandbox.stub(appDefaults, "gravityListFile", __dirname + "/gravity.list");
+            blackListFileStub = sandbox.stub(appDefaults, "blackListFile", __dirname + "/gravity.list");
+        });
+        after(function() {
+            gravityListFileStub.restore();
+            blackListFileStub.restore();
+        });
+        it("should count 30 lines", function(done) {
+            var gravityCount = logHelper.getGravityCount();
+            gravityCount.then(function(result) {
+                    expect(result)
+                        .to.be.equal(30);
+                    done();
+                })
+                .catch(function(err) {
+                    done(err);
+                });
+        });
+    });
     describe("parseLine()", function() {
-
         it("should parse query successfull", function() {
             const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: query[AAAA] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 1111:1111:1111:1111:1111:1111:1111:1111");
             expect(result)

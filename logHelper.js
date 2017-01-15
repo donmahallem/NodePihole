@@ -102,7 +102,7 @@ logHelper.getFileLineCountUnix = function(filename, callback) {
         if (err || stderr !== "") {
             callback(0);
         } else {
-            callback(10);
+            callback(parseInt(stdout));
         }
     });
 };

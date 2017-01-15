@@ -129,7 +129,7 @@ logHelper.getFileLineCount = function(filename) {
 };
 
 logHelper.getGravityCount = function() {
-    return Promise.all([logHelper.getFileLineCount(appDefaults.gravityListName), logHelper.getFileLineCount(appDefaults.gravityListName)])
+    return Promise.all([logHelper.getFileLineCount(appDefaults.gravityListName), logHelper.getFileLineCount(appDefaults.blackListFile)])
         .then(function(results) {
             return results.reduce(function(a, b) {
                 return a + b;

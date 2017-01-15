@@ -109,7 +109,7 @@ logHelper.getFileLineCountUnix = function(filename, callback) {
 
 logHelper.getFileLineCount = function(filename) {
     return new Promise(function(resolve, reject) {
-        fs.access(filename, fs.constants.F_OK | fs.constants.R_OK, function(err) {
+        fs.access(filename, fs.F_OK | fs.R_OK, function(err) {
             if (err) {
                 // if the file does not exist or is not readable return 0
                 resolve(0);

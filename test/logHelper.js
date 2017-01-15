@@ -7,6 +7,7 @@ const helper = require("./../helper.js");
 const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
 const moment = require("moment");
+const readline = require("readline");
 var sandbox;
 describe("logHelper tests", function() {
     var usedTimestamp;
@@ -48,6 +49,70 @@ describe("logHelper tests", function() {
                         done(err);
                     });
             });
+        });
+    });
+    describe("getSummary()", function() {
+        var gravityListFileStub, blackListFileStub, parseLineStub, logFileStub;
+        const queryObj = {
+            domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+            timestamp: "timestamp",
+            client: "1111:1111:1111:1111:1111:1111:1111:1111",
+            type: "query",
+            queryType: "AAAA"
+        };
+        const blockObj = {
+            domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+            timestamp: "timestamp",
+            list: "/etc/pihole/gravity.list",
+            type: "block",
+        };
+        before(function() {
+            gravityListFileStub = sandbox.stub(appDefaults, "gravityListFile", __dirname + "/gravity.list");
+            blackListFileStub = sandbox.stub(appDefaults, "blackListFile", __dirname + "/gravity.list");
+            logFileStub = sandbox.stub(appDefaults, "logFile", __dirname + "/gravity.list");
+            parseLineStub = sandbox.stub(logHelper, "parseLine");
+            for (var i = 0; i < 30; i++) {
+                switch (i % 3) {
+                    case 0:
+                        parseLineStub.onCall(i)
+                            .returns(queryObj);
+                        break;
+                    case 1:
+                        parseLineStub.onCall(i)
+                            .returns(blockObj);
+                        break;
+                    default:
+                        parseLineStub.onCall(i)
+                            .returns(false);
+                        break;
+                }
+            }
+            parseLineStub.returns(false);
+        });
+        afterEach(function() {
+            parseLineStub.reset();
+        });
+        after(function() {
+            gravityListFileStub.restore();
+            blackListFileStub.restore();
+            parseLineStub.restore();
+            logFileStub.restore();
+        });
+        it("should give a working summary", function(done) {
+            var gravityCount = logHelper.getSummary();
+            gravityCount.then(function(result) {
+                    expect(result)
+                        .to.deep.equal({
+                            ads_blocked_today: 5,
+                            dns_queries_today: 5,
+                            ads_percentage_today: 100,
+                            domains_being_blocked: 30
+                        });
+                    done();
+                })
+                .catch(function(err) {
+                    done(err);
+                });
         });
     });
     describe("getGravityCount()", function() {

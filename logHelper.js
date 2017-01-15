@@ -58,33 +58,45 @@ logHelper.parseLine = function(line) {
 
 logHelper.getSummary = function() {
     return new Promise(function(resolve, reject) {
-        var lineReader = require("readline")
-            .createInterface({
-                input: require("fs")
-                    .createReadStream(appDefaults.logFile)
+            var lineReader = require("readline")
+                .createInterface({
+                    input: require("fs")
+                        .createReadStream(appDefaults.logFile)
+                });
+            var summaryData = {
+                ads_blocked_today: 0,
+                dns_queries_today: 0,
+                ads_percentage_today: 0,
+                domains_being_blocked: 0
+            };
+            lineReader.on("line", function(line) {
+                var lineData = logHelper.parseLine(line);
+                if (lineData === false) {
+                    return;
+                }
+                if (lineData.type === "query") {
+                    summaryData.dns_queries_today++;
+                } else if (lineData.type === "block") {
+                    summaryData.ads_blocked_today++;
+                }
             });
-        var summaryData = {
-            ads_blocked_today: 0,
-            dns_queries_today: 0,
-            ads_percentage_today: 0,
-            domains_being_blocked: 0
-        };
-        lineReader.on("line", function(line) {
-            var lineData = logHelper.parseLine(line);
-            if (lineData === false) {
-                return;
-            }
-            if (lineData.type === "query") {
-                summaryData.dns_queries_today++;
-            } else if (lineData.type === "block") {
-                summaryData.ads_blocked_today++;
-            }
+            lineReader.on("close", function() {
+                summaryData.ads_percentage_today = (summaryData.dns_queries_today === 0) ? 0 : (summaryData.ads_blocked_today / summaryData.dns_queries_today) * 100;
+                resolve(summaryData);
+            });
+        })
+        .then(function(result) {
+            return new Promise(function(resolve, reject) {
+                logHelper.getGravityCount()
+                    .then(function(result2) {
+                        result.domains_being_blocked = result2;
+						resolve(result);
+                    })
+                    .catch(function(err) {
+                        reject(err);
+                    });
+            });
         });
-        lineReader.on("close", function() {
-            summaryData.ads_percentage_today = (summaryData.dns_queries_today === 0) ? 0 : (summaryData.ads_blocked_today / summaryData.dns_queries_today) * 100;
-            resolve(summaryData);
-        });
-    });
 };
 
 logHelper.getFileLineCountWindows = function(filename, callback) {

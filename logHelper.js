@@ -23,7 +23,7 @@ logHelper.parseLine = function(line) {
         return false;
     }
     var info = line.substring(infoStart + 2)
-        .replace(/ {2,}/g, " ")
+        .replace(/\s{2,}/g, " ")
         .trim();
     var split = info.split(" ");
     if (info.startsWith("query[")) {

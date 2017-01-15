@@ -5,30 +5,32 @@ const should = chai.should();
 const expect = chai.expect;
 const helper = require("./../helper.js");
 const logHelper = require("./../logHelper.js");
-const moment=require("moment");
+const moment = require("moment");
 var sandbox;
 describe("logHelper tests", function() {
-	var usedTimestamp;
+    var usedTimestamp;
     before(function() {
         sandbox = sinon.sandbox.create();
-		// as stubing the default function of moment.js is tricky I will go this way
-		const sourceTimestampFormat="MMM DD hh:mm:ss"
-		const sourceTimestamp=moment().format(sourceTimestampFormat);
-		usedTimestamp={
-			"iso":moment(sourceTimestamp,sourceTimestampFormat).toISOString(),
-			"source":sourceTimestamp
-		};
+        // as stubing the default function of moment.js is tricky I will go this way
+        const sourceTimestampFormat = "MMM DD hh:mm:ss"
+        const sourceTimestamp = moment()
+            .format(sourceTimestampFormat);
+        usedTimestamp = {
+            "iso": moment(sourceTimestamp, sourceTimestampFormat)
+                .toISOString(),
+            "source": sourceTimestamp
+        };
     });
-	afterEach(function(){
+    afterEach(function() {
         sandbox.reset();
-	});
+    });
     after(function() {
         sandbox.restore();
     });
     describe("parseLine()", function() {
-		
+
         it("should parse query successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source+" dnsmasq[503]: query[AAAA] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 1111:1111:1111:1111:1111:1111:1111:1111");
+            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: query[AAAA] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 1111:1111:1111:1111:1111:1111:1111:1111");
             expect(result)
                 .to.not.be.null;
             expect(result)
@@ -41,7 +43,7 @@ describe("logHelper tests", function() {
                 });
         });
         it("should parse query successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source+" dnsmasq[503]: query[AAAA] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 127.0.0.1");
+            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: query[AAAA] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 127.0.0.1");
             expect(result)
                 .to.not.be.null;
             expect(result)
@@ -54,7 +56,7 @@ describe("logHelper tests", function() {
                 });
         });
         it("should parse query successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source+" dnsmasq[503]: query[A] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 1111:1111:1111:1111:1111:1111:1111:1111");
+            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: query[A] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 1111:1111:1111:1111:1111:1111:1111:1111");
             expect(result)
                 .to.not.be.null;
             expect(result)
@@ -67,7 +69,7 @@ describe("logHelper tests", function() {
                 });
         });
         it("should parse query successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source+" dnsmasq[503]: query[A] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 127.0.0.1");
+            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: query[A] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 127.0.0.1");
             expect(result)
                 .to.not.be.null;
             expect(result)
@@ -94,7 +96,7 @@ describe("logHelper tests", function() {
                 .to.be.false;
         });
         it("should return block successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source+" dnsmasq[503]: /etc/pihole/gravity.list aaaaaaaaaa.bbbbbb.ccccccccccc.net is 1111:1111:1111:1111:1111:1111:1111:1111");
+            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: /etc/pihole/gravity.list aaaaaaaaaa.bbbbbb.ccccccccccc.net is 1111:1111:1111:1111:1111:1111:1111:1111");
             expect(result)
                 .to.not.be.null;
             expect(result)
@@ -106,7 +108,7 @@ describe("logHelper tests", function() {
                 });
         });
         it("should return block successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source+" dnsmasq[503]: 1 2 /etc/pihole/gravity.list aaaaaaaaaa.bbbbbb.ccccccccccc.net is 1111:1111:1111:1111:1111:1111:1111:1111");
+            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: 1 2 /etc/pihole/gravity.list aaaaaaaaaa.bbbbbb.ccccccccccc.net is 1111:1111:1111:1111:1111:1111:1111:1111");
             expect(result)
                 .to.not.be.null;
             expect(result)
@@ -118,7 +120,7 @@ describe("logHelper tests", function() {
                 });
         });
         it("should return block successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source+" dnsmasq[503]: 1 2 /etc/pihole/gravity.list aaaaaaaaaa.bbbbbb.ccccccccccc.net is 1111:1111:1111:1111:1111:1111:1111:1111");
+            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: 1 2 /etc/pihole/gravity.list aaaaaaaaaa.bbbbbb.ccccccccccc.net is 1111:1111:1111:1111:1111:1111:1111:1111");
             expect(result)
                 .to.not.be.null;
             expect(result)
@@ -130,7 +132,7 @@ describe("logHelper tests", function() {
                 });
         });
         it("should return false for invalid block line", function() {
-            const result = logHelper.parseLine(usedTimestamp.source+" dnsmasq[503]: 1 2 /etc/pihole/block.list aaaaaaaaaa.bbbbbb.ccccccccccc.net is 1111:1111:1111:1111:1111:1111:1111:1111");
+            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: 1 2 /etc/pihole/block.list aaaaaaaaaa.bbbbbb.ccccccccccc.net is 1111:1111:1111:1111:1111:1111:1111:1111");
             expect(result)
                 .to.not.be.null;
             expect(result)

@@ -55,7 +55,7 @@ describe("logHelper tests", function() {
             runner++;
         });
         tests.forEach(function(test) {
-            it("should count " + tests[runner].expected + " lines", function(done) {
+            it("should count " + tests[runner].expected + " lines with " + tests[runner].args, function(done) {
                 var gravityCount = logHelper.getGravityCount();
                 gravityCount.then(function(result) {
                         expect(result)

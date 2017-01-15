@@ -4,6 +4,7 @@ const moment = require("moment");
 const os = require("os");
 const exec = require("child_process")
     .exec;
+const readline = require("readline");
 
 const isWin = /^win/.test(os.platform());
 
@@ -58,7 +59,7 @@ logHelper.parseLine = function(line) {
 
 logHelper.getSummary = function() {
     return new Promise(function(resolve, reject) {
-            var lineReader = require("readline")
+            var lineReader = readline
                 .createInterface({
                     input: require("fs")
                         .createReadStream(appDefaults.logFile)
@@ -90,7 +91,7 @@ logHelper.getSummary = function() {
                 logHelper.getGravityCount()
                     .then(function(result2) {
                         result.domains_being_blocked = result2;
-						resolve(result);
+                        resolve(result);
                     })
                     .catch(function(err) {
                         reject(err);
@@ -200,7 +201,7 @@ logHelper.getQueryTypes = function() {
                 reject(err);
             } else {
                 var queryTypes = {};
-                var lineReader = require("readline")
+                var lineReader = readline
                     .createInterface({
                         input: require("fs")
                             .createReadStream(appDefaults.logFile)
@@ -232,7 +233,7 @@ logHelper.getForwardDestinations = function() {
                 reject(err);
             } else {
                 var destinations = {};
-                var lineReader = require("readline")
+                var lineReader = readline
                     .createInterface({
                         input: require("fs")
                             .createReadStream(appDefaults.logFile)
@@ -260,7 +261,7 @@ logHelper.getForwardDestinations = function() {
 
 logHelper.getOverTimeData10mins = function() {
     return new Promise(function(resolve, reject) {
-        var lineReader = require("readline")
+        var lineReader = readline
             .createInterface({
                 input: require("fs")
                     .createReadStream(appDefaults.logFile)
@@ -303,7 +304,7 @@ logHelper.getTopItems = function(argument) {
                 reject(err);
             } else {
                 var domains = {};
-                var lineReader = require("readline")
+                var lineReader = readline
                     .createInterface({
                         input: require("fs")
                             .createReadStream(appDefaults.logFile)

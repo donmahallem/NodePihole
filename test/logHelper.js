@@ -9,19 +9,19 @@ const appDefaults = require("./../defaults.js");
 const moment = require("moment");
 const readline = require("readline");
 var sandbox;
+const sourceTimestampFormat = "MMM DD hh:mm:ss"
+const sourceTimestamp = moment()
+    .format(sourceTimestampFormat);
+const usedTimestamp = {
+    "iso": moment(sourceTimestamp, sourceTimestampFormat)
+        .toISOString(),
+    "source": sourceTimestamp
+};
 describe("logHelper tests", function() {
-    var usedTimestamp;
     before(function() {
         sandbox = sinon.sandbox.create();
         // as stubing the default function of moment.js is tricky I will go this way
-        const sourceTimestampFormat = "MMM DD hh:mm:ss"
-        const sourceTimestamp = moment()
-            .format(sourceTimestampFormat);
-        usedTimestamp = {
-            "iso": moment(sourceTimestamp, sourceTimestampFormat)
-                .toISOString(),
-            "source": sourceTimestamp
-        };
+
     });
     afterEach(function() {
         sandbox.reset();
@@ -138,57 +138,42 @@ describe("logHelper tests", function() {
         });
     });
     describe("parseLine()", function() {
-        it("should parse query successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: query[AAAA] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 1111:1111:1111:1111:1111:1111:1111:1111");
-            expect(result)
-                .to.not.be.null;
-            expect(result)
-                .to.deep.equal({
-                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
-                    timestamp: usedTimestamp.iso,
-                    client: "1111:1111:1111:1111:1111:1111:1111:1111",
-                    type: "query",
-                    queryType: "AAAA"
+        const tests = [];
+        ["1.1.1.1", "1111:1111:1111:1111:1111:1111:1111:1111"].forEach(function(client) {
+            ["a.com", "a.b.com", "a.b.c.com"].forEach(function(domain) {
+                ["AAAA", "AA"].forEach(function(queryType) {
+                    tests.push({
+                        "arg": usedTimestamp.source + " dnsmasq[503]: query[" + queryType + "] " + domain + " from " + client,
+                        "result": {
+                            "domain": domain,
+                            "timestamp": usedTimestamp.iso,
+                            "client": client,
+                            "type": "query",
+                            "queryType": queryType
+                        }
+                    });
                 });
+                ["/etc/pihole/gravity.list", "/some/other/path/gravity.list"].forEach(function(filepath) {
+                    tests.push({
+                        "arg": usedTimestamp.source + " dnsmasq[503]: " + filepath + " " + domain + " is " + client,
+                        "result": {
+                            domain: domain,
+                            timestamp: usedTimestamp.iso,
+                            list: filepath,
+                            type: "block"
+                        }
+                    });
+                });
+            });
         });
-        it("should parse query successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: query[AAAA] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 127.0.0.1");
-            expect(result)
-                .to.not.be.null;
-            expect(result)
-                .to.deep.equal({
-                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
-                    timestamp: usedTimestamp.iso,
-                    client: "127.0.0.1",
-                    type: "query",
-                    queryType: "AAAA"
-                });
-        });
-        it("should parse query successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: query[A] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 1111:1111:1111:1111:1111:1111:1111:1111");
-            expect(result)
-                .to.not.be.null;
-            expect(result)
-                .to.deep.equal({
-                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
-                    timestamp: usedTimestamp.iso,
-                    client: "1111:1111:1111:1111:1111:1111:1111:1111",
-                    type: "query",
-                    queryType: "A"
-                });
-        });
-        it("should parse query successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: query[A] aaaaaaaaaa.bbbbbb.ccccccccccc.net from 127.0.0.1");
-            expect(result)
-                .to.not.be.null;
-            expect(result)
-                .to.deep.equal({
-                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
-                    timestamp: usedTimestamp.iso,
-                    client: "127.0.0.1",
-                    type: "query",
-                    queryType: "A"
-                });
+        tests.forEach(function(test) {
+            it("should parse " + test.result.type + " object successfull", function() {
+                const result = logHelper.parseLine(test.arg);
+                expect(result)
+                    .to.not.be.null;
+                expect(result)
+                    .to.deep.equal(test.result);
+            });
         });
         it("should return false for invalid line", function() {
             const result = logHelper.parseLine("bhn123 3124u 213h4021 34921u3 410ß4 109234 145rj1 0ß235125 1 ß15 u120ß95 1ß125 120i 4021ß5 u");
@@ -199,49 +184,6 @@ describe("logHelper tests", function() {
         });
         it("should return false for invalid line", function() {
             const result = logHelper.parseLine("reply aaaaaaaaaa.bbbbbb.ccccccccccc.net is 127.0.0.1");
-            expect(result)
-                .to.not.be.null;
-            expect(result)
-                .to.be.false;
-        });
-        it("should return block successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: /etc/pihole/gravity.list aaaaaaaaaa.bbbbbb.ccccccccccc.net is 1111:1111:1111:1111:1111:1111:1111:1111");
-            expect(result)
-                .to.not.be.null;
-            expect(result)
-                .to.deep.equal({
-                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
-                    timestamp: usedTimestamp.iso,
-                    list: "/etc/pihole/gravity.list",
-                    type: "block",
-                });
-        });
-        it("should return block successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: 1 2 /etc/pihole/gravity.list aaaaaaaaaa.bbbbbb.ccccccccccc.net is 1111:1111:1111:1111:1111:1111:1111:1111");
-            expect(result)
-                .to.not.be.null;
-            expect(result)
-                .to.deep.equal({
-                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
-                    timestamp: usedTimestamp.iso,
-                    list: "/etc/pihole/gravity.list",
-                    type: "block",
-                });
-        });
-        it("should return block successfull", function() {
-            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: 1 2 /etc/pihole/gravity.list aaaaaaaaaa.bbbbbb.ccccccccccc.net is 1111:1111:1111:1111:1111:1111:1111:1111");
-            expect(result)
-                .to.not.be.null;
-            expect(result)
-                .to.deep.equal({
-                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
-                    timestamp: usedTimestamp.iso,
-                    list: "/etc/pihole/gravity.list",
-                    type: "block",
-                });
-        });
-        it("should return false for invalid block line", function() {
-            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: 1 2 /etc/pihole/block.list aaaaaaaaaa.bbbbbb.ccccccccccc.net is 1111:1111:1111:1111:1111:1111:1111:1111");
             expect(result)
                 .to.not.be.null;
             expect(result)

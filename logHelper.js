@@ -3,7 +3,7 @@ const fs = require("fs");
 const moment = require("moment");
 const os = require("os");
 const exec = require("child_process")
-    .exec
+    .exec;
 
 const isWin = /^win/.test(os.platform());
 

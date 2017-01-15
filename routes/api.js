@@ -119,7 +119,7 @@ router.get("/data", function(req, res) {
         }
     }
     // cancel request because no valid args were provided
-    if (numValidArgs == 0) {
+    if (numValidArgs === 0) {
         res.sendStatus(400);
         return;
     }

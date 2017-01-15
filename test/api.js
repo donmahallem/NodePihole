@@ -157,13 +157,6 @@ describe("Testing api endpoints", function() {
                         });
                     });
                 }));
-                stubs.push(sandbox.stub(logHelper, "getSummaryRaw", function() {
-                    return new Promise(function(resolve, reject) {
-                        resolve({
-                            "success": true
-                        });
-                    });
-                }));
             });
             after(function() {
                 for (var i = 0; i < stubs.length; i++) {

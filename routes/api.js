@@ -130,7 +130,7 @@ router.get("/data", function(req, res) {
         promises.push(logHelper.getSummary());
     }
     if ("summaryRaw" in args) {
-        promises.push(logHelper.getSummaryRaw());
+        promises.push(logHelper.getSummary());
     }
     if ("overTimeData10mins" in req.query) {
         promises.push(logHelper.getOverTimeData10mins());

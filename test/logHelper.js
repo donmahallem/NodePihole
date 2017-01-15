@@ -5,6 +5,7 @@ const should = chai.should();
 const expect = chai.expect;
 const helper = require("./../helper.js");
 const logHelper = require("./../logHelper.js");
+const appDefaults = require("./../defaults.js");
 const moment = require("moment");
 var sandbox;
 describe("logHelper tests", function() {
@@ -26,6 +27,47 @@ describe("logHelper tests", function() {
     });
     after(function() {
         sandbox.restore();
+    });
+    describe("getGravityCount()", function() {
+        var tests = [{
+            args: ["gravity.list2", "gravity.list"],
+            expected: 15
+        }, {
+            args: ["gravity.list", "gravity.list"],
+            expected: 30
+        }, {
+            args: ["gravity.list", "gravity.list2"],
+            expected: 15
+        }, {
+            args: ["gravity.list2", "gravity.list2"],
+            expected: 0
+        }];
+		var gravityListNameStub;
+		var blackListNameStub;
+		var runner=0;
+			beforeEach(function(){
+				gravityListNameStub=sandbox.stub(appDefaults,"gravityListName",__dirname+"/"+tests[runner].args[0]);
+				blackListNameStub=sandbox.stub(appDefaults,"blackListFile",__dirname+"/"+tests[runner].args[1]);
+			});
+			afterEach(function(){
+				gravityListNameStub.restore();
+				blackListNameStub.restore();
+				runner++;
+			});
+        tests.forEach(function(test) {
+            it("should parse query successfull", function(done) {
+				console.log(appDefaults.gravityListName);
+                var gravityCount = logHelper.getGravityCount();
+                gravityCount.then(function(result) {
+                        expect(result)
+                            .to.be.equal(tests[runner].expected);
+                        done();
+                    })
+                    .catch(function(err) {
+                        done(err);
+                    });
+            });
+        });
     });
     describe("parseLine()", function() {
 

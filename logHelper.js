@@ -1,6 +1,12 @@
 const appDefaults = require("./defaults.js");
 const fs = require("fs");
 const moment = require("moment");
+const os = require("os");
+const exec = require("child_process")
+    .exec
+
+const isWin = /^win/.test(os.platform());
+
 var logHelper = {
 
 };
@@ -52,17 +58,83 @@ logHelper.parseLine = function(line) {
 
 logHelper.getSummary = function() {
     return new Promise(function(resolve, reject) {
-        if (true) {
-            resolve({
-                ads_blocked_today: 10,
-                dns_queries_today: 200,
-                ads_percentage_today: 10.2,
-                domains_being_blocked: 20
+        var lineReader = require("readline")
+            .createInterface({
+                input: require("fs")
+                    .createReadStream(appDefaults.logFile)
             });
+        var summaryData = {
+            ads_blocked_today: 0,
+            dns_queries_today: 0,
+            ads_percentage_today: 0,
+            domains_being_blocked: 0
+        };
+        lineReader.on("line", function(line) {
+            var lineData = logHelper.parseLine(line);
+            if (lineData === false) {
+                return;
+            }
+            if (lineData.type === "query") {
+                summaryData.dns_queries_today++;
+            } else if (lineData.type === "block") {
+                summaryData.ads_blocked_today++;
+            }
+        });
+        lineReader.on("close", function() {
+            summaryData.ads_percentage_today = (summaryData.dns_queries_today === 0) ? 0 : (summaryData.ads_blocked_today / summaryData.dns_queries_today) * 100;
+            resolve(summaryData);
+        });
+    });
+};
+
+logHelper.getFileLineCountWindows = function(filename, callback) {
+    exec("find /c /v \"\" \"" + filename + "\"", function(err, stdout, stderr) {
+        if (err || stderr !== "") {
+            callback(0);
         } else {
-            reject(Error("It broke"));
+            callback(10);
         }
     });
+};
+
+logHelper.getFileLineCountUnix = function(filename, callback) {
+    exec("grep -c ^ " + filename, function(err, stdout, stderr) {
+        if (err || stderr !== "") {
+            callback(0);
+        } else {
+            callback(10);
+        }
+    });
+};
+
+logHelper.getFileLineCount = function(filename) {
+    return new Promise(function(resolve, reject) {
+        fs.access(filename, fs.constants.F_OK | fs.constants.R_OK, function(err) {
+            if (err) {
+                // if the file does not exist or is not readable return 0
+                resolve(0);
+            } else {
+                if (isWin) {
+                    logHelper.getFileLineCountWindows(filename, function(result) {
+                        resolve(result);
+                    });
+                } else {
+                    logHelper.getFileLineCountUnix(filename, function(result) {
+                        resolve(result);
+                    });
+                }
+            }
+        });
+    });
+};
+
+logHelper.getGravityCount = function() {
+    return Promise.all([logHelper.getFileLineCount(appDefaults.gravityListName), logHelper.getFileLineCount(appDefaults.gravityListName)])
+        .then(function(results) {
+            return results.reduce(function(a, b) {
+                return a + b;
+            }, 0);
+        });
 };
 
 logHelper.getAllQueries = function() {
@@ -101,21 +173,6 @@ logHelper.getAllQueries = function() {
                 "data": lines
             });
         });
-    });
-};
-
-logHelper.getSummaryRaw = function() {
-    return new Promise(function(resolve, reject) {
-        if (true) {
-            resolve({
-                ads_blocked_today: 10,
-                dns_queries_today: 200,
-                ads_percentage_today: 10.2,
-                domains_being_blocked: 20
-            });
-        } else {
-            reject(Error("It broke"));
-        }
     });
 };
 

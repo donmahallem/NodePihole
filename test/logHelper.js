@@ -42,21 +42,20 @@ describe("logHelper tests", function() {
             args: ["gravity.list2", "gravity.list2"],
             expected: 0
         }];
-		var gravityListNameStub;
-		var blackListNameStub;
-		var runner=0;
-			beforeEach(function(){
-				gravityListNameStub=sandbox.stub(appDefaults,"gravityListName",__dirname+"/"+tests[runner].args[0]);
-				blackListNameStub=sandbox.stub(appDefaults,"blackListFile",__dirname+"/"+tests[runner].args[1]);
-			});
-			afterEach(function(){
-				gravityListNameStub.restore();
-				blackListNameStub.restore();
-				runner++;
-			});
+        var gravityListNameStub;
+        var blackListNameStub;
+        var runner = 0;
+        beforeEach(function() {
+            gravityListNameStub = sandbox.stub(appDefaults, "gravityListName", __dirname + "/" + tests[runner].args[0]);
+            blackListNameStub = sandbox.stub(appDefaults, "blackListFile", __dirname + "/" + tests[runner].args[1]);
+        });
+        afterEach(function() {
+            gravityListNameStub.restore();
+            blackListNameStub.restore();
+            runner++;
+        });
         tests.forEach(function(test) {
-            it("should parse query successfull", function(done) {
-				console.log(appDefaults.gravityListName);
+            it("should count " + tests[runner].expected + " lines", function(done) {
                 var gravityCount = logHelper.getGravityCount();
                 gravityCount.then(function(result) {
                         expect(result)

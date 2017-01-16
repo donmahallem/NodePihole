@@ -141,11 +141,44 @@ describe("logHelper tests", function() {
         after(function() {
             getDomainsStub.restore();
         });
-        it("should count 30 lines", function(done) {
+        it("should return 2 domains", function(done) {
             var gravity = logHelper.getGravity();
             gravity.then(function(result) {
                     expect(result)
                         .to.deep.equal({"domain2.com":true, "domain4.com":true});
+                    done();
+                })
+                .catch(function(err) {
+                    done(err);
+                });
+        });
+    });
+    describe("getDomains()", function() {
+        it("should return 6 domains", function(done) {
+            var gravity = logHelper
+			.getDomains(__dirname+"/whitelist.txt")
+			.then(function(result) {
+                    expect(result)
+                        .to.deep.equal(["raw.githubusercontent.com", 
+						"mirror1.malwaredomains.com", 
+						"sysctl.org", 
+						"zeustracker.abuse.ch", 
+						"s3.amazonaws.com", 
+						"hosts-file.net"]
+						);
+                    done();
+                })
+                .catch(function(err) {
+                    done(err);
+                });
+        });
+        it("should return 1 domain", function(done) {
+            var gravity = logHelper
+			.getDomains(__dirname+"/blacklist.txt")
+			.then(function(result) {
+                    expect(result)
+                        .to.deep.equal(["blocked.blocked.blocked"]
+						);
                     done();
                 })
                 .catch(function(err) {

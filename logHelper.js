@@ -147,11 +147,63 @@ logHelper.getFileLineCount = function(filename) {
 };
 
 logHelper.getGravityCount = function() {
-    return Promise.all([logHelper.getFileLineCount(appDefaults.gravityListFile), logHelper.getFileLineCount(appDefaults.blackListFile)])
+    return Promise.all([logHelper.getFileLineCount(appDefaults.gravityListFile),
+            logHelper.getFileLineCount(appDefaults.blackListFile)
+        ])
         .then(function(results) {
             return results.reduce(function(a, b) {
                 return a + b;
             }, 0);
+        });
+};
+
+logHelper.getDomains = function(file) {
+    return new Promise(function(resolve, reject) {
+        fs.access(file, fs.F_OK | fs.R_OK, function(err) {
+            if (err) {
+                resolve([]);
+            } else {
+                var lineReader = require("readline")
+                    .createInterface({
+                        input: require("fs")
+                            .createReadStream(file)
+                    });
+                var lines = [];
+                lineReader.on("line", function(line) {
+                    if (typeof line === "undefined" || line.trim() === "") {
+                        return;
+                    } else {
+                        lines.push(line);
+                    }
+                });
+                lineReader.on("close", function() {
+                    resolve(lines);
+                });
+            }
+        });
+    });
+};
+
+logHelper.getGravity = function() {
+    return Promise.all([logHelper.getDomains(appDefaults.blackListFile),
+            logHelper.getDomains(appDefaults.gravityListFile),
+            logHelper.getDomains(appDefaults.whiteListFile)
+        ])
+        .then(function(values) {
+            var domains = {};
+            console.log(values);
+            values[0].forEach(function(item) {
+                domains[item] = true;
+            });
+            values[1].forEach(function(item) {
+                domains[item] = true;
+            });
+            values[2].forEach(function(item) {
+                if (domains.hasOwnProperty(item)) {
+                    delete domains[item];
+                }
+            });
+            return domains;
         });
 };
 

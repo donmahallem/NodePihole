@@ -115,6 +115,44 @@ describe("logHelper tests", function() {
                 });
         });
     });
+    describe("getGravity()", function() {
+        var getDomainsStub;
+        before(function() {
+            getDomainsStub = sandbox.stub(logHelper, "getDomains");
+            getDomainsStub.onCall(0)
+                .returns(new Promise(function(resolve, reject) {
+                    setTimeout(function() {
+                        resolve(["domain1.com", "domain2.com"]);
+                    }, 100);
+                }));
+            getDomainsStub.onCall(1)
+                .returns(new Promise(function(resolve, reject) {
+                    setTimeout(function() {
+                        resolve(["domain3.com", "domain4.com"]);
+                    }, 100);
+                }));
+            getDomainsStub.onCall(2)
+                .returns(new Promise(function(resolve, reject) {
+                    setTimeout(function() {
+                        resolve(["domain1.com", "domain3.com"]);
+                    }, 100);
+                }));
+        });
+        after(function() {
+            getDomainsStub.restore();
+        });
+        it("should count 30 lines", function(done) {
+            var gravity = logHelper.getGravity();
+            gravity.then(function(result) {
+                    expect(result)
+                        .to.deep.equal({"domain2.com":true, "domain4.com":true});
+                    done();
+                })
+                .catch(function(err) {
+                    done(err);
+                });
+        });
+    });
     describe("getGravityCount()", function() {
         var gravityListFileStub, blackListFileStub;
         before(function() {

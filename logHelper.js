@@ -191,7 +191,6 @@ logHelper.getGravity = function() {
         ])
         .then(function(values) {
             var domains = {};
-            console.log(values);
             values[0].forEach(function(item) {
                 domains[item] = true;
             });

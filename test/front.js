@@ -30,7 +30,7 @@ describe("Check endpoints", function() {
                 it("get /", function(done) {
                     chai.request(server.app)
                         .get("/")
-						.set("Host","localhost")
+                        .set("Host", "localhost")
                         .end(function(err, res) {
                             expect(err)
                                 .to.be.null;
@@ -42,7 +42,7 @@ describe("Check endpoints", function() {
                 it("should succeed", function(done) {
                     chai.request(server.app)
                         .get("/home")
-						.set("Host","localhost")
+                        .set("Host", "localhost")
                         .end(function(err, res) {
                             expect(err)
                                 .to.be.null;
@@ -58,7 +58,7 @@ describe("Check endpoints", function() {
                 it("should fail", function(done) {
                     chai.request(server.app)
                         .get("/queries")
-						.set("Host","localhost")
+                        .set("Host", "localhost")
                         .end(function(err, res) {
                             expect(err)
                                 .to.not.be.null;
@@ -70,7 +70,7 @@ describe("Check endpoints", function() {
                 it("should fail", function(done) {
                     chai.request(server.app)
                         .get("/queries")
-						.set("Host","localhost")
+                        .set("Host", "localhost")
                         .set("Cookie", "auth=kasdfasfasldfkasödfkasdf")
                         .end(function(err, res) {
                             expect(err)
@@ -98,7 +98,7 @@ describe("Check endpoints", function() {
                 it("should succeed", function(done) {
                     chai.request(server.app)
                         .get("/queries")
-						.set("Host","localhost")
+                        .set("Host", "localhost")
                         .end(function(err, res) {
                             expect(err)
                                 .to.be.null;
@@ -115,7 +115,7 @@ describe("Check endpoints", function() {
                     it("should fail", function(done) {
                         chai.request(server.app)
                             .get("/taillog")
-						.set("Host","localhost")
+                            .set("Host", "localhost")
                             .end(function(err, res) {
                                 expect(err)
                                     .to.not.be.null;
@@ -127,7 +127,7 @@ describe("Check endpoints", function() {
                     it("should fail", function(done) {
                         chai.request(server.app)
                             .get("/taillog")
-						.set("Host","localhost")
+                            .set("Host", "localhost")
                             .set("Cookie", "auth=kasdfasfasldfkasödfkasdf")
                             .end(function(err, res) {
                                 expect(err)
@@ -158,7 +158,7 @@ describe("Check endpoints", function() {
                     it("should succeed", function(done) {
                         chai.request(server.app)
                             .get("/taillog")
-						.set("Host","localhost")
+                            .set("Host", "localhost")
                             .end(function(err, res) {
                                 expect(err)
                                     .to.be.null;
@@ -170,7 +170,7 @@ describe("Check endpoints", function() {
                     it("should fail", function(done) {
                         chai.request(server.app)
                             .post("/taillog")
-						.set("Host","localhost")
+                            .set("Host", "localhost")
                             .end(function(err, res) {
                                 expect(err)
                                     .to.not.be.null;
@@ -182,7 +182,7 @@ describe("Check endpoints", function() {
                     it("should fail", function(done) {
                         chai.request(server.app)
                             .put("/taillog")
-						.set("Host","localhost")
+                            .set("Host", "localhost")
                             .end(function(err, res) {
                                 expect(err)
                                     .to.not.be.null;
@@ -194,7 +194,7 @@ describe("Check endpoints", function() {
                     it("should fail", function(done) {
                         chai.request(server.app)
                             .delete("/taillog")
-						.set("Host","localhost")
+                            .set("Host", "localhost")
                             .end(function(err, res) {
                                 expect(err)
                                     .to.not.be.null;
@@ -211,7 +211,7 @@ describe("Check endpoints", function() {
                 it("should fail", function(done) {
                     chai.request(server.app)
                         .get("/settings")
-						.set("Host","localhost")
+                        .set("Host", "localhost")
                         .end(function(err, res) {
                             expect(err)
                                 .to.not.be.null;
@@ -223,7 +223,7 @@ describe("Check endpoints", function() {
                 it("should fail", function(done) {
                     chai.request(server.app)
                         .get("/settings")
-						.set("Host","localhost")
+                        .set("Host", "localhost")
                         .set("Cookie", "auth=kasdfasfasldfkasödfkasdf")
                         .end(function(err, res) {
                             expect(err)
@@ -251,7 +251,7 @@ describe("Check endpoints", function() {
                 it("should succeed", function(done) {
                     chai.request(server.app)
                         .get("/settings")
-						.set("Host","localhost")
+                        .set("Host", "localhost")
                         .end(function(err, res) {
                             expect(err)
                                 .to.be.null;
@@ -267,7 +267,7 @@ describe("Check endpoints", function() {
                 it("should succeed", function(done) {
                     chai.request(server.app)
                         .get("/login")
-						.set("Host","localhost")
+                        .set("Host", "localhost")
                         .end(function(err, res) {
                             expect(err)
                                 .to.be.null;
@@ -282,7 +282,7 @@ describe("Check endpoints", function() {
                     chai.request(server.app)
                         .post("/login")
                         .type("form")
-						.set("Host","localhost")
+                        .set("Host", "localhost")
                         .send({
                             pw: "password"
                         })
@@ -297,7 +297,7 @@ describe("Check endpoints", function() {
                 it("should fail and respond with 401", function(done) {
                     chai.request(server.app)
                         .post("/login")
-						.set("Host","localhost")
+                        .set("Host", "localhost")
                         .type("form")
                         .send({
                             pw: "passworda"
@@ -332,7 +332,7 @@ describe("Check endpoints", function() {
                 it("should succeed", function(done) {
                     chai.request(server.app)
                         .get("/logout")
-						.set("Host","localhost")
+                        .set("Host", "localhost")
                         .end(function(err, res) {
                             expect(err)
                                 .to.be.null;

@@ -49,21 +49,21 @@ helper.express.corsMiddleware = function(req, res, next) {
         os.hostname(),
         "pi.hole",
         "localhost",
-		"127.0.0.1"
+        "127.0.0.1"
     ];
     if (process.env.VIRTUAL_HOST) {
         authorizedHostnames.push(process.env.VIRTUAL_HOST);
     }
     var serverHost = req.hostname;
-    if (serverHost && authorizedHostnames.indexOf(serverHost)===-1) {
+    if (serverHost && authorizedHostnames.indexOf(serverHost) === -1) {
         res.sendStatus(401);
         return;
     }
     if (req.headers.origin) {
-		var originHeader=req.headers.origin;
-		if(originHeader.indexOf(":")>=0){
-			originHeader=originHeader.split(":")[0];
-		}
+        var originHeader = req.headers.origin;
+        if (originHeader.indexOf(":") >= 0) {
+            originHeader = originHeader.split(":")[0];
+        }
         if (authorizedHostnames.indexOf(originHeader) === -1) {
             res.sendStatus(401);
             return;

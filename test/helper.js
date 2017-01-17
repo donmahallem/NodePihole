@@ -32,14 +32,22 @@ describe("helper tests", function() {
     describe(".express", function() {
         describe(".corsMiddleware()", function() {
             it("should count lines with ", function(done) {
-				var req={hostname:"localhost",headers:{origin:"localhost"}};
-				var res={sendStatus:function(status){
-					done();},set:function(name,value){
-					}};
-				var next=function(){
-					done()
-					};
-                helper.express.corsMiddleware(req, res,next);
+                var req = {
+                    hostname: "localhost",
+                    headers: {
+                        origin: "localhost"
+                    }
+                };
+                var res = {
+                    sendStatus: function(status) {
+                        done();
+                    },
+                    set: function(name, value) {}
+                };
+                var next = function() {
+                    done()
+                };
+                helper.express.corsMiddleware(req, res, next);
             });
         });
     });

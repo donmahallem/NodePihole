@@ -29,7 +29,7 @@ describe("Testing api endpoints", function() {
             describe("get - authenticated", function() {
                 var verifyCookieStub;
                 beforeEach(function() {
-                    verifyCookieStub = sandbox.stub(helper, "verifyAuthCookie", function(req, res, next) {
+                    verifyCookieStub = sandbox.stub(helper.express, "verifyAuthCookie", function(req, res, next) {
                         req.user = {
                             authenticated: true
                         };
@@ -43,6 +43,7 @@ describe("Testing api endpoints", function() {
                 it("should not succeed", function(done) {
                     chai.request(server.app)
                         .get("/api/list")
+						.set("Host","localhost")
                         .end(function(err, res) {
                             expect(err)
                                 .to.not.be.null;
@@ -54,6 +55,7 @@ describe("Testing api endpoints", function() {
                 it("should succeed", function(done) {
                     chai.request(server.app)
                         .get("/api/list")
+						.set("Host","localhost")
                         .query({
                             "list": "white"
                         })
@@ -68,6 +70,7 @@ describe("Testing api endpoints", function() {
                 it("should succeed", function(done) {
                     chai.request(server.app)
                         .get("/api/list")
+						.set("Host","localhost")
                         .query({
                             "list": "black"
                         })
@@ -86,6 +89,7 @@ describe("Testing api endpoints", function() {
                 it("should not succeed", function(done) {
                     chai.request(server.app)
                         .get("/api/list")
+						.set("Host","localhost")
                         .query({
                             "list": "unknown"
                         })
@@ -102,6 +106,7 @@ describe("Testing api endpoints", function() {
                 it("should succeed", function(done) {
                     chai.request(server.app)
                         .get("/api/list")
+						.set("Host","localhost")
                         .end(function(err, res) {
                             expect(err)
                                 .to.not.be.null;
@@ -193,6 +198,7 @@ describe("Testing api endpoints", function() {
                         it("should " + (authRequired ? "not " : "") + "succeed ?" + arg, function(done) {
                             chai.request(server.app)
                                 .get("/api/data?" + arg)
+						.set("Host","localhost")
                                 .end(function(err, res) {
                                     if (authRequired) {
                                         expect(err)
@@ -215,7 +221,7 @@ describe("Testing api endpoints", function() {
 
                 var verifyCookieStub;
                 before(function() {
-                    verifyCookieStub = sandbox.stub(helper, "verifyAuthCookie", function(req, res, next) {
+                    verifyCookieStub = sandbox.stub(helper.express, "verifyAuthCookie", function(req, res, next) {
                         req.user = {
                             authenticated: true
                         };
@@ -253,6 +259,7 @@ describe("Testing api endpoints", function() {
                         it("should succeed ?" + arg, function(done) {
                             chai.request(server.app)
                                 .get("/api/data?" + arg)
+						.set("Host","localhost")
                                 .end(function(err, res) {
                                     expect(err)
                                         .to.be.null;

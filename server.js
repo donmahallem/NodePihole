@@ -37,7 +37,10 @@ var PiServer = function() {
     this.app.use("/static", serveStatic(__dirname + "/static"));
     this.app.use(cookieParser(appDefaults.cookieSecret));
     this.app.use(function(req, res, next) {
-        helper.verifyAuthCookie(req, res, next);
+        helper.express.corsMiddleware(req, res, next);
+    }.bind(this));
+    this.app.use(function(req, res, next) {
+        helper.express.verifyAuthCookie(req, res, next);
     });
     this.app.use(function(req, res, next) {
         var cCsp = csp({

@@ -3,25 +3,14 @@ const chai = require("chai");
 const sinon = require("sinon");
 const should = chai.should();
 const expect = chai.expect;
-const logHelper = require("./../logHelper.js");
-const appDefaults = require("./../defaults.js");
-const moment = require("moment");
-const readline = require("readline");
-var sandbox;
-const sourceTimestampFormat = "MMM DD hh:mm:ss"
-const sourceTimestamp = moment()
-    .format(sourceTimestampFormat);
+var appDefaults = require('./../defaults.js');
 const helper = require("./../helper.js");
-const usedTimestamp = {
-    "iso": moment(sourceTimestamp, sourceTimestampFormat)
-        .toISOString(),
-    "source": sourceTimestamp
-};
+const setupVars = require("./../setupVars.js");
 describe("helper tests", function() {
+    var setupVarsStub, sandbox;
     before(function() {
         sandbox = sinon.sandbox.create();
-        // as stubing the default function of moment.js is tricky I will go this way
-
+        setupVarsStub = sandbox.stub(setupVars, "IPV4_ADDRESS", "127.0.0.1");
     });
     afterEach(function() {
         sandbox.reset();

@@ -15,11 +15,6 @@ var sandbox;
 describe("Check endpoints", function() {
     before(function() {
         sandbox = sinon.sandbox.create();
-        const logFileStub = sandbox.stub(appDefaults, "logFile", __dirname + "/../test/pihole.log");
-        const setupVarsStub = sandbox.stub(appDefaults, "setupVars", __dirname + "/../test/setupVars.conf");
-        const whiteListStub = sandbox.stub(appDefaults, "whiteListFile", __dirname + "/../test/whitelist.txt");
-        const blackListStub = sandbox.stub(appDefaults, "blackListFile", __dirname + "/../test/blacklist.txt");
-        server.load();
     });
     after(function() {
         sandbox.restore();

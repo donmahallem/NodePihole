@@ -5,6 +5,7 @@ const cookieSplitter = require("cookie");
 const cookieParser = require("cookie-parser");
 const os = require("os");
 const setupVars = require("./setupVars.js");
+const url = require('url');
 var helper = {};
 // creates the default hash of the password for the admin panel
 helper.hashPassword = function(pwd) {
@@ -61,8 +62,8 @@ helper.express.corsMiddleware = function(req, res, next) {
     }
     if (req.headers.origin) {
         var originHeader = req.headers.origin;
-        if (originHeader.indexOf(":") >= 0) {
-            originHeader = originHeader.split(":")[0];
+		if (originHeader.indexOf(":") >= 0) {
+            originHeader = url.parse(originHeader).hostname;
         }
         if (authorizedHostnames.indexOf(originHeader) === -1) {
             res.sendStatus(401);
@@ -90,7 +91,6 @@ helper.socketIo.authMiddleware = function(socket, next) {
             next(new Error("Authentication error"));
         }
     } else {
-        console.log("No cookies");
         next(new Error("Authentication error"));
     }
 };

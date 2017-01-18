@@ -110,9 +110,6 @@ var PiServer = function() {
     });
     this.started = false;
 };
-PiServer.prototype.load = function() {
-    this.app.locals.piHoleConfig = ini.parse(fs.readFileSync(appDefaults.setupVars, "utf-8"));
-};
 PiServer.prototype.start = function() {
     if (!this.started) {
         this.started = true;

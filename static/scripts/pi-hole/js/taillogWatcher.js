@@ -9,15 +9,17 @@ var taillogWatcher = {};
     var isListening = false;
 
     var evSource;
-    const onError = function(error) {
-        emit("error", error);
-    };
 
     const emit = function(name, event) {
         callbacks[name].forEach(function(callback) {
             callback(JSON.parse(event.data));
         });
     };
+
+    const onError = function(error) {
+        emit("error", error);
+    };
+
     const onDnsEvent = function(event) {
         emit("dns", event);
     };

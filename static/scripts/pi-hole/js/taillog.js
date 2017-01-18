@@ -1,23 +1,27 @@
 var offset, timer, pre, scrolling = true,
-    token;
+    token, evSource;
 $(function() {
     token = $("token")
         .html();
-    var socket = io("/private");
     pre = $("#output");
-    socket.on('connect_error', function() {
-        console.log("connect_error");
+    evSource = new EventSource("/api/taillog", {
+        "withcredentials": true
     });
-    socket.on('error', function(data) {
-        console.log("connect_error" + data);
-    });
-    socket.on("dnsevent", function(data) {
+    evSource.onerror = function(err) {
+        console.log("onerror");
+    };
+    evSource.onmessage = function(data) {
         console.log(data);
-        pre.append(data);
+    };
+    evSource.addEventListener("dns", function(e) {
+        pre.append(e.data);
         if (scrolling) {
             window.scrollTo(0, document.body.scrollHeight);
         }
-    });
+    }, false);
+    evSource.onopen = function() {
+        console.log("on open");
+    };
 });
 $("#chk1")
     .click(function() {
@@ -31,19 +35,3 @@ $("#chk2")
             .prop("checked", this.checked);
         scrolling = this.checked;
     });
-
-pc = new EventSource("/api/taillog", {
-    "withcredentials": true
-});
-pc.onerror = function(err) {
-    console.log("onerror");
-};
-pc.onmessage = function(data) {
-    console.log("on data: " + data);
-};
-pc.addEventListener("data", function(e) {
-    console.log("CCC " + e);
-}, false);
-pc.onopen = function() {
-    console.log("on open");
-};

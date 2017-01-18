@@ -160,6 +160,7 @@ router.get("/data", function(req, res) {
             res.sendStatus(400);
         });
 });
+
 router.get("/taillog", function(req, res) {
     if (!req.user.authenticated) {
         res.sendStatus(401);
@@ -188,12 +189,15 @@ router.get("/taillog", function(req, res) {
             "Access-Control-Allow-Origin": "*"
         });
 
-        res.write("retry: 10000\n\n");
+        res.write("event: ping\n\n");
         updateInterval = setInterval(function() {
-            res.write("data:{\"lot\":\"stuff\"}\n");
+            res.write("id: 19\n");
+            res.write("event: dns\n");
+            res.write("data: {\"lot\":\"stuff\"}\n\n");
         }, 1000);
     }
 });
+
 router.get("/list", function(req, res) {
     if (!req.user.authenticated) {
         res.sendStatus(401);

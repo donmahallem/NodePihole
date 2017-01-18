@@ -31,3 +31,19 @@ $("#chk2")
             .prop("checked", this.checked);
         scrolling = this.checked;
     });
+
+pc = new EventSource("/api/taillog", {
+    "withcredentials": true
+});
+pc.onerror = function(err) {
+    console.log("onerror");
+};
+pc.onmessage = function(data) {
+    console.log("on data: " + data);
+};
+pc.addEventListener("data", function(e) {
+    console.log("CCC " + e);
+}, false);
+pc.onopen = function() {
+    console.log("on open");
+};

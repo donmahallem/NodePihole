@@ -73,28 +73,8 @@ helper.express.corsMiddleware = function(req, res, next) {
         res.set("Access-Control-Allow-Origin", req.headers.origin);
     }
     next();
-
 };
 
-helper.socketIo = {};
-helper.socketIo.authMiddleware = function(socket, next) {
-    if (socket.request.headers.cookie) {
-        var cookies = cookieParser.signedCookies(cookieSplitter.parse(socket.request.headers.cookie), appDefaults.cookieSecret);
-        if ("auth" in cookies) {
-            helper.jwtVerify(cookies.auth, function(err, decoded) {
-                if (err) {
-                    next(new Error("Authentication error"));
-                } else {
-                    next();
-                }
-            });
-        } else {
-            next(new Error("Authentication error"));
-        }
-    } else {
-        next(new Error("Authentication error"));
-    }
-};
 helper.jwtVerify = function(token, callback) {
     jwt.verify(token, appDefaults.jwtSecret, {
         "subject": "admin",

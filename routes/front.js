@@ -92,7 +92,6 @@ var frontEnd = {
             var token = req.body.pw;
             if (token) {
                 var tokenHash = helper.hashPassword(token);
-				console.log(tokenHash,setupVars.WEBPASSWORD);
                 if (tokenHash === setupVars.WEBPASSWORD) {
                     jwt.sign({
                             foo: "bar"

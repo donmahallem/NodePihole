@@ -3,7 +3,7 @@
 // Define global variables
 var timeLineChart, queryTypeChart, forwardDestinationChart;
 
-const padNumber=function(num) {
+const padNumber = function(num) {
     return ("00" + num)
         .substr(-2, 2);
 };

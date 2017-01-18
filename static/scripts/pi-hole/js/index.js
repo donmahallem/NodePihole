@@ -61,15 +61,17 @@ const summaryUpdater = {
             });
     },
     subscribeSocket() {
-        const self = this;
-        $(taillogWatcher)
-            .on("pihole:dns", this.socketUpdate);
+        taillogWatcher
+            .on("dns", this.socketUpdate);
     },
     unsubscribeSocket() {
-        $(taillogWatcher)
-            .off("pihole:dns", this.socketUpdate);
+        taillogWatcher
+            .off("dns", this.socketUpdate);
     },
-    socketUpdate(event, data) {
+    socketUpdate( data) {
+		if(!data.type){
+			return;
+		}
         if (data.type === "block") {
             this.summaryData["ads_blocked_today"]++;
         }
@@ -144,15 +146,14 @@ const queryTimelineUpdater = {
         self.timeLineChart.update();
     },
     subscribeSocket() {
-        const self = this;
-        $(taillogWatcher)
-            .on("pihole:dns", this.socketUpdate);
+        taillogWatcher
+            .on("dns", this.socketUpdate);
     },
     unsubscribeSocket() {
-        $(taillogWatcher)
-            .off("pihole:dns", this.socketUpdate);
+        taillogWatcher
+            .off("dns", this.socketUpdate);
     },
-    socketUpdate(event, data) {
+    socketUpdate( data) {
         //update chart
         var timestamp = new Date(data.timestamp);
         var hour = timestamp.getHours();

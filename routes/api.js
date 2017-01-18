@@ -193,7 +193,7 @@ router.get("/taillog", function(req, res) {
         updateInterval = setInterval(function() {
             res.write("id: 19\n");
             res.write("event: dns\n");
-            res.write("data: {\"lot\":\"stuff\"}\n\n");
+            res.write("data: {\"timestamp\":\"2017-01-18T21:34:20Z\",\"type\":\"query\"}\n\n");
         }, 1000);
     }
 });

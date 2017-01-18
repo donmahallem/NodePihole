@@ -24,17 +24,17 @@ function objectToArray(p) {
 }
 
 // Class handling summary updates
-const summaryUpdater = {
-    summaryData: {
+var summaryUpdater = {};
+(function(sU) {
+    var summaryData = {
         "ads_blocked_today": -1,
         "dns_queries_today": -1,
         "domains_being_blocked": -1,
         "ads_percentage_today": -1
-    },
-    updateView() {
-        const self = this;
+    };
+    const updateView = function() {
         ["ads_blocked_today", "dns_queries_today", "domains_being_blocked", "ads_percentage_today"].forEach(function(header, idx) {
-            var textData = idx === 3 ? self.summaryData[header] + "%" : self.summaryData[header];
+            var textData = idx === 3 ? summaryData[header] + "%" : summaryData[header];
             $("h3#" + header)
                 .text(textData);
         });
@@ -46,86 +46,83 @@ const summaryUpdater = {
                         .hide();
                 }
             });
-    },
-    pollData() {
-        const self = this;
+    };
+    const pollData = function() {
         $.getJSON("/api/data?summary", function LoadSummaryData(data) {
-                self.summaryData = data;
+                summaryData = data;
             })
             .done(function() {
-                self.updateView();
+                updateView();
             })
             .fail(function() {
                 // retry again in 300ms
-                setTimeout(self.pollData, 300);
+                setTimeout(pollData, 300);
             });
-    },
-    subscribeSocket() {
+    };
+    const subscribeSocket = function() {
         taillogWatcher
-            .on("dns", this.socketUpdate);
-    },
-    unsubscribeSocket() {
+            .on("dns", socketUpdate);
+    };
+    const unsubscribeSocket = function() {
         taillogWatcher
-            .off("dns", this.socketUpdate);
-    },
-    socketUpdate(data) {
+            .off("dns", socketUpdate);
+    };
+    const socketUpdate = function(data) {
         if (!data.type) {
             return;
         }
         if (data.type === "block") {
-            this.summaryData["ads_blocked_today"]++;
+            summaryData["ads_blocked_today"]++;
         }
-        this.summaryData["dns_queries_today"]++;
-        this.summaryData["ads_percentage_today"] = (this.summaryData["ads_blocked_today"] / this.summaryData["dns_queries_today"] * 100)
+        summaryData["dns_queries_today"]++;
+        summaryData["ads_percentage_today"] = (summaryData["ads_blocked_today"] / summaryData["dns_queries_today"] * 100)
             .toFixed(2);
-        this.updateView();
-    },
-    start() {
-        this.pollData();
-        this.subscribeSocket();
+        updateView();
+    };
+    sU.start = function() {
+        pollData();
+        subscribeSocket();
+    };
+}(summaryUpdater));
+
+var queryTimelineUpdater = {};
+(function(qTU) {
+    var timeLineChart;
+    var failures = 0;
+    //WHY IS IT SO HARD FOR YOU JAVASCRIPT ?????
+    const sortNumberAsc = function(a, b) {
+        return a - b;
     }
-};
-
-var failures = 0;
-
-//WHY IS IT SO HARD FOR YOU JAVASCRIPT ?????
-const sortNumberAsc = function(a, b) {
-    return a - b;
-}
-
-const queryTimelineUpdater = {
-    timeLineChart,
-    pollData() {
-        self = this;
+    const pollData = function() {
         $.getJSON("/api/data?overTimeData10mins", function(data) {
                 // Remove possibly already existing data
-                self.tableData = data;
-                self.updateTable();
+                tableData = data;
+                updateTable();
             })
             .done(function() {
                 // Reload graph after 10 minutes
                 failures = 0;
-                setTimeout(self.pollData, 600000);
+                setTimeout(pollData, 600000);
             })
             .fail(function() {
                 failures++;
                 if (failures < 5) {
                     // Try again after 1 minute only if this has not failed more
                     // than five times in a row
-                    setTimeout(self.pollData, 60000);
+                    setTimeout(pollData, 60000);
                 }
             });
-    },
-    updateTable() {
-        self.timeLineChart.data.labels = [];
-        self.timeLineChart.data.datasets[0].data = [];
-        self.timeLineChart.data.datasets[1].data = [];
+    };
+    const updateTable = function() {
+        timeLineChart.data.labels = [];
+        timeLineChart.data.datasets[0].data = [];
+        timeLineChart.data.datasets[1].data = [];
         // get all keys of ads datapoints
-        var adsKeys = Object.keys(this.tableData.ads_over_time)
+        var adsKeys = Object.keys(tableData.ads_over_time)
             .map(Number)
             .sort(sortNumberAsc);
         // get all keys of domain datapoints
-        var domainKeys = Object.keys(this.tableData.domains_over_time)
+        var domainKeys = Object.keys(tableData.domains_over_time)
             .map(Number)
             .sort(sortNumberAsc);
         // get the largest datapoint key
@@ -137,46 +134,46 @@ const queryTimelineUpdater = {
             var h = timeInterval;
             var d = new Date()
                 .setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0);
-            self.timeLineChart.data.labels.push(d);
-            self.timeLineChart.data.datasets[0].data.push((timeInterval in this.tableData.domains_over_time) ? this.tableData.domains_over_time[timeInterval] : 0);
-            self.timeLineChart.data.datasets[1].data.push((timeInterval in this.tableData.ads_over_time) ? this.tableData.ads_over_time[timeInterval] : 0);
+            timeLineChart.data.labels.push(d);
+            timeLineChart.data.datasets[0].data.push((timeInterval in tableData.domains_over_time) ? tableData.domains_over_time[timeInterval] : 0);
+            timeLineChart.data.datasets[1].data.push((timeInterval in tableData.ads_over_time) ? tableData.ads_over_time[timeInterval] : 0);
         }
         $("#queries-over-time .overlay")
             .remove();
-        self.timeLineChart.update();
-    },
-    subscribeSocket() {
+        timeLineChart.update();
+    };
+    const subscribeSocket = function() {
         taillogWatcher
-            .on("dns", this.socketUpdate);
-    },
-    unsubscribeSocket() {
+            .on("dns", socketUpdate);
+    };
+    const unsubscribeSocket = function() {
         taillogWatcher
-            .off("dns", this.socketUpdate);
-    },
-    socketUpdate(data) {
+            .off("dns", socketUpdate);
+    };
+    const socketUpdate = function(data) {
         //update chart
         var timestamp = new Date(data.timestamp);
         var hour = timestamp.getHours();
         var minute = timestamp.getMinutes();
         var timestampIdx = (minute - minute % 10) / 10 + 6 * hour;
         if (data.type === "block") {
-            if (timestampIdx in this.tableData.ads_over_time) {
-                this.tableData.ads_over_time[timestampIdx]++;
+            if (timestampIdx in tableData.ads_over_time) {
+                tableData.ads_over_time[timestampIdx]++;
             } else {
-                this.tableData.ads_over_time[timestampIdx] = 1;
+                tableData.ads_over_time[timestampIdx] = 1;
             }
         }
-        if (timestampIdx in this.tableData.domains_over_time) {
-            this.tableData.domains_over_time[timestampIdx]++;
+        if (timestampIdx in tableData.domains_over_time) {
+            tableData.domains_over_time[timestampIdx]++;
         } else {
-            this.tableData.domains_over_time[timestampIdx] = 1;
+            tableData.domains_over_time[timestampIdx] = 1;
         }
-        this.updateTable();
-    },
-    start() {
+        updateTable();
+    };
+    qTU.start = function() {
         var ctx = document.getElementById("queryOverTimeChart")
             .getContext("2d");
-        this.timeLineChart = new Chart(ctx, {
+        timeLineChart = new Chart(ctx, {
             type: "line",
             data: {
                 labels: [],
@@ -256,10 +253,10 @@ const queryTimelineUpdater = {
                 maintainAspectRatio: false
             }
         });
-        this.pollData();
-        this.subscribeSocket();
+        pollData();
+        subscribeSocket();
     }
-};
+}(queryTimelineUpdater));
 
 function updateQueryTypes() {
     $.getJSON("/api/data?getQueryTypes", function(data) {
@@ -334,38 +331,41 @@ function updateTopClientsChart() {
     });
 }
 
-function updateForwardDestinations() {
-    $.getJSON("/api/data?getForwardDestinations", function(data) {
-        var colors = [];
-        // Get colors from AdminLTE
-        $.each($.AdminLTE.options.colors, function(key, value) {
-            colors.push(value);
+var forwardDestinationUpdater = {};
+(function(fDU) {
+    fDU.poll = function() {
+        $.getJSON("/api/data?getForwardDestinations", function(data) {
+            var colors = [];
+            // Get colors from AdminLTE
+            $.each($.AdminLTE.options.colors, function(key, value) {
+                colors.push(value);
+            });
+            var v = [],
+                c = [];
+            // Collect values and colors, immediately push individual labels
+            $.each(data, function(key, value) {
+                v.push(value);
+                c.push(colors.shift());
+                if (key.indexOf("|") > -1) {
+                    key = key.substr(0, key.indexOf("|"));
+                }
+                forwardDestinationChart.data.labels.push(key);
+            });
+            // Build a single dataset with the data to be pushed
+            var dd = {
+                data: v,
+                backgroundColor: c
+            };
+            // and push it at once
+            forwardDestinationChart.data.datasets.push(dd);
+            $("#forward-destinations .overlay")
+                .remove();
+            forwardDestinationChart.update();
+            forwardDestinationChart.chart.config.options.cutoutPercentage = 30;
+            forwardDestinationChart.update();
         });
-        var v = [],
-            c = [];
-        // Collect values and colors, immediately push individual labels
-        $.each(data, function(key, value) {
-            v.push(value);
-            c.push(colors.shift());
-            if (key.indexOf("|") > -1) {
-                key = key.substr(0, key.indexOf("|"));
-            }
-            forwardDestinationChart.data.labels.push(key);
-        });
-        // Build a single dataset with the data to be pushed
-        var dd = {
-            data: v,
-            backgroundColor: c
-        };
-        // and push it at once
-        forwardDestinationChart.data.datasets.push(dd);
-        $("#forward-destinations .overlay")
-            .remove();
-        forwardDestinationChart.update();
-        forwardDestinationChart.chart.config.options.cutoutPercentage = 30;
-        forwardDestinationChart.update();
-    });
-}
+    };
+}(forwardDestinationUpdater));
 
 function updateTopLists() {
     $.getJSON("/api/data?summaryRaw&topItems", function(data) {
@@ -485,7 +485,7 @@ $(document)
                     cutoutPercentage: 0
                 }
             });
-            updateForwardDestinations();
+            forwardDestinationUpdater.poll();
         }
         // Create / load "Top Domains" and "Top Advertisers" only if authorized
         if (document.getElementById("domain-frequency") &&

@@ -1,7 +1,7 @@
-/* globals io */
+/* globals taillogWatcher */
 
 // Define global variables
-var timeLineChart, queryTypeChart, forwardDestinationChart, publicSocket;
+var timeLineChart, queryTypeChart, forwardDestinationChart;
 
 function padNumber(num) {
     return ("00" + num)
@@ -61,12 +61,15 @@ const summaryUpdater = {
             });
     },
     subscribeSocket() {
-        publicSocket.on("dnsevent", this.socketUpdate.bind(this));
+        const self = this;
+        $(taillogWatcher)
+            .on("pihole:dns", this.socketUpdate);
     },
     unsubscribeSocket() {
-        publicSocket.off("dnsevent", this.socketUpdate);
+        $(taillogWatcher)
+            .off("pihole:dns", this.socketUpdate);
     },
-    socketUpdate(data) {
+    socketUpdate(event, data) {
         if (data.type === "block") {
             this.summaryData["ads_blocked_today"]++;
         }
@@ -141,12 +144,15 @@ const queryTimelineUpdater = {
         self.timeLineChart.update();
     },
     subscribeSocket() {
-        publicSocket.on("dnsevent", this.socketUpdate.bind(this));
+        const self = this;
+        $(taillogWatcher)
+            .on("pihole:dns", this.socketUpdate);
     },
     unsubscribeSocket() {
-        publicSocket.off("dnsevent", this.socketUpdate);
+        $(taillogWatcher)
+            .off("pihole:dns", this.socketUpdate);
     },
-    socketUpdate(data) {
+    socketUpdate(event, data) {
         //update chart
         var timestamp = new Date(data.timestamp);
         var hour = timestamp.getHours();
@@ -412,13 +418,6 @@ function updateTopLists() {
 
 $(document)
     .ready(function() {
-        publicSocket = io("/public");
-        publicSocket.on("connect", function() {
-            console.log("connect");
-        });
-        publicSocket.on("connect_error", function(data) {
-            console.log("connect_error" + data);
-        });
         var isMobile = {
             Windows: function() {
                 return /IEMobile/i.test(navigator.userAgent);

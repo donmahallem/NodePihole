@@ -23,9 +23,9 @@ $(function() {
         console.log("on open");
     };*/
 
-    $(taillogWatcher)
-        .on("light:toggle", function(event, data) {
-            console.log(event, data);
+    taillogWatcher
+        .on("dns", function(data) {
+            console.log(data);
             pre.append(data);
             if (scrolling) {
                 window.scrollTo(0, document.body.scrollHeight);

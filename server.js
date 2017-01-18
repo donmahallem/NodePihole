@@ -102,11 +102,6 @@ PiServer.prototype.start = function() {
             if (lineInfo === false) {
                 return;
             }
-            this.socketIo.privateSocket.emit("dnsevent", lineInfo);
-            this.socketIo.publicSocket.emit("dnsevent", {
-                "type": lineInfo.type,
-                "timestamp": lineInfo.timestamp
-            });
         }.bind(this));
         tail.on("error", function(error) {});
     }

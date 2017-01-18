@@ -62,8 +62,9 @@ helper.express.corsMiddleware = function(req, res, next) {
     }
     if (req.headers.origin) {
         var originHeader = req.headers.origin;
-		if (originHeader.indexOf(":") >= 0) {
-            originHeader = url.parse(originHeader).hostname;
+        if (originHeader.indexOf(":") >= 0) {
+            originHeader = url.parse(originHeader)
+                .hostname;
         }
         if (authorizedHostnames.indexOf(originHeader) === -1) {
             res.sendStatus(401);

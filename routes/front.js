@@ -2,7 +2,7 @@ const express = require("express");
 const helper = require("./../helper.js");
 const jwt = require("jsonwebtoken");
 const appDefaults = require("./../defaults.js");
-const setupVars=require("./../setupVars.js");
+const setupVars = require("./../setupVars.js");
 
 var frontEnd = {
     queries: {

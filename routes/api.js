@@ -160,7 +160,40 @@ router.get("/data", function(req, res) {
             res.sendStatus(400);
         });
 });
+router.get("/taillog", function(req, res) {
+    if (!req.user.authenticated) {
+        res.sendStatus(401);
+    } else {
+        var connectionOpen = true;
+        var updateInterval;
+        req.on("close", function() {
+            if (connectionOpen) {
+                connectionOpen = false;
+                clearInterval(updateInterval);
+                console.log("Request close");
+            }
+        });
 
+        req.on("end", function() {
+            if (connectionOpen) {
+                connectionOpen = false;
+                clearInterval(updateInterval);
+                console.log("Request end");
+            }
+        });
+        res.set({
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*"
+        });
+
+        res.write("retry: 10000\n\n");
+        updateInterval = setInterval(function() {
+            res.write("data:{\"lot\":\"stuff\"}\n");
+        }, 1000);
+    }
+});
 router.get("/list", function(req, res) {
     if (!req.user.authenticated) {
         res.sendStatus(401);

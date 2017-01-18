@@ -4,7 +4,7 @@ $(function() {
     token = $("token")
         .html();
     pre = $("#output");
-    evSource = new EventSource("/api/taillog", {
+    /*evSource = new EventSource("/api/taillog", {
         "withcredentials": true
     });
     evSource.onerror = function(err) {
@@ -21,7 +21,16 @@ $(function() {
     }, false);
     evSource.onopen = function() {
         console.log("on open");
-    };
+    };*/
+
+    $(taillogWatcher)
+        .on("light:toggle", function(event, data) {
+            console.log(event, data);
+            pre.append(data);
+            if (scrolling) {
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        });
 });
 $("#chk1")
     .click(function() {

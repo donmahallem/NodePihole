@@ -108,8 +108,7 @@ PiServer.prototype.start = function() {
                 "timestamp": lineInfo.timestamp
             });
         }.bind(this));
-        tail.on("error", function(error) {
-        });
+        tail.on("error", function(error) {});
     }
 };
 module.exports = PiServer;

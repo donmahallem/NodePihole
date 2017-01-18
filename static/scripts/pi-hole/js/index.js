@@ -68,10 +68,10 @@ const summaryUpdater = {
         taillogWatcher
             .off("dns", this.socketUpdate);
     },
-    socketUpdate( data) {
-		if(!data.type){
-			return;
-		}
+    socketUpdate(data) {
+        if (!data.type) {
+            return;
+        }
         if (data.type === "block") {
             this.summaryData["ads_blocked_today"]++;
         }
@@ -153,7 +153,7 @@ const queryTimelineUpdater = {
         taillogWatcher
             .off("dns", this.socketUpdate);
     },
-    socketUpdate( data) {
+    socketUpdate(data) {
         //update chart
         var timestamp = new Date(data.timestamp);
         var hour = timestamp.getHours();

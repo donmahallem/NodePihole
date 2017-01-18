@@ -3,38 +3,38 @@ var taillogWatcher = {};
     const supportedEvents = ["dns"];
     var callbacks = {
         "dns": [],
-		"error":[],
-		"open":[]
+        "error": [],
+        "open": []
     };
     var isListening = false;
 
-	var evSource;
+    var evSource;
     const onError = function(error) {
-		emit("error",error);
-	};
+        emit("error", error);
+    };
 
-	const emit=function(name,event){
+    const emit = function(name, event) {
         callbacks[name].forEach(function(callback) {
             callback(JSON.parse(event.data));
         });
-	};
+    };
     const onDnsEvent = function(event) {
-        emit("dns",event);
+        emit("dns", event);
     };
 
     const onMessage = function(data) {};
 
     const onOpen = function() {
-		emit("open");
+        emit("open");
     };
 
     taillog.on = function(event, callback) {
         if (supportedEvents.indexOf(event) >= 0) {
             callbacks[event].push(callback);
         }
-		return function(){
-			taillog.off(callback);
-		};
+        return function() {
+            taillog.off(callback);
+        };
     };
 
     taillog.off = function(event, callback) {

@@ -5,7 +5,7 @@ const cookieSplitter = require("cookie");
 const cookieParser = require("cookie-parser");
 const os = require("os");
 const setupVars = require("./setupVars.js");
-const url = require('url');
+const url = require("url");
 var helper = {};
 // creates the default hash of the password for the admin panel
 helper.hashPassword = function(pwd) {

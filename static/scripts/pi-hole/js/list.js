@@ -20,13 +20,13 @@ function sub(index, entry) {
             "list": listType,
             "token": token
         },
-        success: function(response) {
+        success(response) {
             if (response.length !== 0) {
                 return;
             }
             domain.remove();
         },
-        error: function(jqXHR, exception) {
+        error(jqXHR, exception) {
             domain.show({
                 queue: true
             });
@@ -46,7 +46,7 @@ function refresh(fade) {
         data: {
             "list": listType
         },
-        success: function(data) {
+        success(data) {
             list.html("");
             if (data.length === 0) {
                 list.html("<div class=\"alert alert-info\" role=\"alert\">Your " + fullName + " is empty!</div>");

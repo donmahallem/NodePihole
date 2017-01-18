@@ -3,7 +3,7 @@ const chai = require("chai");
 const sinon = require("sinon");
 const should = chai.should();
 const expect = chai.expect;
-var appDefaults = require('./../defaults.js');
+var appDefaults = require("./../defaults.js");
 const helper = require("./../helper.js");
 const setupVars = require("./../setupVars.js");
 describe("helper tests", function() {

@@ -109,7 +109,6 @@ PiServer.prototype.start = function() {
             });
         }.bind(this));
         tail.on("error", function(error) {
-            console.log("ERROR: ", error);
         });
     }
 };

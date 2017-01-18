@@ -1,4 +1,4 @@
-/* globals taillogWatcher */
+/* globals taillogWatcher Chart */
 
 // Define global variables
 var timeLineChart, queryTypeChart, forwardDestinationChart;
@@ -6,7 +6,7 @@ var timeLineChart, queryTypeChart, forwardDestinationChart;
 function padNumber(num) {
     return ("00" + num)
         .substr(-2, 2);
-}
+};
 
 // Helper function needed for converting the Objects to Arrays
 function objectToArray(p) {

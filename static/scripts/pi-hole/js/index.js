@@ -424,7 +424,7 @@ function updateTopLists() {
                 .parent()
                 .remove();
         }
-        for (domain in data.top_ads) {
+        for (domain in data.topAds) {
             if ({}
                 .hasOwnProperty.call(data.top_ads, domain)) {
                 // Sanitize domain

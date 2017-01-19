@@ -354,14 +354,15 @@ logHelper.getTopItems = function(argument) {
             if (err) {
                 reject(err);
             } else {
-                var topDomains = {},topAds={};
+                var topDomains = {},
+                    topAds = {};
                 var lineReader = readline
                     .createInterface({
                         input: require("fs")
                             .createReadStream(appDefaults.logFile)
                     });
                 lineReader.on("line", function(line) {
-					if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
+                    if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
                         return;
                     }
                     var info = line.split(" ");
@@ -373,7 +374,10 @@ logHelper.getTopItems = function(argument) {
                     }
                 });
                 lineReader.on("close", function() {
-                    resolve({"topQueries":topDomains,"topAds":topAds});
+                    resolve({
+                        "topQueries": topDomains,
+                        "topAds": topAds
+                    });
                 });
             }
         });

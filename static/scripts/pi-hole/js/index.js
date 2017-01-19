@@ -282,7 +282,7 @@ var queryTimelineUpdater = {};
         qTU.pollData();
         // attach live updater
         qTU.subscribeSocket();
-    }
+    };
 }(queryTimelineUpdater));
 
 // Credit: http://stackoverflow.com/questions/1787322/htmlspecialchars-equivalent-in-javascript/4835406#4835406
@@ -504,23 +504,6 @@ var queryTypeChart = {};
 
 $(document)
     .ready(function() {
-        var isMobile = {
-            windows: function() {
-                return /IEMobile/i.test(navigator.userAgent);
-            },
-            android: function() {
-                return /Android/i.test(navigator.userAgent);
-            },
-            blackBerry: function() {
-                return /BlackBerry/i.test(navigator.userAgent);
-            },
-            iOS: function() {
-                return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-            },
-            any: function() {
-                return (isMobile.android() || isMobile.blackBerry() || isMobile.iOS() || isMobile.windows());
-            }
-        };
         // Pull in data via AJAX
         summaryUpdater.start();
         queryTimelineUpdater.start();

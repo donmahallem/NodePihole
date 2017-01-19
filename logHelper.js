@@ -354,27 +354,26 @@ logHelper.getTopItems = function(argument) {
             if (err) {
                 reject(err);
             } else {
-                var domains = {};
+                var topDomains = {},topAds={};
                 var lineReader = readline
                     .createInterface({
                         input: require("fs")
                             .createReadStream(appDefaults.logFile)
                     });
                 lineReader.on("line", function(line) {
-                    if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
+					if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
                         return;
                     }
                     var info = line.split(" ");
                     var domain = info[info.length - 3].trim();
-                    if (domains.hasOwnProperty(domain)) {
-                        domains[domain]++;
+                    if (topDomains.hasOwnProperty(domain)) {
+                        topDomains[domain]++;
                     } else {
-                        domains[domain] = 1;
+                        topDomains[domain] = 1;
                     }
                 });
                 lineReader.on("close", function() {
-					console.log(domains);
-                    resolve({"topQueries":domains});
+                    resolve({"topQueries":topDomains,"topAds":topAds});
                 });
             }
         });

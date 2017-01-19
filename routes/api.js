@@ -161,6 +161,43 @@ router.get("/data", function(req, res) {
         });
 });
 
+router.get("/taillog", function(req, res) {
+    if (!req.user.authenticated) {
+        res.sendStatus(401);
+    } else {
+        var connectionOpen = true;
+        var updateInterval;
+        req.on("close", function() {
+            if (connectionOpen) {
+                connectionOpen = false;
+                clearInterval(updateInterval);
+                console.log("Request close");
+            }
+        });
+
+        req.on("end", function() {
+            if (connectionOpen) {
+                connectionOpen = false;
+                clearInterval(updateInterval);
+                console.log("Request end");
+            }
+        });
+        res.set({
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*"
+        });
+
+        res.write("event: ping\n\n");
+        updateInterval = setInterval(function() {
+            res.write("id: 19\n");
+            res.write("event: dns\n");
+            res.write("data: {\"timestamp\":\"2017-01-18T21:34:20Z\",\"type\":\"query\"}\n\n");
+        }, 1000);
+    }
+});
+
 router.get("/list", function(req, res) {
     if (!req.user.authenticated) {
         res.sendStatus(401);

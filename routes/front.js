@@ -2,6 +2,7 @@ const express = require("express");
 const helper = require("./../helper.js");
 const jwt = require("jsonwebtoken");
 const appDefaults = require("./../defaults.js");
+const setupVars = require("./../setupVars.js");
 
 var frontEnd = {
     queries: {
@@ -91,7 +92,7 @@ var frontEnd = {
             var token = req.body.pw;
             if (token) {
                 var tokenHash = helper.hashPassword(token);
-                if (tokenHash === req.app.locals.piHoleConfig.WEBPASSWORD) {
+                if (tokenHash === setupVars.WEBPASSWORD) {
                     jwt.sign({
                             foo: "bar"
                         }, appDefaults.jwtSecret, {

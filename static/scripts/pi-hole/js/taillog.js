@@ -1,33 +1,29 @@
-var offset, timer, pre, scrolling = true,
-    token;
-$(function() {
-    token = $("token")
+/* globals taillogWatcher */
+
+(function() {
+    var scrolling = true;
+    const token = $("token")
         .html();
-    var socket = io("/private");
-    pre = $("#output");
-    socket.on('connect_error', function() {
-        console.log("connect_error");
-    });
-    socket.on('error', function(data) {
-        console.log("connect_error" + data);
-    });
-    socket.on("dnsevent", function(data) {
-        console.log(data);
-        pre.append(data);
-        if (scrolling) {
-            window.scrollTo(0, document.body.scrollHeight);
+    const pre = $("#output");
+    const chk1 = $("#chk1");
+    const chk2 = $("#chk2");
+    const chkCallback = function() {
+        if ($(this)
+            .is(chk1)) {
+            chk2.prop("checked", this.checked);
+        } else if ($(this)
+            .is(chk2)) {
+            chk1.prop("checked", this.checked);
         }
-    });
-});
-$("#chk1")
-    .click(function() {
-        $("#chk2")
-            .prop("checked", this.checked);
         scrolling = this.checked;
-    });
-$("#chk2")
-    .click(function() {
-        $("#chk1")
-            .prop("checked", this.checked);
-        scrolling = this.checked;
-    });
+    };
+    chk1.click(chkCallback);
+    chk2.click(chkCallback);
+    taillogWatcher
+        .on("dns", function(data) {
+            pre.append(data.timestamp);
+            if (scrolling) {
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        });
+}());

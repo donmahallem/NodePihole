@@ -1,3 +1,9 @@
+mixin sidebar_menu_item(link,title,icon,active)
+	li(class=active?'active':'')&attributes(attributes)
+		a(href=link)
+			i.fa(class!=icon)
+			span= title
+
 aside.main-sidebar
 	// sidebar: style can be found in sidebar.less
 	section.sidebar
@@ -25,32 +31,17 @@ aside.main-sidebar
 		ul.sidebar-menu
 			li.header MAIN NAVIGATION
 			// Home Page
-			li(class=PCONFIG.activePage=='home'?'active':'')
-				a(href='/home')
-					i.fa.fa-home
-					span Main Page
+			+sidebar_menu_item("/home","Main Page","fa-home",PCONFIG.activePage=="home")
 			if !PCONFIG.user.authenticated
 				// Login
-				li(class=PCONFIG.activePage=='login'?'active':'')
-					a(href='/login')
-						i.fa.fa-user
-						span Login
+				+sidebar_menu_item("/Login","Login","fa-user",PCONFIG.activePage=="login")
 			if PCONFIG.user.authenticated
 				// Query Log
-				li(class=PCONFIG.activePage=='queries'?'active':'')
-					a(href='/queries')
-						i.fa.fa-file-text-o
-						span Query Log
+				+sidebar_menu_item("/queries","Query Log","fa-file-text-o",PCONFIG.activePage=="queries")
 				// Whitelist
-				li(class=PCONFIG.activePage=='whitelist'?'active':'')
-					a(href='/list?l=white')
-						i.fa.fa-pencil-square-o
-						span Whitelist
+				+sidebar_menu_item("/list?l=white","Whitelist","fa-pencil-square-o",PCONFIG.activePage=='whitelist')
 				// Blacklist
-				li(class=PCONFIG.activePage=='blacklist'?'active':'')
-					a(href='/list?l=black')
-						i.fa.fa-ban
-						span Blacklist
+				+sidebar_menu_item("/list?l=black","Blacklist","fa-ban",PCONFIG.activePage=='blacklist')
 				// Toggle
 				li#pihole-disable.treeview
 					a(href='#')
@@ -60,22 +51,10 @@ aside.main-sidebar
 						span.pull-right-container
 							i.fa.fa-angle-down.pull-right(style='padding-right: 5px;')
 					ul.treeview-menu
-						li
-							a#pihole-disable-permanently(href='#')
-								i.fa.fa-stop
-								span Permanently
-						li
-							a#pihole-disable-10s(href='#')
-								i.fa.fa-clock-o
-								span For 10 seconds
-						li
-							a#pihole-disable-30s(href='#')
-								i.fa.fa-clock-o
-								span For 30 seconds
-						li
-							a#pihole-disable-5m(href='#')
-								i.fa.fa-clock-o
-								span For 5 minutes
+						+sidebar_menu_item("#","Permanently","fa-stop")#pihole-disable-permanently
+						+sidebar_menu_item("#","For 10 seconds","fa-clock-o")#pihole-disable-10s
+						+sidebar_menu_item("#","For 30 seconds","fa-clock-o")#pihole-disable-30s
+						+sidebar_menu_item("#","For 5 minutes","fa-clock-o")#pihole-disable-5m
 					// <a href="#" id="flip-status"><i class="fa fa-stop"></i> <span>Disable</span></a>
 				li#pihole-enable.treeview(hidden='true')
 					a(href='#')
@@ -106,25 +85,13 @@ aside.main-sidebar
 								i.fa.fa-list-ul
 								span Tail pihole.log
 				// Settings
-				li
-					a(href='/settings')
-						i.fa.fa-gears
-						span Settings
+				+sidebar_menu_item("/settings","Settings","fa-gears")
 				// Logout
-				li
-					a(href='/logout')
-						i.fa.fa-user-times
-						span Logout
+				+sidebar_menu_item("/logout","Logout","fa-user-times")
 			// Login
 			// Donate
-			li
-				a(href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3J2L3Z4DHW9UY')
-					i.fa.fa-paypal
-					span Donate
-			if authenticated
+			+sidebar_menu_item("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3J2L3Z4DHW9UY","Donate","fa-paypal")
+			if PCONFIG.user.authenticated
 				// Help
-				li
-					a(href='help')
-						i.fa.fa-question-circle
-						span Help
+				+sidebar_menu_item("help","Help","fa-question-circle")
 	// /.sidebar

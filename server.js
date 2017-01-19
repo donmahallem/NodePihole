@@ -2,7 +2,6 @@ const serveStatic = require("serve-static");
 const express = require("express");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const socketIo = require("socket.io");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const ini = require("ini");
@@ -23,13 +22,10 @@ const csp = require("csp-header");
 const appDefaults = require("./defaults.js");
 const Tail = require("tail")
     .Tail;
-const socketioJwt = require("socketio-jwt");
+
 var PiServer = function() {
     this.app = express();
     this.http = server(this.app);
-    this.socketIo = {
-        "io": socketIo(this.http)
-    }
     this.app.set("view engine", "pug");
     this.app.use(bodyParser.urlencoded({
         extended: true
@@ -37,7 +33,10 @@ var PiServer = function() {
     this.app.use("/static", serveStatic(__dirname + "/static"));
     this.app.use(cookieParser(appDefaults.cookieSecret));
     this.app.use(function(req, res, next) {
-        helper.verifyAuthCookie(req, res, next);
+        helper.express.corsMiddleware(req, res, next);
+    }.bind(this));
+    this.app.use(function(req, res, next) {
+        helper.express.verifyAuthCookie(req, res, next);
     });
     this.app.use(function(req, res, next) {
         var cCsp = csp({
@@ -88,27 +87,7 @@ var PiServer = function() {
         }
         res.sendStatus(404);
     });
-    // Socket IO setup
-    // https://github.com/socketio/engine.io-client/pull/379
-    this.socketIo.privateSocket = this.socketIo.io.of("/private");
-    this.socketIo.publicSocket = this.socketIo.io.of("/public");
-    this.socketIo.privateSocket.use(helper.socketIo.authMiddleware);
-    this.socketIo.privateSocket.on("connection", function(socket) {
-        console.log("an authenticated user connected, ");
-        socket.on("disconnect", function() {
-            console.log("an authenticated user disconnected");
-        });
-    });
-    this.socketIo.publicSocket.on("connection", function(socket) {
-        console.log("a user connected");
-        socket.on("disconnect", function() {
-            console.log("a user disconnected");
-        });
-    });
     this.started = false;
-};
-PiServer.prototype.load = function() {
-    this.app.locals.piHoleConfig = ini.parse(fs.readFileSync(appDefaults.setupVars, "utf-8"));
 };
 PiServer.prototype.start = function() {
     if (!this.started) {
@@ -123,15 +102,8 @@ PiServer.prototype.start = function() {
             if (lineInfo === false) {
                 return;
             }
-            this.socketIo.privateSocket.emit("dnsevent", lineInfo);
-            this.socketIo.publicSocket.emit("dnsevent", {
-                "type": lineInfo.type,
-                "timestamp": lineInfo.timestamp
-            });
         }.bind(this));
-        tail.on("error", function(error) {
-            console.log("ERROR: ", error);
-        });
+        tail.on("error", function(error) {});
     }
 };
 module.exports = PiServer;

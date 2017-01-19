@@ -40,7 +40,7 @@ section.content
 		#alInfo.alert.alert-info.alert-dismissible.fade.in(role='alert', hidden='true')
 			button.close(type='button', data-hide='alert', aria-label='Close')
 				span(aria-hidden='true') ×
-			|     Adding to the= PCONFIG.listType
+			|     Adding to the #{PCONFIG.listType=='black'?'Blacklist':'Whitelist'}
 			| ...
 		#alSuccess.alert.alert-success.alert-dismissible.fade.in(role='alert', hidden='true')
 			button.close(type='button', data-hide='alert', aria-label='Close')

@@ -44,6 +44,7 @@ function add(row) {
     alDomain.html(rowData.domain);
     var alSuccess = $("#alSuccess");
     var alFailure = $("#alFailure");
+    var list;
     if (rowData.status === "Pi-holed") {
         list = "white";
         alList.html("Whitelist");

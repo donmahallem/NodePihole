@@ -115,6 +115,79 @@ describe("logHelper tests", function() {
                 });
         });
     });
+    describe("getGravity()", function() {
+        var getDomainsStub;
+        before(function() {
+            getDomainsStub = sandbox.stub(logHelper, "getDomains");
+            getDomainsStub.onCall(0)
+                .returns(new Promise(function(resolve, reject) {
+                    setTimeout(function() {
+                        resolve(["domain1.com", "domain2.com"]);
+                    }, 100);
+                }));
+            getDomainsStub.onCall(1)
+                .returns(new Promise(function(resolve, reject) {
+                    setTimeout(function() {
+                        resolve(["domain3.com", "domain4.com"]);
+                    }, 100);
+                }));
+            getDomainsStub.onCall(2)
+                .returns(new Promise(function(resolve, reject) {
+                    setTimeout(function() {
+                        resolve(["domain1.com", "domain3.com"]);
+                    }, 100);
+                }));
+        });
+        after(function() {
+            getDomainsStub.restore();
+        });
+        it("should return 2 domains", function(done) {
+            var gravity = logHelper.getGravity();
+            gravity.then(function(result) {
+                    expect(result)
+                        .to.deep.equal({
+                            "domain2.com": true,
+                            "domain4.com": true
+                        });
+                    done();
+                })
+                .catch(function(err) {
+                    done(err);
+                });
+        });
+    });
+    describe("getDomains()", function() {
+        it("should return 6 domains", function(done) {
+            var gravity = logHelper
+                .getDomains(__dirname + "/whitelist.txt")
+                .then(function(result) {
+                    expect(result)
+                        .to.deep.equal(["raw.githubusercontent.com",
+                            "mirror1.malwaredomains.com",
+                            "sysctl.org",
+                            "zeustracker.abuse.ch",
+                            "s3.amazonaws.com",
+                            "hosts-file.net"
+                        ]);
+                    done();
+                })
+                .catch(function(err) {
+                    done(err);
+                });
+        });
+        it("should return 1 domain", function(done) {
+            var gravity = logHelper
+                .getDomains(__dirname + "/blacklist.txt")
+                .then(function(result) {
+                    expect(result)
+                        .to.deep.equal(["blocked.blocked.blocked"]);
+                    done();
+                })
+                .catch(function(err) {
+                    done(err);
+                });
+        });
+    });
     describe("getGravityCount()", function() {
         var gravityListFileStub, blackListFileStub;
         before(function() {

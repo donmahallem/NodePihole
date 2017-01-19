@@ -376,9 +376,9 @@ function updateTopLists() {
         var url,
             domain,
             percentage;
-        for (domain in data.top_queries) {
+        for (domain in data.topQueries) {
             if ({}
-                .hasOwnProperty.call(data.top_queries, domain)) {
+                .hasOwnProperty.call(data.topQueries, domain)) {
                 // Sanitize domain
                 domain = escapeHtml(domain);
                 if (domain !== "pi.hole") {
@@ -386,14 +386,14 @@ function updateTopLists() {
                 } else {
                     url = domain;
                 }
-                percentage = data.top_queries[domain] / data.dns_queries_today * 100;
+                percentage = data.topQueries[domain] / data.dns_queries_today * 100;
                 domaintable.append("<tr> <td>" + url +
-                    "</td> <td>" + data.top_queries[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-green\" style=\"width: " +
+                    "</td> <td>" + data.topQueries[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-green\" style=\"width: " +
                     percentage + "%\"></div> </div> </td> </tr> ");
             }
         }
         // Remove table if there are no results (e.g. privacy mode enabled)
-        if (jQuery.isEmptyObject(data.top_queries)) {
+        if (jQuery.isEmptyObject(data.topQueries)) {
             $("#domain-frequency")
                 .parent()
                 .remove();

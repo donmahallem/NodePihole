@@ -89,31 +89,115 @@ var queryTimelineUpdater = {};
 (function(qTU) {
     var timeLineChart;
     var failures = 0;
+    var callbacks = {};
+    const timelineChartData = {
+        labels: [],
+        datasets: [{
+            label: "Total DNS Queries",
+            fill: true,
+            backgroundColor: "rgba(220,220,220,0.5)",
+            borderColor: "rgba(0, 166, 90,.8)",
+            pointBorderColor: "rgba(0, 166, 90,.8)",
+            pointRadius: 1,
+            pointHoverRadius: 5,
+            data: [],
+            pointHitRadius: 5,
+            cubicInterpolationMode: "monotone"
+        }, {
+            label: "Blocked DNS Queries",
+            fill: true,
+            backgroundColor: "rgba(0,192,239,0.5)",
+            borderColor: "rgba(0,192,239,1)",
+            pointBorderColor: "rgba(0,192,239,1)",
+            pointRadius: 1,
+            pointHoverRadius: 5,
+            data: [],
+            pointHitRadius: 5,
+            cubicInterpolationMode: "monotone"
+        }]
+    };
+    const timelineChartOptions = {
+        tooltips: {
+            enabled: true,
+            mode: "x-axis",
+            callbacks: {
+                title: function(tooltipItem, data) {
+                    var label = tooltipItem[0].xLabel;
+                    var time = label.match(/(\d?\d):?(\d?\d?)/);
+                    var h = parseInt(time[1], 10);
+                    var m = parseInt(time[2], 10) || 0;
+                    var from = padNumber(h) + ":" + padNumber(m) + ":00";
+                    var to = padNumber(h) + ":" + padNumber(m + 9) + ":59";
+                    return "Queries from " + from + " to " + to;
+                },
+                label: function(tooltipItems, data) {
+                    if (tooltipItems.datasetIndex === 1) {
+                        var percentage = 0.0;
+                        var total = parseInt(data.datasets[0].data[tooltipItems.index]);
+                        var blocked = parseInt(data.datasets[1].data[tooltipItems.index]);
+                        if (total > 0) {
+                            percentage = 100.0 * blocked / total;
+                        }
+                        return data.datasets[tooltipItems.datasetIndex].label + ": " + tooltipItems.yLabel + " (" + percentage.toFixed(1) + "%)";
+                    } else {
+                        return data.datasets[tooltipItems.datasetIndex].label + ": " + tooltipItems.yLabel;
+                    }
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            xAxes: [{
+                type: "time",
+                time: {
+                    unit: "hour",
+                    displayFormats: {
+                        hour: "HH:mm"
+                    },
+                    tooltipFormat: "HH:mm"
+                }
+            }],
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        },
+        maintainAspectRatio: false
+    };
+    const timelineChartConfig = {
+        type: "line",
+        data: timelineChartData,
+        options: timelineChartOptions
+    };
+
     //WHY IS IT SO HARD FOR YOU JAVASCRIPT ?????
     const sortNumberAsc = function(a, b) {
         return a - b;
     }
-    const pollData = function() {
+    qTU.pollData = function() {
         $.getJSON("/api/data?overTimeData10mins", function(data) {
                 // Remove possibly already existing data
                 tableData = data;
-                updateTable();
+                qTU.updateTable();
             })
             .done(function() {
                 // Reload graph after 10 minutes
                 failures = 0;
-                setTimeout(pollData, 600000);
+                setTimeout(qTU.pollData, 600000);
             })
             .fail(function() {
                 failures++;
                 if (failures < 5) {
                     // Try again after 1 minute only if this has not failed more
                     // than five times in a row
-                    setTimeout(pollData, 60000);
+                    setTimeout(qTU.pollData, 60000);
                 }
             });
     };
-    const updateTable = function() {
+    qTU.updateTable = function() {
         timeLineChart.data.labels = [];
         timeLineChart.data.datasets[0].data = [];
         timeLineChart.data.datasets[1].data = [];
@@ -142,15 +226,7 @@ var queryTimelineUpdater = {};
             .remove();
         timeLineChart.update();
     };
-    const subscribeSocket = function() {
-        taillogWatcher
-            .on("dns", socketUpdate);
-    };
-    const unsubscribeSocket = function() {
-        taillogWatcher
-            .off("dns", socketUpdate);
-    };
-    const socketUpdate = function(data) {
+    callbacks.socketUpdate = function(data) {
         //update chart
         var timestamp = new Date(data.timestamp);
         var hour = timestamp.getHours();
@@ -168,93 +244,43 @@ var queryTimelineUpdater = {};
         } else {
             tableData.domains_over_time[timestampIdx] = 1;
         }
-        updateTable();
+        qTU.updateTable();
+    };
+    callbacks.onClickTimeline = function(evt) {
+        var activePoints = timeLineChart.getElementAtEvent(evt);
+        if (activePoints.length > 0) {
+            //get the internal index of slice in pie chart
+            var clickedElementindex = activePoints[0]["_index"];
+            //get specific label by index
+            var label = timeLineChart.data.labels[clickedElementindex];
+            //get value by index
+            //var value = timeLineChart.data.datasets[0].data[clickedElementindex];
+            var time = new Date(label);
+            var from = time.getHours() + ":" + time.getMinutes();
+            var until = time.getHours() + ":" + padNumber(parseInt(time.getMinutes() + 9), 2);
+            window.location.href = "queries.php?from=" + from + "&until=" + until;
+        }
+        return false;
+    };
+    qTU.subscribeSocket = function() {
+        taillogWatcher
+            .on("dns", callbacks.socketUpdate);
+    };
+    qTU.unsubscribeSocket = function() {
+        taillogWatcher
+            .off("dns", callbacks.socketUpdate);
     };
     qTU.start = function() {
         var ctx = document.getElementById("queryOverTimeChart")
             .getContext("2d");
-        timeLineChart = new Chart(ctx, {
-            type: "line",
-            data: {
-                labels: [],
-                datasets: [{
-                    label: "Total DNS Queries",
-                    fill: true,
-                    backgroundColor: "rgba(220,220,220,0.5)",
-                    borderColor: "rgba(0, 166, 90,.8)",
-                    pointBorderColor: "rgba(0, 166, 90,.8)",
-                    pointRadius: 1,
-                    pointHoverRadius: 5,
-                    data: [],
-                    pointHitRadius: 5,
-                    cubicInterpolationMode: "monotone"
-                }, {
-                    label: "Blocked DNS Queries",
-                    fill: true,
-                    backgroundColor: "rgba(0,192,239,0.5)",
-                    borderColor: "rgba(0,192,239,1)",
-                    pointBorderColor: "rgba(0,192,239,1)",
-                    pointRadius: 1,
-                    pointHoverRadius: 5,
-                    data: [],
-                    pointHitRadius: 5,
-                    cubicInterpolationMode: "monotone"
-                }]
-            },
-            options: {
-                tooltips: {
-                    enabled: true,
-                    mode: "x-axis",
-                    callbacks: {
-                        title: function(tooltipItem, data) {
-                            var label = tooltipItem[0].xLabel;
-                            var time = label.match(/(\d?\d):?(\d?\d?)/);
-                            var h = parseInt(time[1], 10);
-                            var m = parseInt(time[2], 10) || 0;
-                            var from = padNumber(h) + ":" + padNumber(m) + ":00";
-                            var to = padNumber(h) + ":" + padNumber(m + 9) + ":59";
-                            return "Queries from " + from + " to " + to;
-                        },
-                        label: function(tooltipItems, data) {
-                            if (tooltipItems.datasetIndex === 1) {
-                                var percentage = 0.0;
-                                var total = parseInt(data.datasets[0].data[tooltipItems.index]);
-                                var blocked = parseInt(data.datasets[1].data[tooltipItems.index]);
-                                if (total > 0) {
-                                    percentage = 100.0 * blocked / total;
-                                }
-                                return data.datasets[tooltipItems.datasetIndex].label + ": " + tooltipItems.yLabel + " (" + percentage.toFixed(1) + "%)";
-                            } else {
-                                return data.datasets[tooltipItems.datasetIndex].label + ": " + tooltipItems.yLabel;
-                            }
-                        }
-                    }
-                },
-                legend: {
-                    display: false
-                },
-                scales: {
-                    xAxes: [{
-                        type: "time",
-                        time: {
-                            unit: "hour",
-                            displayFormats: {
-                                hour: "HH:mm"
-                            },
-                            tooltipFormat: "HH:mm"
-                        }
-                    }],
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
-                    }]
-                },
-                maintainAspectRatio: false
-            }
-        });
-        pollData();
-        subscribeSocket();
+        timeLineChart = new Chart(ctx, timelineChartConfig);
+        // Click handler for the chart
+        $("#queryOverTimeChart")
+            .click(callbacks.onClickTimeline);
+        // Poll initial data
+        qTU.pollData();
+        // attach live updater
+        qTU.subscribeSocket();
     }
 }(queryTimelineUpdater));
 
@@ -496,21 +522,4 @@ $(document)
         if (document.getElementById("client-frequency")) {
             updateTopClientsChart();
         }
-        $("#queryOverTimeChart")
-            .click(function(evt) {
-                var activePoints = timeLineChart.getElementAtEvent(evt);
-                if (activePoints.length > 0) {
-                    //get the internal index of slice in pie chart
-                    var clickedElementindex = activePoints[0]["_index"];
-                    //get specific label by index
-                    var label = timeLineChart.data.labels[clickedElementindex];
-                    //get value by index
-                    //var value = timeLineChart.data.datasets[0].data[clickedElementindex];
-                    var time = new Date(label);
-                    var from = time.getHours() + ":" + time.getMinutes();
-                    var until = time.getHours() + ":" + padNumber(parseInt(time.getMinutes() + 9), 2);
-                    window.location.href = "queries.php?from=" + from + "&until=" + until;
-                }
-                return false;
-            });
     });

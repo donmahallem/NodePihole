@@ -1,7 +1,6 @@
 /* globals taillogWatcher Chart */
 
 // Define global variables
-var timeLineChart, forwardDestinationChart;
 
 const padNumber = function(num) {
     return ("00" + num)

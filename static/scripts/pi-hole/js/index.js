@@ -1,7 +1,7 @@
 /* globals taillogWatcher Chart */
 
 // Define global variables
-var timeLineChart, queryTypeChart, forwardDestinationChart;
+var timeLineChart, forwardDestinationChart;
 
 const padNumber = function(num) {
     return ("00" + num)
@@ -32,8 +32,8 @@ var summaryUpdater = {};
         "domains_being_blocked": -1,
         "ads_percentage_today": -1
     };
-	var callbacks={};
-	callbacks.socketUpdate = function(data) {
+    var callbacks = {};
+    callbacks.socketUpdate = function(data) {
         if (!data.type) {
             return;
         }
@@ -45,7 +45,7 @@ var summaryUpdater = {};
             .toFixed(2);
         sU.updateView();
     };
-	sU.updateView = function() {
+    sU.updateView = function() {
         ["ads_blocked_today", "dns_queries_today", "domains_being_blocked", "ads_percentage_today"].forEach(function(header, idx) {
             var textData = idx === 3 ? summaryData[header] + "%" : summaryData[header];
             $("h3#" + header)
@@ -60,7 +60,7 @@ var summaryUpdater = {};
                 }
             });
     };
-	sU.pollData = function() {
+    sU.pollData = function() {
         $.getJSON("/api/data?summary", function LoadSummaryData(data) {
                 summaryData = data;
             })
@@ -72,11 +72,11 @@ var summaryUpdater = {};
                 setTimeout(pollData, 300);
             });
     };
-	sU.subscribeSocket = function() {
+    sU.subscribeSocket = function() {
         taillogWatcher
             .on("dns", callbacks.socketUpdate);
     };
-	sU.unsubscribeSocket = function() {
+    sU.unsubscribeSocket = function() {
         taillogWatcher
             .off("dns", callbacks.socketUpdate);
     };
@@ -285,36 +285,6 @@ var queryTimelineUpdater = {};
     }
 }(queryTimelineUpdater));
 
-function updateQueryTypes() {
-    $.getJSON("/api/data?getQueryTypes", function(data) {
-        var colors = [];
-        // Get colors from AdminLTE
-        $.each($.AdminLTE.options.colors, function(key, value) {
-            colors.push(value);
-        });
-        var v = [],
-            c = [];
-        // Collect values and colors, immediately push individual labels
-        $.each(data, function(key, value) {
-            v.push(value);
-            c.push(colors.shift());
-            queryTypeChart.data.labels.push(key.substr(6, key.length - 7));
-        });
-        // Build a single dataset with the data to be pushed
-        var dd = {
-            data: v,
-            backgroundColor: c
-        };
-        // and push it at once
-        queryTypeChart.data.datasets.push(dd);
-        $("#query-types .overlay")
-            .remove();
-        queryTypeChart.update();
-        queryTypeChart.chart.config.options.cutoutPercentage = 30;
-        queryTypeChart.update();
-    });
-}
-
 // Credit: http://stackoverflow.com/questions/1787322/htmlspecialchars-equivalent-in-javascript/4835406#4835406
 function escapeHtml(text) {
     var map = {
@@ -361,9 +331,35 @@ var topClientsChart = {};
     };
 }(topClientsChart));
 
-var forwardDestinationUpdater = {};
+var forwardDestinationChart = {};
 (function(fDU) {
-    fDU.poll = function() {
+    var ctx;
+    fDU.setup = function() {
+        ctx = document.getElementById("forwardDestinationChart")
+            .getContext("2d");
+        fDU.chart = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: [],
+                datasets: [{
+                    data: []
+                }]
+            },
+            options: {
+                legend: {
+                    display: false
+                },
+                animation: {
+                    duration: 2000
+                },
+                cutoutPercentage: 0
+            }
+        });
+    };
+    fDU.update = function() {
+        if (!ctx) {
+            fDU.setup();
+        }
         $.getJSON("/api/data?getForwardDestinations", function(data) {
             var colors = [];
             // Get colors from AdminLTE
@@ -379,7 +375,7 @@ var forwardDestinationUpdater = {};
                 if (key.indexOf("|") > -1) {
                     key = key.substr(0, key.indexOf("|"));
                 }
-                forwardDestinationChart.data.labels.push(key);
+                fDU.chart.data.labels.push(key);
             });
             // Build a single dataset with the data to be pushed
             var dd = {
@@ -387,15 +383,15 @@ var forwardDestinationUpdater = {};
                 backgroundColor: c
             };
             // and push it at once
-            forwardDestinationChart.data.datasets.push(dd);
+            fDU.chart.data.datasets.push(dd);
             $("#forward-destinations .overlay")
                 .remove();
-            forwardDestinationChart.update();
-            forwardDestinationChart.chart.config.options.cutoutPercentage = 30;
-            forwardDestinationChart.update();
+            fDU.chart.update();
+            fDU.chart.chart.config.options.cutoutPercentage = 30;
+            fDU.chart.update();
         });
     };
-}(forwardDestinationUpdater));
+}(forwardDestinationChart));
 
 function updateTopLists() {
     $.getJSON("/api/data?summaryRaw&topItems", function(data) {
@@ -447,6 +443,65 @@ function updateTopLists() {
     });
 }
 
+var queryTypeChart = {};
+(function(qTC) {
+    var ctx;
+    qTC.setup = function() {
+        ctx = document.getElementById("queryTypeChart")
+            .getContext("2d");
+        qTC.chart = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: [],
+                datasets: [{
+                    data: []
+                }]
+            },
+            options: {
+                legend: {
+                    display: false
+                },
+                animation: {
+                    duration: 2000
+                },
+                cutoutPercentage: 0
+            }
+        });
+    };
+    qTC.update = function() {
+        if (!ctx) {
+            qTC.setup();
+        }
+        $.getJSON("/api/data?getQueryTypes", function(data) {
+            var colors = [];
+            // Get colors from AdminLTE
+            $.each($.AdminLTE.options.colors, function(key, value) {
+                colors.push(value);
+            });
+            var v = [],
+                c = [];
+            // Collect values and colors, immediately push individual labels
+            $.each(data, function(key, value) {
+                v.push(value);
+                c.push(colors.shift());
+                qTC.chart.data.labels.push(key.substr(6, key.length - 7));
+            });
+            // Build a single dataset with the data to be pushed
+            var dd = {
+                data: v,
+                backgroundColor: c
+            };
+            // and push it at once
+            qTC.chart.data.datasets.push(dd);
+            $("#query-types .overlay")
+                .remove();
+            qTC.chart.update();
+            qTC.chart.chart.config.options.cutoutPercentage = 30;
+            qTC.chart.update();
+        });
+    };
+}(queryTypeChart));
+
 $(document)
     .ready(function() {
         var isMobile = {
@@ -471,51 +526,11 @@ $(document)
         queryTimelineUpdater.start();
         // Create / load "Query Types" only if authorized
         if (document.getElementById("queryTypeChart")) {
-            ctx = document.getElementById("queryTypeChart")
-                .getContext("2d");
-            queryTypeChart = new Chart(ctx, {
-                type: "doughnut",
-                data: {
-                    labels: [],
-                    datasets: [{
-                        data: []
-                    }]
-                },
-                options: {
-                    legend: {
-                        display: false
-                    },
-                    animation: {
-                        duration: 2000
-                    },
-                    cutoutPercentage: 0
-                }
-            });
-            updateQueryTypes();
+            queryTypeChart.update();
         }
         // Create / load "Forward Destinations" only if authorized
         if (document.getElementById("forwardDestinationChart")) {
-            ctx = document.getElementById("forwardDestinationChart")
-                .getContext("2d");
-            forwardDestinationChart = new Chart(ctx, {
-                type: "doughnut",
-                data: {
-                    labels: [],
-                    datasets: [{
-                        data: []
-                    }]
-                },
-                options: {
-                    legend: {
-                        display: false
-                    },
-                    animation: {
-                        duration: 2000
-                    },
-                    cutoutPercentage: 0
-                }
-            });
-            forwardDestinationUpdater.poll();
+            forwardDestinationChart.update();
         }
         // Create / load "Top Domains" and "Top Advertisers" only if authorized
         if (document.getElementById("domain-frequency") &&

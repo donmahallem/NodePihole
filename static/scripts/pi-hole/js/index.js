@@ -393,6 +393,62 @@ var forwardDestinationChart = {};
     };
 }(forwardDestinationChart));
 
+const DomainTable = function(table) {
+    var dTable = {};
+    (function(tD, tableObj) {
+        var table = tableObj.DataTable({
+            "processing": true,
+            "paging": false,
+            "ordering": true,
+            "searching": false,
+            "order": [
+                [1, 'desc']
+            ],
+            "columnDefs": [{
+                // The `data` parameter refers to the data for the cell (defined by the
+                // `data` option, which defaults to the column being worked with, in
+                // this case `data: 0`.
+                "render": function(data, type, row) {
+                    return "<div class=\"progress progress-sm\" title=\"" + data.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-yellow\" style=\"width: " + data + "%\"></div> </div>";
+                },
+                "targets": 2
+            }],
+            "columns": [{
+                "data": "domain",
+                "type": "string",
+                "orderable": false
+            }, {
+                "data": "occurences",
+                "type": "num",
+                "orderable": false
+            }, {
+                "data": "percent",
+                "type": "num",
+                "orderable": false
+            }]
+        });
+        tD.setData = function(data, dnsQueriesToday) {
+            //dataTable.clear().draw();
+            for (domain in data) {
+                if ({}
+                    .hasOwnProperty.call(data, domain)) {
+                    // Sanitize domain
+                    domain = escapeHtml(domain);
+                    const rowData = {
+                        "domain": domain,
+                        "occurences": data[domain],
+                        "percent": data[domain] / dnsQueriesToday * 100
+                    };
+                    table.row.add(rowData)
+                        .draw();
+                }
+            }
+            table.draw();
+        };
+    }(dTable, table));
+    return dTable;
+};
+
 function updateTopLists() {
     $.getJSON("/api/data?summaryRaw&topItems", function(data) {
         var domaintable = $("#domain-frequency")
@@ -402,27 +458,14 @@ function updateTopLists() {
         var url,
             domain,
             percentage;
-        for (domain in data.topQueries) {
-            if ({}
-                .hasOwnProperty.call(data.topQueries, domain)) {
-                // Sanitize domain
-                domain = escapeHtml(domain);
-                if (domain !== "pi.hole") {
-                    url = "<a href=\"queries.php?domain=" + domain + "\">" + domain + "</a>";
-                } else {
-                    url = domain;
-                }
-                percentage = data.topQueries[domain] / data.dns_queries_today * 100;
-                domaintable.append("<tr> <td>" + url +
-                    "</td> <td>" + data.topQueries[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-green\" style=\"width: " +
-                    percentage + "%\"></div> </div> </td> </tr> ");
-            }
-        }
         // Remove table if there are no results (e.g. privacy mode enabled)
         if (jQuery.isEmptyObject(data.topQueries)) {
             $("#domain-frequency")
                 .parent()
                 .remove();
+        } else {
+            var dT = new DomainTable($("#domain-frequency table.table"));
+            dT.setData(data.topQueries, data.dns_queries_today);
         }
         for (domain in data.topAds) {
             if ({}

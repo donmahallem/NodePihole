@@ -366,14 +366,15 @@ logHelper.getTopItems = function(argument) {
                     }
                     var info = line.split(" ");
                     var domain = info[info.length - 3].trim();
-                    if (domain in domains) {
+                    if (domains.hasOwnProperty(domain)) {
                         domains[domain]++;
                     } else {
-                        domains[domains] = 1;
+                        domains[domain] = 1;
                     }
                 });
                 lineReader.on("close", function() {
-                    resolve(domains);
+					console.log(domains);
+                    resolve({"topQueries":domains});
                 });
             }
         });

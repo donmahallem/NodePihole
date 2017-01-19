@@ -68,7 +68,7 @@ var summaryUpdater = {};
             })
             .fail(function() {
                 // retry again in 300ms
-                setTimeout(pollData, 300);
+                setTimeout(sU.pollData, 300);
             });
     };
     sU.subscribeSocket = function() {
@@ -90,6 +90,7 @@ var queryTimelineUpdater = {};
     var timeLineChart;
     var failures = 0;
     var callbacks = {};
+    var tableData;
     const timelineChartData = {
         labels: [],
         datasets: [{
@@ -176,7 +177,7 @@ var queryTimelineUpdater = {};
     //WHY IS IT SO HARD FOR YOU JAVASCRIPT ?????
     const sortNumberAsc = function(a, b) {
         return a - b;
-    }
+    };
     qTU.pollData = function() {
         $.getJSON("/api/data?overTimeData10mins", function(data) {
                 // Remove possibly already existing data
@@ -504,20 +505,20 @@ var queryTypeChart = {};
 $(document)
     .ready(function() {
         var isMobile = {
-            Windows: function() {
+            windows: function() {
                 return /IEMobile/i.test(navigator.userAgent);
             },
-            Android: function() {
+            android: function() {
                 return /Android/i.test(navigator.userAgent);
             },
-            BlackBerry: function() {
+            blackBerry: function() {
                 return /BlackBerry/i.test(navigator.userAgent);
             },
             iOS: function() {
                 return /iPhone|iPad|iPod/i.test(navigator.userAgent);
             },
             any: function() {
-                return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Windows());
+                return (isMobile.android() || isMobile.blackBerry() || isMobile.iOS() || isMobile.windows());
             }
         };
         // Pull in data via AJAX

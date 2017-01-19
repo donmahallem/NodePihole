@@ -429,7 +429,7 @@ const DomainTable = function(table) {
         });
         tD.setData = function(data, dnsQueriesToday) {
             //dataTable.clear().draw();
-            for (domain in data) {
+            for (var domain in data) {
                 if ({}
                     .hasOwnProperty.call(data, domain)) {
                     // Sanitize domain

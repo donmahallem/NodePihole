@@ -32,7 +32,20 @@ var summaryUpdater = {};
         "domains_being_blocked": -1,
         "ads_percentage_today": -1
     };
-    const updateView = function() {
+	var callbacks={};
+	callbacks.socketUpdate = function(data) {
+        if (!data.type) {
+            return;
+        }
+        if (data.type === "block") {
+            summaryData["ads_blocked_today"]++;
+        }
+        summaryData["dns_queries_today"]++;
+        summaryData["ads_percentage_today"] = (summaryData["ads_blocked_today"] / summaryData["dns_queries_today"] * 100)
+            .toFixed(2);
+        sU.updateView();
+    };
+	sU.updateView = function() {
         ["ads_blocked_today", "dns_queries_today", "domains_being_blocked", "ads_percentage_today"].forEach(function(header, idx) {
             var textData = idx === 3 ? summaryData[header] + "%" : summaryData[header];
             $("h3#" + header)
@@ -47,41 +60,29 @@ var summaryUpdater = {};
                 }
             });
     };
-    const pollData = function() {
+	sU.pollData = function() {
         $.getJSON("/api/data?summary", function LoadSummaryData(data) {
                 summaryData = data;
             })
             .done(function() {
-                updateView();
+                sU.updateView();
             })
             .fail(function() {
                 // retry again in 300ms
                 setTimeout(pollData, 300);
             });
     };
-    const subscribeSocket = function() {
+	sU.subscribeSocket = function() {
         taillogWatcher
-            .on("dns", socketUpdate);
+            .on("dns", callbacks.socketUpdate);
     };
-    const unsubscribeSocket = function() {
+	sU.unsubscribeSocket = function() {
         taillogWatcher
-            .off("dns", socketUpdate);
-    };
-    const socketUpdate = function(data) {
-        if (!data.type) {
-            return;
-        }
-        if (data.type === "block") {
-            summaryData["ads_blocked_today"]++;
-        }
-        summaryData["dns_queries_today"]++;
-        summaryData["ads_percentage_today"] = (summaryData["ads_blocked_today"] / summaryData["dns_queries_today"] * 100)
-            .toFixed(2);
-        updateView();
+            .off("dns", callbacks.socketUpdate);
     };
     sU.start = function() {
-        pollData();
-        subscribeSocket();
+        sU.pollData();
+        sU.subscribeSocket();
     };
 }(summaryUpdater));
 
@@ -328,34 +329,37 @@ function escapeHtml(text) {
     });
 }
 
-function updateTopClientsChart() {
-    $.getJSON("/api/data?summaryRaw&getQuerySources", function(data) {
-        var clienttable = $("#client-frequency")
-            .find("tbody:last");
-        var domain,
-            percentage,
-            domainname;
-        for (domain in data.top_sources) {
-            if ({}
-                .hasOwnProperty.call(data.top_sources, domain)) {
-                // Sanitize domain
-                domain = escapeHtml(domain);
-                if (domain.indexOf("|") > -1) {
-                    domainname = domain.substr(0, domain.indexOf("|"));
-                } else {
-                    domainname = domain;
+var topClientsChart = {};
+(function(tCC) {
+    tCC.update = function() {
+        $.getJSON("/api/data?summaryRaw&getQuerySources", function(data) {
+            var clienttable = $("#client-frequency")
+                .find("tbody:last");
+            var domain,
+                percentage,
+                domainname;
+            for (domain in data.top_sources) {
+                if ({}
+                    .hasOwnProperty.call(data.top_sources, domain)) {
+                    // Sanitize domain
+                    domain = escapeHtml(domain);
+                    if (domain.indexOf("|") > -1) {
+                        domainname = domain.substr(0, domain.indexOf("|"));
+                    } else {
+                        domainname = domain;
+                    }
+                    var url = "<a href=\"queries.php?client=" + domain + "\">" + domainname + "</a>";
+                    percentage = data.top_sources[domain] / data.dns_queries_today * 100;
+                    clienttable.append("<tr> <td>" + url +
+                        "</td> <td>" + data.top_sources[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-blue\" style=\"width: " +
+                        percentage + "%\"></div> </div> </td> </tr> ");
                 }
-                var url = "<a href=\"queries.php?client=" + domain + "\">" + domainname + "</a>";
-                percentage = data.top_sources[domain] / data.dns_queries_today * 100;
-                clienttable.append("<tr> <td>" + url +
-                    "</td> <td>" + data.top_sources[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-blue\" style=\"width: " +
-                    percentage + "%\"></div> </div> </td> </tr> ");
             }
-        }
-        $("#client-frequency .overlay")
-            .remove();
-    });
-}
+            $("#client-frequency .overlay")
+                .remove();
+        });
+    };
+}(topClientsChart));
 
 var forwardDestinationUpdater = {};
 (function(fDU) {
@@ -520,6 +524,6 @@ $(document)
         }
         // Create / load "Top Clients" only if authorized
         if (document.getElementById("client-frequency")) {
-            updateTopClientsChart();
+            topClientsChart.update();
         }
     });

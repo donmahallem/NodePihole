@@ -402,7 +402,7 @@ const DomainTable = function(table) {
             "ordering": true,
             "searching": false,
             "order": [
-                [1, 'desc']
+                [1, "desc"]
             ],
             "columnDefs": [{
                 // The `data` parameter refers to the data for the cell (defined by the

@@ -355,7 +355,7 @@ logHelper.getQuerySources = function() {
             return {
                 "topSources": clients
             };
-        });;
+        });
 };
 
 logHelper.getForwardDestinations = function() {

@@ -5,6 +5,8 @@ const os = require("os");
 const exec = require("child_process")
     .exec;
 const readline = require("readline");
+const setupVars=require("./setupVars.js");
+const dns = require("dns");
 
 const isWin = /^win/.test(os.platform());
 
@@ -277,6 +279,45 @@ logHelper.getQueryTypes = function() {
     });
 };
 
+const excludeFromList = function(source, excl) {
+    var idx;
+    for (var i = 0; i < excl.length; i++) {
+        idx = source.indexOf(excl[i]);
+        if (idx !== -1) {
+            console.log("B", source.splice(idx, 1));
+        }
+    }
+    return source;
+};
+
+function resolveIP(ip) {
+    return new Promise(function(resolve, reject) {
+        dns.reverse(ip, function(err, result) {
+            if (err) {
+                resolve(ip);
+            } else {
+                resolve(result.join(",") + "|" + ip);
+            }
+        });
+    });
+};
+
+function resolveIPs(ips) {
+    dns.reverse
+    var queries = [];
+    for (var ip in ips) {
+        queries.push(resolveIP(ip, ips[ip]));
+    }
+    return Promise.all(queries)
+        .then(function(results) {
+            var domains = {};
+            for (var i = 0; i < results.length; i++ ) {
+                domain[results[i]] = ips[i];
+            }
+            return domain;
+        });
+};
+
 logHelper.getQuerySources = function() {
     return new Promise(function(resolve, reject) {
             var lineReader = readline
@@ -297,36 +338,21 @@ logHelper.getQuerySources = function() {
                 }
             });
             lineReader.on("close", function() {
-                /* TO BE IMPLEMENTED
-				
-        if(isset($setupVars["API_EXCLUDE_CLIENTS"]))
-        {
-            excludeFromList($sources, "API_EXCLUDE_CLIENTS");
-        }
-        arsort($sources);
-        $sources = array_slice($sources, 0, 10);
-        if(istrue($setupVars["API_GET_CLIENT_HOSTNAME"]))
-        {
-            resolveIPs($sources);
-        }
-		*/
-                resolve({
-                    "top_sources": clients
-                });
+				resolve(clients);
             });
         })
-        .then(function(result) {
-            return new Promise(function(resolve, reject) {
-                logHelper.getGravityCount()
-                    .then(function(result2) {
-                        result.domains_being_blocked = result2;
-                        resolve(result);
-                    })
-                    .catch(function(err) {
-                        reject(err);
-                    });
-            });
-        });
+        .then(function(clients) {
+            if (setupVars["API_EXCLUDE_CLIENTS"]) {
+                clients = excludeFromList(clients, setupVars["API_EXCLUDE_CLIENTS"]);
+            }
+            if (setupVars["API_GET_CLIENT_HOSTNAME"] === true) {
+                return resolveIPs(clients);
+            } else {
+                return clients;
+            }
+        }).then(function(clients){
+			return {"topSources":clients};
+		});;
 };
 
 logHelper.getForwardDestinations = function() {

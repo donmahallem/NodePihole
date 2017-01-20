@@ -429,39 +429,48 @@ logHelper.getOverTimeData10mins = function() {
 };
 
 logHelper.getTopItems = function(argument) {
-    return new Promise(function(resolve, reject) {
-        fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
-            if (err) {
-                reject(err);
-            } else {
-                var topDomains = {},
-                    topAds = {};
-                var lineReader = readline
-                    .createInterface({
-                        input: require("fs")
-                            .createReadStream(appDefaults.logFile)
-                    });
-                lineReader.on("line", function(line) {
-                    if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
-                        return;
-                    }
-                    var info = line.split(" ");
-                    var domain = info[info.length - 3].trim();
-                    if (topDomains.hasOwnProperty(domain)) {
-                        topDomains[domain]++;
+    return logHelper.getGravity()
+        .then(function(gravityList) {
+            return new Promise(function(resolve, reject) {
+                fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
+                    if (err) {
+                        reject(err);
                     } else {
-                        topDomains[domain] = 1;
+                        var topDomains = {},
+                            topAds = {};
+                        var lineReader = readline
+                            .createInterface({
+                                input: require("fs")
+                                    .createReadStream(appDefaults.logFile)
+                            });
+                        lineReader.on("line", function(line) {
+                            var info = logHelper.parseLine(line);
+                            if (info !== false && info.type === "query") {
+                                if (info.domain in gravityList) {
+                                    if (topAds.hasOwnProperty(info.domain)) {
+                                        topAds[info.domain]++;
+                                    } else {
+                                        topAds[info.domain] = 1;
+                                    }
+                                } else {
+                                    if (topDomains.hasOwnProperty(info.domain)) {
+                                        topDomains[info.domain]++;
+                                    } else {
+                                        topDomains[info.domain] = 1;
+                                    }
+                                }
+                            }
+                        });
+                        lineReader.on("close", function() {
+                            resolve({
+                                "topQueries": topDomains,
+                                "topAds": topAds
+                            });
+                        });
                     }
                 });
-                lineReader.on("close", function() {
-                    resolve({
-                        "topQueries": topDomains,
-                        "topAds": topAds
-                    });
-                });
-            }
+            })
         });
-    });
 };
 
 module.exports = logHelper;

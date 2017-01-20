@@ -471,13 +471,13 @@ var topLists = {};
                 topQueryTable.setData(data.topQueries, data.dns_queries_today);
             }
             for (domain in data.topAds) {
-                if (Object.hasOwnProperty.call(data.top_ads, domain)) {
+                if (Object.hasOwnProperty.call(data.topAds, domain)) {
                     // Sanitize domain
                     domain = escapeHtml(domain);
                     url = "<a href=\"queries.php?domain=" + domain + "\">" + domain + "</a>";
-                    percentage = data.top_ads[domain] / data.ads_blocked_today * 100;
+                    percentage = data.topAds[domain] / data.ads_blocked_today * 100;
                     adtable.append("<tr> <td>" + url +
-                        "</td> <td>" + data.top_ads[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-yellow\" style=\"width: " +
+                        "</td> <td>" + data.topAds[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-yellow\" style=\"width: " +
                         percentage + "%\"></div> </div> </td> </tr> ");
                 }
             }

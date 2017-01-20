@@ -290,7 +290,7 @@ const excludeFromList = function(source, excl) {
     return source;
 };
 
-const resolveIPfunction = function(ip) {
+const resolveIP = function(ip) {
     return new Promise(function(resolve, reject) {
         dns.reverse(ip, function(err, result) {
             if (err) {

@@ -277,6 +277,58 @@ logHelper.getQueryTypes = function() {
     });
 };
 
+logHelper.getQuerySources = function() {
+    return new Promise(function(resolve, reject) {
+            var lineReader = readline
+                .createInterface({
+                    input: require("fs")
+                        .createReadStream(appDefaults.logFile)
+                });
+            var clients = {};
+            lineReader.on("line", function(line) {
+                var lineData = logHelper.parseLine(line);
+                if (lineData === false || lineData.type !== "query") {
+                    return;
+                }
+                if (clients.hasOwnProperty(lineData.client)) {
+                    clients[lineData.client]++;
+                } else {
+                    clients[lineData.client] = 1;
+                }
+            });
+            lineReader.on("close", function() {
+                /* TO BE IMPLEMENTED
+				
+        if(isset($setupVars["API_EXCLUDE_CLIENTS"]))
+        {
+            excludeFromList($sources, "API_EXCLUDE_CLIENTS");
+        }
+        arsort($sources);
+        $sources = array_slice($sources, 0, 10);
+        if(istrue($setupVars["API_GET_CLIENT_HOSTNAME"]))
+        {
+            resolveIPs($sources);
+        }
+		*/
+                resolve({
+                    "top_sources": clients
+                });
+            });
+        })
+        .then(function(result) {
+            return new Promise(function(resolve, reject) {
+                logHelper.getGravityCount()
+                    .then(function(result2) {
+                        result.domains_being_blocked = result2;
+                        resolve(result);
+                    })
+                    .catch(function(err) {
+                        reject(err);
+                    });
+            });
+        });
+};
+
 logHelper.getForwardDestinations = function() {
     return new Promise(function(resolve, reject) {
         fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {

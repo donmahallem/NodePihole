@@ -33,6 +33,9 @@ const supportedDataQueries = {
     },
     "getAllQueries": {
         "authRequired": true
+    },
+    "getQuerySources": {
+        "authRequired": true
     }
 };
 
@@ -132,20 +135,23 @@ router.get("/data", function(req, res) {
     if ("summaryRaw" in args) {
         promises.push(logHelper.getSummary());
     }
-    if ("overTimeData10mins" in req.query) {
+    if ("overTimeData10mins" in args) {
         promises.push(logHelper.getOverTimeData10mins());
     }
-    if ("topItems" in req.query) {
+    if ("topItems" in args) {
         promises.push(logHelper.getTopItems());
     }
-    if ("getQueryTypes" in req.query) {
+    if ("getQueryTypes" in args) {
         promises.push(logHelper.getQueryTypes());
     }
-    if ("getForwardDestinations" in req.query) {
+    if ("getForwardDestinations" in args) {
         promises.push(logHelper.getForwardDestinations());
     }
-    if ("getAllQueries" in req.query) {
+    if ("getAllQueries" in args) {
         promises.push(logHelper.getAllQueries());
+    }
+    if ("getQuerySources" in args) {
+        promises.push(logHelper.getQuerySources());
     }
     Promise.all(promises)
         .then(function(values) {

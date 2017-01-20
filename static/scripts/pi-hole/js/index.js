@@ -40,13 +40,12 @@ var summaryUpdater = {};
             summaryData["ads_blocked_today"]++;
         }
         summaryData["dns_queries_today"]++;
-        summaryData["ads_percentage_today"] = (summaryData["ads_blocked_today"] / summaryData["dns_queries_today"] * 100)
-            .toFixed(2);
+        summaryData["ads_percentage_today"] = (summaryData["ads_blocked_today"] / summaryData["dns_queries_today"] * 100);
         sU.updateView();
     };
     sU.updateView = function() {
         ["ads_blocked_today", "dns_queries_today", "domains_being_blocked", "ads_percentage_today"].forEach(function(header, idx) {
-            var textData = idx === 3 ? summaryData[header] + "%" : summaryData[header];
+            var textData = idx === 3 ? summaryData[header].toFixed(2) + "%" : summaryData[header];
             $("h3#" + header)
                 .text(textData);
         });

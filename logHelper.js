@@ -284,13 +284,13 @@ const excludeFromList = function(source, excl) {
     for (var i = 0; i < excl.length; i++) {
         idx = source.indexOf(excl[i]);
         if (idx !== -1) {
-            console.log("B", source.splice(idx, 1));
+            source.splice(idx, 1);
         }
     }
     return source;
 };
 
-function resolveIP(ip) {
+const resolveIPfunction = function(ip) {
     return new Promise(function(resolve, reject) {
         dns.reverse(ip, function(err, result) {
             if (err) {
@@ -303,7 +303,6 @@ function resolveIP(ip) {
 };
 
 function resolveIPs(ips) {
-    dns.reverse
     var queries = [];
     for (var ip in ips) {
         queries.push(resolveIP(ip, ips[ip]));
@@ -312,9 +311,9 @@ function resolveIPs(ips) {
         .then(function(results) {
             var domains = {};
             for (var i = 0; i < results.length; i++) {
-                domain[results[i]] = ips[i];
+                domains[results[i]] = ips[i];
             }
-            return domain;
+            return domains;
         });
 };
 

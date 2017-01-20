@@ -5,7 +5,7 @@ const os = require("os");
 const exec = require("child_process")
     .exec;
 const readline = require("readline");
-const setupVars=require("./setupVars.js");
+const setupVars = require("./setupVars.js");
 const dns = require("dns");
 
 const isWin = /^win/.test(os.platform());
@@ -311,7 +311,7 @@ function resolveIPs(ips) {
     return Promise.all(queries)
         .then(function(results) {
             var domains = {};
-            for (var i = 0; i < results.length; i++ ) {
+            for (var i = 0; i < results.length; i++) {
                 domain[results[i]] = ips[i];
             }
             return domain;
@@ -338,7 +338,7 @@ logHelper.getQuerySources = function() {
                 }
             });
             lineReader.on("close", function() {
-				resolve(clients);
+                resolve(clients);
             });
         })
         .then(function(clients) {
@@ -350,9 +350,12 @@ logHelper.getQuerySources = function() {
             } else {
                 return clients;
             }
-        }).then(function(clients){
-			return {"topSources":clients};
-		});;
+        })
+        .then(function(clients) {
+            return {
+                "topSources": clients
+            };
+        });;
 };
 
 logHelper.getForwardDestinations = function() {

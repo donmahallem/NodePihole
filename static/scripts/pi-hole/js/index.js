@@ -412,12 +412,12 @@ const DomainTable = function(table) {
                     return "<div class=\"progress progress-sm\" title=\"" + data.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-yellow\" style=\"width: " + data + "%\"></div> </div>";
                 },
                 "targets": 2
-            },{
+            }, {
                 // The `data` parameter refers to the data for the cell (defined by the
                 // `data` option, which defaults to the column being worked with, in
                 // this case `data: 0`.
                 "render": function(data, type, row) {
-                    domain = escapeHtml(data);
+                    var domain = escapeHtml(data);
                     return "<a href=\"queries?domain=" + domain + "\">" + domain + "</a>";
                 },
                 "targets": 0

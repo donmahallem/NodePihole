@@ -94,7 +94,7 @@ var frontEnd = {
                 var tokenHash = helper.hashPassword(token);
                 if (tokenHash === setupVars.WEBPASSWORD) {
                     jwt.sign({
-                            foo: "bar"
+                            "csrfToken": helper.hashPassword("" + Math.random() * Date.now())
                         }, appDefaults.jwtSecret, {
                             expiresIn: "1h",
                             subject: "admin",

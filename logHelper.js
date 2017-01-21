@@ -302,7 +302,7 @@ const resolveIP = function(ip) {
     });
 };
 
-function resolveIPs(ips) {
+const resolveIPs = function(ips) {
     var queries = [];
     for (var ip in ips) {
         queries.push(resolveIP(ip, ips[ip]));
@@ -469,7 +469,7 @@ logHelper.getTopItems = function(argument) {
                         });
                     }
                 });
-            })
+            });
         });
 };
 

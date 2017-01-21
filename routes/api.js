@@ -282,10 +282,12 @@ router.post("/disable",
                     res.sendStatus(500);
                 } else {
                     res.json({
-                        "status": "enabled"
+                        "status": "disabled"
                     });
                 }
             });
+        } else {
+            res.sendStatus(400);
         }
     }
 );

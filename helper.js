@@ -55,11 +55,9 @@ helper.express.verifyAuthCookie = function(req, res, next) {
 };
 
 helper.express.csrfMiddleware = function(req, res, next) {
-    console.log(req.body);
     if (req.body.token && req.body.token === helper.hashWithSalt(req.user.csrfToken, appDefaults.csrfSecret)) {
         next();
     } else {
-        console.log("csrf token match failed: " + req.method + "(" + req.originalUrl + ")");
         res.sendStatus(401);
     }
 };

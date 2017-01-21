@@ -5,6 +5,8 @@ const os = require("os");
 const exec = require("child_process")
     .exec;
 const readline = require("readline");
+const setupVars = require("./setupVars.js");
+const dns = require("dns");
 
 const isWin = /^win/.test(os.platform());
 
@@ -277,6 +279,84 @@ logHelper.getQueryTypes = function() {
     });
 };
 
+const excludeFromList = function(source, excl) {
+    var idx;
+    for (var i = 0; i < excl.length; i++) {
+        idx = source.indexOf(excl[i]);
+        if (idx !== -1) {
+            source.splice(idx, 1);
+        }
+    }
+    return source;
+};
+
+const resolveIP = function(ip) {
+    return new Promise(function(resolve, reject) {
+        dns.reverse(ip, function(err, result) {
+            if (err) {
+                resolve(ip);
+            } else {
+                resolve(result.join(",") + "|" + ip);
+            }
+        });
+    });
+};
+
+const resolveIPs = function(ips) {
+    var queries = [];
+    for (var ip in ips) {
+        queries.push(resolveIP(ip, ips[ip]));
+    }
+    return Promise.all(queries)
+        .then(function(results) {
+            var domains = {};
+            for (var i = 0; i < results.length; i++) {
+                domains[results[i]] = ips[i];
+            }
+            return domains;
+        });
+};
+
+logHelper.getQuerySources = function() {
+    return new Promise(function(resolve, reject) {
+            var lineReader = readline
+                .createInterface({
+                    input: require("fs")
+                        .createReadStream(appDefaults.logFile)
+                });
+            var clients = {};
+            lineReader.on("line", function(line) {
+                var lineData = logHelper.parseLine(line);
+                if (lineData === false || lineData.type !== "query") {
+                    return;
+                }
+                if (clients.hasOwnProperty(lineData.client)) {
+                    clients[lineData.client]++;
+                } else {
+                    clients[lineData.client] = 1;
+                }
+            });
+            lineReader.on("close", function() {
+                resolve(clients);
+            });
+        })
+        .then(function(clients) {
+            if (setupVars["API_EXCLUDE_CLIENTS"]) {
+                clients = excludeFromList(clients, setupVars["API_EXCLUDE_CLIENTS"]);
+            }
+            if (setupVars["API_GET_CLIENT_HOSTNAME"] === true) {
+                return resolveIPs(clients);
+            } else {
+                return clients;
+            }
+        })
+        .then(function(clients) {
+            return {
+                "topSources": clients
+            };
+        });
+};
+
 logHelper.getForwardDestinations = function() {
     return new Promise(function(resolve, reject) {
         fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
@@ -349,39 +429,48 @@ logHelper.getOverTimeData10mins = function() {
 };
 
 logHelper.getTopItems = function(argument) {
-    return new Promise(function(resolve, reject) {
-        fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
-            if (err) {
-                reject(err);
-            } else {
-                var topDomains = {},
-                    topAds = {};
-                var lineReader = readline
-                    .createInterface({
-                        input: require("fs")
-                            .createReadStream(appDefaults.logFile)
-                    });
-                lineReader.on("line", function(line) {
-                    if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
-                        return;
-                    }
-                    var info = line.split(" ");
-                    var domain = info[info.length - 3].trim();
-                    if (topDomains.hasOwnProperty(domain)) {
-                        topDomains[domain]++;
+    return logHelper.getGravity()
+        .then(function(gravityList) {
+            return new Promise(function(resolve, reject) {
+                fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
+                    if (err) {
+                        reject(err);
                     } else {
-                        topDomains[domain] = 1;
+                        var topDomains = {},
+                            topAds = {};
+                        var lineReader = readline
+                            .createInterface({
+                                input: require("fs")
+                                    .createReadStream(appDefaults.logFile)
+                            });
+                        lineReader.on("line", function(line) {
+                            var info = logHelper.parseLine(line);
+                            if (info !== false && info.type === "query") {
+                                if (info.domain in gravityList) {
+                                    if (topAds.hasOwnProperty(info.domain)) {
+                                        topAds[info.domain]++;
+                                    } else {
+                                        topAds[info.domain] = 1;
+                                    }
+                                } else {
+                                    if (topDomains.hasOwnProperty(info.domain)) {
+                                        topDomains[info.domain]++;
+                                    } else {
+                                        topDomains[info.domain] = 1;
+                                    }
+                                }
+                            }
+                        });
+                        lineReader.on("close", function() {
+                            resolve({
+                                "topQueries": topDomains,
+                                "topAds": topAds
+                            });
+                        });
                     }
                 });
-                lineReader.on("close", function() {
-                    resolve({
-                        "topQueries": topDomains,
-                        "topAds": topAds
-                    });
-                });
-            }
+            });
         });
-    });
 };
 
 module.exports = logHelper;

@@ -1,9 +1,13 @@
+/*eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
+
 const express = require("express");
 const readline = require("readline");
 const moment = require("moment");
 const fs = require("fs");
 const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
+const helper = require("./../helper.js");
+const childProcess = require("child_process");
 var router = express.Router();
 
 const supportedDataQueries = {
@@ -33,9 +37,25 @@ const supportedDataQueries = {
     },
     "getAllQueries": {
         "authRequired": true
+    },
+    "getQuerySources": {
+        "authRequired": true
     }
 };
 
+/*
+Special middleware for api endpoint as no login redirect will be shown
+*/
+const apiMiddleware = {
+    auth: function(req, res, next) {
+        if (req.user.authenticated) {
+            next();
+        } else {
+            console.log("authentication failed: " + req.method + "(" + req.originalUrl + ")");
+            res.sendStatus(401);
+        }
+    }
+};
 // Potential buildfail fix for node 5 and below
 // polyfill source: https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
 if (typeof Object.assign != "function") {
@@ -111,6 +131,7 @@ router.get("/data", function(req, res) {
         if (query in supportedDataQueries && (typeof supportedDataQueries[query].authRequired === "boolean")) {
             if (supportedDataQueries[query].authRequired && !req.user.authenticated) {
                 // User needs to be authenticated for this query
+                console.log("User is not authenticated for: " + req.method + "(" + req.originalUrl + ")");
                 res.sendStatus(401);
                 return;
             }
@@ -120,6 +141,7 @@ router.get("/data", function(req, res) {
     }
     // cancel request because no valid args were provided
     if (numValidArgs === 0) {
+        console.log("No valid argument specified");
         res.sendStatus(400);
         return;
     }
@@ -132,20 +154,23 @@ router.get("/data", function(req, res) {
     if ("summaryRaw" in args) {
         promises.push(logHelper.getSummary());
     }
-    if ("overTimeData10mins" in req.query) {
+    if ("overTimeData10mins" in args) {
         promises.push(logHelper.getOverTimeData10mins());
     }
-    if ("topItems" in req.query) {
+    if ("topItems" in args) {
         promises.push(logHelper.getTopItems());
     }
-    if ("getQueryTypes" in req.query) {
+    if ("getQueryTypes" in args) {
         promises.push(logHelper.getQueryTypes());
     }
-    if ("getForwardDestinations" in req.query) {
+    if ("getForwardDestinations" in args) {
         promises.push(logHelper.getForwardDestinations());
     }
-    if ("getAllQueries" in req.query) {
+    if ("getAllQueries" in args) {
         promises.push(logHelper.getAllQueries());
+    }
+    if ("getQuerySources" in args) {
+        promises.push(logHelper.getQuerySources());
     }
     Promise.all(promises)
         .then(function(values) {
@@ -156,22 +181,21 @@ router.get("/data", function(req, res) {
             res.json(data);
         })
         .catch(function(err) {
-            console.log(err);
+            console.error("Request failed", err);
             res.sendStatus(400);
         });
 });
 
-router.get("/taillog", function(req, res) {
-    if (!req.user.authenticated) {
-        res.sendStatus(401);
-    } else {
+router.get("/taillog",
+    apiMiddleware.auth,
+    function(req, res) {
         var connectionOpen = true;
         var updateInterval;
         req.on("close", function() {
             if (connectionOpen) {
                 connectionOpen = false;
                 clearInterval(updateInterval);
-                console.log("Request close");
+                console.log("Taillog connection closed");
             }
         });
 
@@ -179,7 +203,7 @@ router.get("/taillog", function(req, res) {
             if (connectionOpen) {
                 connectionOpen = false;
                 clearInterval(updateInterval);
-                console.log("Request end");
+                console.log("Taillog connection ended");
             }
         });
         res.set({
@@ -195,13 +219,10 @@ router.get("/taillog", function(req, res) {
             res.write("event: dns\n");
             res.write("data: {\"timestamp\":\"2017-01-18T21:34:20Z\",\"type\":\"query\"}\n\n");
         }, 1000);
-    }
-});
+    });
 
-router.get("/list", function(req, res) {
-    if (!req.user.authenticated) {
-        res.sendStatus(401);
-    } else if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
+router.get("/list", apiMiddleware.auth, function(req, res) {
+    if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
         var filepath;
         if (req.query.list === "white") {
             filepath = appDefaults.whiteListFile;
@@ -235,4 +256,82 @@ router.get("/list", function(req, res) {
     }
 });
 
+router.post("/list",
+    apiMiddleware.auth,
+    helper.express.csrfMiddleware,
+    function(req, res) {
+        var domain = req.body.domain;
+        var list = req.body.list;
+        if (domain && list) {
+            if (list === "white") {
+                childProcess.exec("sudo pihole -w -q " + domain);
+                res.end();
+            } else if (list === "black") {
+                childProcess.exec("sudo pihole -b -q " + domain);
+                res.end();
+            } else {
+                res.sendStatus(401);
+            }
+        } else {
+            res.sendStatus(404);
+        }
+    });
+
+router.delete("/list",
+    apiMiddleware.auth,
+    helper.express.csrfMiddleware,
+    function(req, res) {
+        var domain = req.body.domain;
+        var list = req.body.list;
+        if (domain && list) {
+            if (list === "white") {
+                childProcess.exec("sudo pihole -w -q -d " + domain);
+                res.end();
+            } else if (list === "black") {
+                childProcess.exec("sudo pihole -b -q -d " + domain);
+                res.end();
+            } else {
+                res.sendStatus(401);
+            }
+        } else {
+            res.sendStatus(404);
+        }
+    });
+
+router.post("/enable",
+    apiMiddleware.auth,
+    helper.express.csrfMiddleware,
+    function(req, res) {
+        childProcess.exec("sudo pihole enable", function(error, stdout, stderr) {
+            if (error || stderr.trim() !== "") {
+                res.sendStatus(500);
+            } else {
+                res.json({
+                    "status": "enabled"
+                });
+            }
+        });
+    }
+);
+
+router.post("/disable",
+    apiMiddleware.auth,
+    helper.express.csrfMiddleware,
+    function(req, res) {
+        if (req.body.time && !isNaN(req.body.time)) {
+            var disableTime = Math.floor(Number(req.body.time));
+            childProcess.exec("sudo pihole disable" + (disableTime > 0 ? disableTime + "s" : ""), function(error, stdout, stderr) {
+                if (error || stderr.trim() !== "") {
+                    res.sendStatus(500);
+                } else {
+                    res.json({
+                        "status": "disabled"
+                    });
+                }
+            });
+        } else {
+            res.sendStatus(400);
+        }
+    }
+);
 module.exports = router;

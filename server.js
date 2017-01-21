@@ -63,30 +63,6 @@ var PiServer = function() {
     this.app.get("/logout", frontEnd.logout.get);
     this.app.get("/queries", frontEnd.queries.get);
     this.app.get("/list", frontEnd.list.get);
-    this.app.post("/scripts/pi-hole/php/add.php", function(req, res) {
-        if (!req.user.authenticated) {
-            res.sendStatus(401);
-            res.end();
-            return;
-        }
-        var domain = req.body.domain;
-        var list = req.body.list;
-        var token = req.body.token;
-        if (domain && list) {
-            if (list === "white") {
-                exec("sudo pihole -w -q " + domain);
-                res.end();
-                return;
-            } else if (list === "black") {
-                exec("sudo pihole -b -q " + domain);
-                res.end();
-                return;
-            } else {
-                console.log("unknwon list type:" + list);
-            }
-        }
-        res.sendStatus(404);
-    });
     this.started = false;
 };
 PiServer.prototype.start = function() {

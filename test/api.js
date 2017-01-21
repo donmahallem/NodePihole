@@ -10,6 +10,7 @@ const helper = require("./../helper.js");
 chai.use(chaiHttp);
 const appDefaults = require("./../defaults.js");
 const logHelper = require("./../logHelper.js");
+const childProcess = require("child_process");
 var server = new Backend();
 var sandbox;
 describe("Testing api endpoints", function() {
@@ -21,94 +22,398 @@ describe("Testing api endpoints", function() {
     });
     describe("/api", function() {
         describe("/list", function() {
-            describe("get - authenticated", function() {
-                var verifyCookieStub;
-                beforeEach(function() {
-                    verifyCookieStub = sandbox.stub(helper.express, "verifyAuthCookie", function(req, res, next) {
-                        req.user = {
-                            authenticated: true
-                        };
-                        next();
+            describe("get", function() {
+                describe("authenticated", function() {
+                    var verifyCookieStub;
+                    beforeEach(function() {
+                        verifyCookieStub = sandbox.stub(helper.express, "verifyAuthCookie", function(req, res, next) {
+                            req.user = {
+                                authenticated: true
+                            };
+                            next();
+                        });
+                    });
+                    afterEach(function() {
+                        sinon.assert.calledOnce(verifyCookieStub);
+                        verifyCookieStub.restore();
+                    });
+                    it("should not succeed", function(done) {
+                        chai.request(server.app)
+                            .get("/api/list")
+                            .set("Host", "localhost")
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(400);
+                                done();
+                            });
+                    });
+                    it("should succeed", function(done) {
+                        chai.request(server.app)
+                            .get("/api/list")
+                            .set("Host", "localhost")
+                            .query({
+                                "list": "white"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
+                                done();
+                            });
+                    });
+                    it("should succeed", function(done) {
+                        chai.request(server.app)
+                            .get("/api/list")
+                            .set("Host", "localhost")
+                            .query({
+                                "list": "black"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
+                                expect(res.header["content-type"])
+                                    .to.not.be.null;
+                                expect(res.header["content-type"])
+                                    .to.contain("application/json");
+                                done();
+                            });
+                    });
+                    it("should not succeed", function(done) {
+                        chai.request(server.app)
+                            .get("/api/list")
+                            .set("Host", "localhost")
+                            .query({
+                                "list": "unknown"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(400);
+                                done();
+                            });
+                    });
+                });
+                describe("get - unauthenticated", function() {
+                    it("should not succeed", function(done) {
+                        chai.request(server.app)
+                            .get("/api/list")
+                            .set("Host", "localhost")
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                done();
+                            });
+                    });
+                });
+            });
+            describe("post", function() {
+                var execStub;
+                before(function() {
+                    execStub = sandbox.stub(childProcess, "exec", function(arg, callback) {
+
                     });
                 });
                 afterEach(function() {
-                    sinon.assert.calledOnce(verifyCookieStub);
-                    verifyCookieStub.restore();
+                    execStub.reset();
                 });
-                it("should not succeed", function(done) {
-                    chai.request(server.app)
-                        .get("/api/list")
-                        .set("Host", "localhost")
-                        .end(function(err, res) {
-                            expect(err)
-                                .to.not.be.null;
-                            expect(res.status)
-                                .to.equal(400);
-                            done();
-                        });
+                after(function() {
+                    execStub.restore();
                 });
-                it("should succeed", function(done) {
-                    chai.request(server.app)
-                        .get("/api/list")
-                        .set("Host", "localhost")
-                        .query({
-                            "list": "white"
-                        })
-                        .end(function(err, res) {
-                            expect(err)
-                                .to.be.null;
-                            expect(res.status)
-                                .to.equal(200);
-                            done();
+                describe("authenticated", function() {
+                    var csrfStub, verifyCookieStub;
+                    before(function() {
+                        csrfStub = sandbox.stub(helper, "hashWithSalt");
+                        csrfStub.returns("token");
+                        verifyCookieStub = sandbox.stub(helper.express, "verifyAuthCookie", function(req, res, next) {
+                            req.user = {
+                                authenticated: true
+                            };
+                            next();
                         });
+                    });
+                    afterEach(function() {
+                        sinon.assert.calledOnce(csrfStub);
+                        sinon.assert.calledOnce(verifyCookieStub);
+                        csrfStub.reset();
+                        verifyCookieStub.reset();
+                    });
+                    after(function() {
+                        csrfStub.restore();
+                        verifyCookieStub.restore();
+                    });
+                    it("should not succeed for missing list name", function(done) {
+                        chai.request(server.app)
+                            .post("/api/list")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(404);
+                                sinon.assert.callCount(execStub, 0);
+                                done();
+                            });
+                    });
+                    it("should not succeed for wrong list name", function(done) {
+                        chai.request(server.app)
+                            .post("/api/list")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token",
+                                "list": "whitee"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                sinon.assert.callCount(execStub, 0);
+                                done();
+                            });
+                    });
+                    it("should succeed for white list", function(done) {
+                        chai.request(server.app)
+                            .post("/api/list")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token",
+                                "list": "white"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
+                                sinon.assert.calledOnce(execStub);
+                                sinon.assert.calledWithExactly(execStub, "sudo pihole -w -q test.com");
+                                done();
+                            });
+                    });
+                    it("should succeed for black list", function(done) {
+                        chai.request(server.app)
+                            .post("/api/list")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token",
+                                "list": "black"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
+                                sinon.assert.calledOnce(execStub);
+                                sinon.assert.calledWithExactly(execStub, "sudo pihole -b -q test.com");
+                                done();
+                            });
+                    });
                 });
-                it("should succeed", function(done) {
-                    chai.request(server.app)
-                        .get("/api/list")
-                        .set("Host", "localhost")
-                        .query({
-                            "list": "black"
-                        })
-                        .end(function(err, res) {
-                            expect(err)
-                                .to.be.null;
-                            expect(res.status)
-                                .to.equal(200);
-                            expect(res.header["content-type"])
-                                .to.not.be.null;
-                            expect(res.header["content-type"])
-                                .to.contain("application/json");
-                            done();
-                        });
-                });
-                it("should not succeed", function(done) {
-                    chai.request(server.app)
-                        .get("/api/list")
-                        .set("Host", "localhost")
-                        .query({
-                            "list": "unknown"
-                        })
-                        .end(function(err, res) {
-                            expect(err)
-                                .to.not.be.null;
-                            expect(res.status)
-                                .to.equal(400);
-                            done();
-                        });
+                describe("unauthenticated", function() {
+                    afterEach(function() {
+                        sinon.assert.callCount(execStub, 0);
+                    });
+                    it("should not succeed for right csrf", function(done) {
+                        chai.request(server.app)
+                            .post("/api/list")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                done();
+                            });
+                    });
+                    it("should not succeed", function(done) {
+                        chai.request(server.app)
+                            .post("/api/list")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "wrongtoken"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                done();
+                            });
+                    });
                 });
             });
-            describe("get - unauthenticated", function() {
-                it("should succeed", function(done) {
-                    chai.request(server.app)
-                        .get("/api/list")
-                        .set("Host", "localhost")
-                        .end(function(err, res) {
-                            expect(err)
-                                .to.not.be.null;
-                            expect(res.status)
-                                .to.equal(401);
-                            done();
+            describe("delete", function() {
+                var execStub;
+                before(function() {
+                    execStub = sandbox.stub(childProcess, "exec", function(arg, callback) {
+
+                    });
+                });
+                afterEach(function() {
+                    execStub.reset();
+                });
+                after(function() {
+                    execStub.restore();
+                });
+                describe("authenticated", function() {
+                    var csrfStub, verifyCookieStub;
+                    before(function() {
+                        csrfStub = sandbox.stub(helper, "hashWithSalt");
+                        csrfStub.returns("token");
+                        verifyCookieStub = sandbox.stub(helper.express, "verifyAuthCookie", function(req, res, next) {
+                            req.user = {
+                                authenticated: true
+                            };
+                            next();
                         });
+                    });
+                    afterEach(function() {
+                        sinon.assert.calledOnce(csrfStub);
+                        sinon.assert.calledOnce(verifyCookieStub);
+                        csrfStub.reset();
+                        verifyCookieStub.reset();
+                    });
+                    after(function() {
+                        csrfStub.restore();
+                        verifyCookieStub.restore();
+                    });
+                    it("should not succeed for missing list name", function(done) {
+                        chai.request(server.app)
+                            .delete("/api/list")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(404);
+                                sinon.assert.callCount(execStub, 0);
+                                done();
+                            });
+                    });
+                    it("should not succeed for wrong list name", function(done) {
+                        chai.request(server.app)
+                            .delete("/api/list")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token",
+                                "list": "whitee"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                sinon.assert.callCount(execStub, 0);
+                                done();
+                            });
+                    });
+                    it("should succeed for white list", function(done) {
+                        chai.request(server.app)
+                            .delete("/api/list")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token",
+                                "list": "white"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
+                                sinon.assert.calledOnce(execStub);
+                                sinon.assert.calledWithExactly(execStub, "sudo pihole -w -q -d test.com");
+                                done();
+                            });
+                    });
+                    it("should succeed for black list", function(done) {
+                        chai.request(server.app)
+                            .delete("/api/list")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token",
+                                "list": "black"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
+                                sinon.assert.calledOnce(execStub);
+                                sinon.assert.calledWithExactly(execStub, "sudo pihole -b -q -d test.com");
+                                done();
+                            });
+                    });
+                });
+                describe("unauthenticated", function() {
+                    afterEach(function() {
+                        sinon.assert.callCount(execStub, 0);
+                    });
+                    it("should not succeed for right csrf", function(done) {
+                        chai.request(server.app)
+                            .delete("/api/list")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                done();
+                            });
+                    });
+                    it("should not succeed", function(done) {
+                        chai.request(server.app)
+                            .delete("/api/list")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "wrongtoken"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                done();
+                            });
+                    });
                 });
             });
         });

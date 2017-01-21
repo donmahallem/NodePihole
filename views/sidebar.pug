@@ -56,6 +56,8 @@ aside.main-sidebar
 						+sidebar_menu_item("#","For 30 seconds","fa-clock-o")#pihole-disable-30s
 						+sidebar_menu_item("#","For 5 minutes","fa-clock-o")#pihole-disable-5m
 					// <a href="#" id="flip-status"><i class="fa fa-stop"></i> <span>Disable</span></a>
+				
+				+sidebar_menu_item("#","Enable","fa-play",false)#pihole-enable.treeview(hidden='true')
 				li#pihole-enable.treeview(hidden='true')
 					a(href='#')
 						i.fa.fa-play

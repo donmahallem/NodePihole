@@ -17,6 +17,17 @@ helper.hashPassword = function(pwd) {
         .digest("hex");
 };
 
+helper.hashWithSalt = function(pwd, salt) {
+    const tempHash = crypto.createHash("sha256", "utf8")
+        .update(pwd)
+        .update(salt)
+        .digest("hex");
+    return crypto.createHash("sha256", "utf8")
+        .update(tempHash)
+        .update(salt)
+        .digest("hex");
+};
+
 helper.express = {};
 
 helper.express.verifyAuthCookie = function(req, res, next) {
@@ -25,7 +36,8 @@ helper.express.verifyAuthCookie = function(req, res, next) {
             if (decoded) {
                 req.user = {
                     "authenticated": true,
-                    "token": req.signedCookies.auth
+                    "csrfToken": decoded.csrfToken,
+                    "token": helper.hashWithSalt(decoded.csrfToken, appDefaults.csrfSecret)
                 };
             } else {
                 req.user = {
@@ -42,6 +54,13 @@ helper.express.verifyAuthCookie = function(req, res, next) {
     }
 };
 
+helper.express.csrfMiddleware = function(req, res, next) {
+    if (req.body.token && req.body.token === helper.hashWithSalt(req.user.csrfToken, appDefaults.csrfSecret)) {
+        next();
+    } else {
+        res.sendStatus(401);
+    }
+};
 helper.express.corsMiddleware = function(req, res, next) {
     const ipv4 = setupVars.hasOwnProperty("IPV4_ADDRESS") ? setupVars["IPV4_ADDRESS"].split("\/")[0] : server.address()
         .address;

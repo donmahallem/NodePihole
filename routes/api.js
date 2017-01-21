@@ -4,7 +4,7 @@ const moment = require("moment");
 const fs = require("fs");
 const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
-const exec = require('child_process')
+const exec = require("child_process")
     .exec;
 var router = express.Router();
 

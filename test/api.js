@@ -202,6 +202,7 @@ describe("Testing api endpoints", function() {
                                 expect(res.status)
                                     .to.equal(200);
                                 sinon.assert.calledOnce(execStub);
+								sinon.assert.calledWithExactly(execStub, "sudo pihole -w -q test.com");
                                 done();
                             });
                     });
@@ -221,6 +222,7 @@ describe("Testing api endpoints", function() {
                                 expect(res.status)
                                     .to.equal(200);
                                 sinon.assert.calledOnce(execStub);
+								sinon.assert.calledWithExactly(execStub, "sudo pihole -b -q test.com");
                                 done();
                             });
                     });
@@ -248,6 +250,157 @@ describe("Testing api endpoints", function() {
                     it("should not succeed", function(done) {
                         chai.request(server.app)
                             .post("/api/list")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "wrongtoken"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                done();
+                            });
+                    });
+                });
+            });
+			describe("delete", function() {
+                var execStub;
+                before(function() {
+                    execStub = sandbox.stub(childProcess, "exec", function(arg, callback) {
+
+                    });
+                });
+                afterEach(function() {
+                    execStub.reset();
+                });
+                after(function() {
+                    execStub.restore();
+                });
+                describe("authenticated", function() {
+                    var csrfStub, verifyCookieStub;
+                    before(function() {
+                        csrfStub = sandbox.stub(helper, "hashWithSalt");
+                        csrfStub.returns("token");
+                        verifyCookieStub = sandbox.stub(helper.express, "verifyAuthCookie", function(req, res, next) {
+                            req.user = {
+                                authenticated: true
+                            };
+                            next();
+                        });
+                    });
+                    afterEach(function() {
+                        sinon.assert.calledOnce(csrfStub);
+                        sinon.assert.calledOnce(verifyCookieStub);
+                        csrfStub.reset();
+                        verifyCookieStub.reset();
+                    });
+                    after(function() {
+                        csrfStub.restore();
+                        verifyCookieStub.restore();
+                    });
+                    it("should not succeed for missing list name", function(done) {
+                        chai.request(server.app)
+                            .delete("/api/list")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(404);
+                                sinon.assert.callCount(execStub, 0);
+                                done();
+                            });
+                    });
+                    it("should not succeed for wrong list name", function(done) {
+                        chai.request(server.app)
+                            .delete("/api/list")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token",
+                                "list": "whitee"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                sinon.assert.callCount(execStub, 0);
+                                done();
+                            });
+                    });
+                    it("should succeed for white list", function(done) {
+                        chai.request(server.app)
+                            .delete("/api/list")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token",
+                                "list": "white"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
+                                sinon.assert.calledOnce(execStub);
+								sinon.assert.calledWithExactly(execStub, "sudo pihole -w -q -d test.com");
+                                done();
+                            });
+                    });
+                    it("should succeed for black list", function(done) {
+                        chai.request(server.app)
+                            .delete("/api/list")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token",
+                                "list": "black"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
+                                sinon.assert.calledOnce(execStub);
+								sinon.assert.calledWithExactly(execStub, "sudo pihole -b -q -d test.com");
+                                done();
+                            });
+                    });
+                });
+                describe("unauthenticated", function() {
+                    afterEach(function() {
+                        sinon.assert.callCount(execStub, 0);
+                    });
+                    it("should not succeed for right csrf", function(done) {
+                        chai.request(server.app)
+                            .delete("/api/list")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                done();
+                            });
+                    });
+                    it("should not succeed", function(done) {
+                        chai.request(server.app)
+                            .delete("/api/list")
                             .set("Host", "localhost")
                             .send({
                                 "domain": "test.com",

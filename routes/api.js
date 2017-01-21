@@ -51,6 +51,13 @@ const apiMiddleware = {
         } else {
             res.sendStatus(401);
         }
+    },
+    csrf: function(req, res, next) {
+        if (req.body.token && req.body.token === req.user.csrfToken) {
+            next();
+        } else {
+            res.sendStatus(401);
+        }
     }
 };
 // Potential buildfail fix for node 5 and below

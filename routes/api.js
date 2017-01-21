@@ -1,3 +1,5 @@
+/*eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
+
 const express = require("express");
 const readline = require("readline");
 const moment = require("moment");
@@ -50,7 +52,7 @@ const apiMiddleware = {
         if (req.user.authenticated) {
             next();
         } else {
-            console.log("auth didnt match");
+            console.log("authentication failed");
             res.sendStatus(401);
         }
     },
@@ -58,7 +60,7 @@ const apiMiddleware = {
         if (req.body.token && req.body.token === helper.hashWithSalt(req.user.csrfToken, appDefaults.csrfSecret)) {
             next();
         } else {
-            console.log("csrf didnt match");
+            console.log("csrf token match failed");
             res.sendStatus(401);
         }
     }

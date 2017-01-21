@@ -230,10 +230,8 @@ router.get("/taillog",
         }, 1000);
     });
 
-router.get("/list", function(req, res) {
-    if (!req.user.authenticated) {
-        res.sendStatus(401);
-    } else if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
+router.get("/list",apiMiddleware.auth, function(req, res) {
+    if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
         var filepath;
         if (req.query.list === "white") {
             filepath = appDefaults.whiteListFile;

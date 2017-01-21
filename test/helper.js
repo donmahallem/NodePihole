@@ -39,5 +39,68 @@ describe("helper tests", function() {
                 helper.express.corsMiddleware(req, res, next);
             });
         });
+
+        describe(".csrfMiddleware()", function() {
+            it("should succeed ", function(done) {
+                var req = {
+                    "body": {
+                        "token": helper.hashWithSalt("token", appDefaults.csrfSecret)
+                    },
+                    "user": {
+                        "authenticated": true,
+                        "csrfToken": "token"
+                    }
+                };
+                var next = function() {
+                    done();
+                };
+                var res = {
+                    "sendStatus": function(code) {
+                        done(new Error("should be called"));
+                    }
+                };
+                helper.express.csrfMiddleware(req, res, next);
+            });
+            it("should not succeed ", function(done) {
+                var req = {
+                    "body": {
+                        "token": helper.hashWithSalt("wrongtoken", appDefaults.csrfSecret)
+                    },
+                    "user": {
+                        "authenticated": true,
+                        "csrfToken": "token"
+                    }
+                };
+                var next = function() {
+                    done(new Error("should not be called"));
+                };
+                var res = {
+                    "sendStatus": function(code) {
+                        done();
+                    }
+                };
+                helper.express.csrfMiddleware(req, res, next);
+            });
+            it("should not succeed ", function(done) {
+                var req = {
+                    "body": {
+                        "token": "wrong token"
+                    },
+                    "user": {
+                        "authenticated": true,
+                        "csrfToken": "token"
+                    }
+                };
+                var next = function() {
+                    done(new Error("should not be called"));
+                };
+                var res = {
+                    "sendStatus": function(code) {
+                        done();
+                    }
+                };
+                helper.express.csrfMiddleware(req, res, next);
+            });
+        });
     });
 });

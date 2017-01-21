@@ -202,7 +202,7 @@ describe("Testing api endpoints", function() {
                                 expect(res.status)
                                     .to.equal(200);
                                 sinon.assert.calledOnce(execStub);
-								sinon.assert.calledWithExactly(execStub, "sudo pihole -w -q test.com");
+                                sinon.assert.calledWithExactly(execStub, "sudo pihole -w -q test.com");
                                 done();
                             });
                     });
@@ -222,7 +222,7 @@ describe("Testing api endpoints", function() {
                                 expect(res.status)
                                     .to.equal(200);
                                 sinon.assert.calledOnce(execStub);
-								sinon.assert.calledWithExactly(execStub, "sudo pihole -b -q test.com");
+                                sinon.assert.calledWithExactly(execStub, "sudo pihole -b -q test.com");
                                 done();
                             });
                     });
@@ -265,7 +265,7 @@ describe("Testing api endpoints", function() {
                     });
                 });
             });
-			describe("delete", function() {
+            describe("delete", function() {
                 var execStub;
                 before(function() {
                     execStub = sandbox.stub(childProcess, "exec", function(arg, callback) {
@@ -353,7 +353,7 @@ describe("Testing api endpoints", function() {
                                 expect(res.status)
                                     .to.equal(200);
                                 sinon.assert.calledOnce(execStub);
-								sinon.assert.calledWithExactly(execStub, "sudo pihole -w -q -d test.com");
+                                sinon.assert.calledWithExactly(execStub, "sudo pihole -w -q -d test.com");
                                 done();
                             });
                     });
@@ -373,7 +373,7 @@ describe("Testing api endpoints", function() {
                                 expect(res.status)
                                     .to.equal(200);
                                 sinon.assert.calledOnce(execStub);
-								sinon.assert.calledWithExactly(execStub, "sudo pihole -b -q -d test.com");
+                                sinon.assert.calledWithExactly(execStub, "sudo pihole -b -q -d test.com");
                                 done();
                             });
                     });

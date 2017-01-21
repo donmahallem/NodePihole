@@ -54,6 +54,15 @@ helper.express.verifyAuthCookie = function(req, res, next) {
     }
 };
 
+helper.express.csrfMiddleware = function(req, res, next) {
+    console.log(req.body);
+    if (req.body.token && req.body.token === helper.hashWithSalt(req.user.csrfToken, appDefaults.csrfSecret)) {
+        next();
+    } else {
+        console.log("csrf token match failed: " + req.method + "(" + req.originalUrl + ")");
+        res.sendStatus(401);
+    }
+};
 helper.express.corsMiddleware = function(req, res, next) {
     const ipv4 = setupVars.hasOwnProperty("IPV4_ADDRESS") ? setupVars["IPV4_ADDRESS"].split("\/")[0] : server.address()
         .address;

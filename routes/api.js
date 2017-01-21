@@ -7,8 +7,7 @@ const fs = require("fs");
 const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
 const helper = require("./../helper.js");
-const exec = require("child_process")
-    .exec;
+const childProcess = require("child_process");
 var router = express.Router();
 
 const supportedDataQueries = {
@@ -53,14 +52,6 @@ const apiMiddleware = {
             next();
         } else {
             console.log("authentication failed: " + req.method + "(" + req.originalUrl + ")");
-            res.sendStatus(401);
-        }
-    },
-    csrf: function(req, res, next) {
-        if (req.body.token && req.body.token === helper.hashWithSalt(req.user.csrfToken, appDefaults.csrfSecret)) {
-            next();
-        } else {
-            console.log("csrf token match failed: " + req.method + "(" + req.originalUrl + ")");
             res.sendStatus(401);
         }
     }
@@ -230,7 +221,7 @@ router.get("/taillog",
         }, 1000);
     });
 
-router.get("/list",apiMiddleware.auth, function(req, res) {
+router.get("/list", apiMiddleware.auth, function(req, res) {
     if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
         var filepath;
         if (req.query.list === "white") {
@@ -267,16 +258,16 @@ router.get("/list",apiMiddleware.auth, function(req, res) {
 
 router.post("/list",
     apiMiddleware.auth,
-    apiMiddleware.csrf,
+    helper.express.csrfMiddleware,
     function(req, res) {
         var domain = req.body.domain;
         var list = req.body.list;
         if (domain && list) {
             if (list === "white") {
-                exec("sudo pihole -w -q " + domain);
+                childProcess.exec("sudo pihole -w -q " + domain);
                 res.end();
             } else if (list === "black") {
-                exec("sudo pihole -b -q " + domain);
+                childProcess.exec("sudo pihole -b -q " + domain);
                 res.end();
             } else {
                 res.sendStatus(401);
@@ -288,16 +279,16 @@ router.post("/list",
 
 router.delete("/list",
     apiMiddleware.auth,
-    apiMiddleware.csrf,
+    helper.express.csrfMiddleware,
     function(req, res) {
         var domain = req.body.domain;
         var list = req.body.list;
         if (domain && list) {
             if (list === "white") {
-                exec("sudo pihole -w -q -d " + domain);
+                childProcess.exec("sudo pihole -w -q -d " + domain);
                 res.end();
             } else if (list === "black") {
-                exec("sudo pihole -b -q -d " + domain);
+                childProcess.exec("sudo pihole -b -q -d " + domain);
                 res.end();
             } else {
                 res.sendStatus(401);
@@ -309,9 +300,9 @@ router.delete("/list",
 
 router.post("/enable",
     apiMiddleware.auth,
-    apiMiddleware.csrf,
+    helper.express.csrfMiddleware,
     function(req, res) {
-        exec("sudo pihole enable", function(error, stdout, stderr) {
+        childProcess.exec("sudo pihole enable", function(error, stdout, stderr) {
             if (error || stderr.trim() !== "") {
                 res.sendStatus(500);
             } else {
@@ -325,11 +316,11 @@ router.post("/enable",
 
 router.post("/disable",
     apiMiddleware.auth,
-    apiMiddleware.csrf,
+    helper.express.csrfMiddleware,
     function(req, res) {
         if (req.body.time && !isNaN(req.body.time)) {
             var disableTime = Math.floor(Number(req.body.time));
-            exec("sudo pihole disable" + (disableTime > 0 ? disableTime + "s" : ""), function(error, stdout, stderr) {
+            childProcess.exec("sudo pihole disable" + (disableTime > 0 ? disableTime + "s" : ""), function(error, stdout, stderr) {
                 if (error || stderr.trim() !== "") {
                     res.sendStatus(500);
                 } else {

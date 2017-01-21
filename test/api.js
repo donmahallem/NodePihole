@@ -226,6 +226,25 @@ describe("Testing api endpoints", function() {
                     });
                 });
                 describe("unauthenticated", function() {
+                    afterEach(function() {
+                        sinon.assert.callCount(execStub, 0);
+                    });
+                    it("should not succeed for right csrf", function(done) {
+                        chai.request(server.app)
+                            .post("/api/list")
+                            .set("Host", "localhost")
+                            .send({
+                                "domain": "test.com",
+                                "token": "token"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                done();
+                            });
+                    });
                     it("should not succeed", function(done) {
                         chai.request(server.app)
                             .post("/api/list")

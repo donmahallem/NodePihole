@@ -52,7 +52,7 @@ const apiMiddleware = {
         if (req.user.authenticated) {
             next();
         } else {
-            console.log("authentication failed");
+            console.log("authentication failed: " + req.method + "(" + req.originalUrl + ")");
             res.sendStatus(401);
         }
     },
@@ -60,7 +60,7 @@ const apiMiddleware = {
         if (req.body.token && req.body.token === helper.hashWithSalt(req.user.csrfToken, appDefaults.csrfSecret)) {
             next();
         } else {
-            console.log("csrf token match failed");
+            console.log("csrf token match failed: " + req.method + "(" + req.originalUrl + ")");
             res.sendStatus(401);
         }
     }
@@ -140,6 +140,7 @@ router.get("/data", function(req, res) {
         if (query in supportedDataQueries && (typeof supportedDataQueries[query].authRequired === "boolean")) {
             if (supportedDataQueries[query].authRequired && !req.user.authenticated) {
                 // User needs to be authenticated for this query
+                console.log("User is not authenticated for: " + req.method + "(" + req.originalUrl + ")");
                 res.sendStatus(401);
                 return;
             }
@@ -149,6 +150,7 @@ router.get("/data", function(req, res) {
     }
     // cancel request because no valid args were provided
     if (numValidArgs === 0) {
+        console.log("No valid argument specified");
         res.sendStatus(400);
         return;
     }
@@ -188,7 +190,7 @@ router.get("/data", function(req, res) {
             res.json(data);
         })
         .catch(function(err) {
-            console.log(err);
+            console.error("Request failed", err);
             res.sendStatus(400);
         });
 });
@@ -202,7 +204,7 @@ router.get("/taillog",
             if (connectionOpen) {
                 connectionOpen = false;
                 clearInterval(updateInterval);
-                console.log("Request close");
+                console.log("Taillog connection closed");
             }
         });
 
@@ -210,7 +212,7 @@ router.get("/taillog",
             if (connectionOpen) {
                 connectionOpen = false;
                 clearInterval(updateInterval);
-                console.log("Request end");
+                console.log("Taillog connection ended");
             }
         });
         res.set({

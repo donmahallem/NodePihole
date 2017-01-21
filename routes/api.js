@@ -4,6 +4,7 @@ const moment = require("moment");
 const fs = require("fs");
 const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
+const helper = require("./../helper.js");
 const exec = require("child_process")
     .exec;
 var router = express.Router();
@@ -49,13 +50,15 @@ const apiMiddleware = {
         if (req.user.authenticated) {
             next();
         } else {
+            console.log("auth didnt match");
             res.sendStatus(401);
         }
     },
     csrf: function(req, res, next) {
-        if (req.body.token && req.body.token === req.user.csrfToken) {
+        if (req.body.token && req.body.token === helper.hashWithSalt(req.user.csrfToken, appDefaults.csrfSecret)) {
             next();
         } else {
+            console.log("csrf didnt match");
             res.sendStatus(401);
         }
     }
@@ -188,10 +191,9 @@ router.get("/data", function(req, res) {
         });
 });
 
-router.get("/taillog", function(req, res) {
-    if (!req.user.authenticated) {
-        res.sendStatus(401);
-    } else {
+router.get("/taillog",
+    apiMiddleware.auth,
+    function(req, res) {
         var connectionOpen = true;
         var updateInterval;
         req.on("close", function() {
@@ -222,8 +224,7 @@ router.get("/taillog", function(req, res) {
             res.write("event: dns\n");
             res.write("data: {\"timestamp\":\"2017-01-18T21:34:20Z\",\"type\":\"query\"}\n\n");
         }, 1000);
-    }
-});
+    });
 
 router.get("/list", function(req, res) {
     if (!req.user.authenticated) {
@@ -316,8 +317,8 @@ router.post("/disable",
     apiMiddleware.auth,
     apiMiddleware.csrf,
     function(req, res) {
-        if (req.query.time && !isNaN(req.query.time)) {
-            var disableTime = Math.floor(Number(req.query.time));
+        if (req.body.time && !isNaN(req.body.time)) {
+            var disableTime = Math.floor(Number(req.body.time));
             exec("sudo pihole disable" + (disableTime > 0 ? disableTime + "s" : ""), function(error, stdout, stderr) {
                 if (error || stderr.trim() !== "") {
                     res.sendStatus(500);

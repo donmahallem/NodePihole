@@ -17,6 +17,17 @@ helper.hashPassword = function(pwd) {
         .digest("hex");
 };
 
+helper.hashWithSalt = function(pwd, salt) {
+    const tempHash = crypto.createHash("sha256", "utf8")
+        .update(pwd)
+        .update(salt)
+        .digest("hex");
+    return crypto.createHash("sha256", "utf8")
+        .update(tempHash)
+        .update(salt)
+        .digest("hex");
+};
+
 helper.express = {};
 
 helper.express.verifyAuthCookie = function(req, res, next) {
@@ -25,7 +36,8 @@ helper.express.verifyAuthCookie = function(req, res, next) {
             if (decoded) {
                 req.user = {
                     "authenticated": true,
-                    "token": req.signedCookies.auth
+                    "csrfToken": decoded.csrfToken,
+                    "token": helper.hashWithSalt(decoded.csrfToken, appDefaults.csrfSecret)
                 };
             } else {
                 req.user = {

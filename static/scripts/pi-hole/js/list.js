@@ -106,7 +106,7 @@ var domainList = {};
         alSuccess.hide();
         alFailure.hide();
         $.ajax({
-            url: "scripts/pi-hole/php/add.php",
+            url: "api/list",
             method: "post",
             data: {
                 "domain": domain.val(),
@@ -120,8 +120,8 @@ var domainList = {};
     dList.sub = function(index, entry) {
         domain.hide("highlight");
         $.ajax({
-            url: "scripts/pi-hole/php/sub.php",
-            method: "post",
+            url: "api/list",
+            method: "delete",
             data: {
                 "domain": entry,
                 "list": listType,

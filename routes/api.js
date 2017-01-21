@@ -267,34 +267,42 @@ router.post("/list",
     apiMiddleware.auth,
     apiMiddleware.csrf,
     function(req, res) {
-        //TODO: Implement method
-        res.sendStatus(501);
-        /*
         var domain = req.body.domain;
         var list = req.body.list;
-        var token = req.body.token;
         if (domain && list) {
             if (list === "white") {
                 exec("sudo pihole -w -q " + domain);
                 res.end();
-                return;
             } else if (list === "black") {
                 exec("sudo pihole -b -q " + domain);
                 res.end();
-                return;
             } else {
-                console.log("unknwon list type:" + list);
+                res.sendStatus(401);
             }
+        } else {
+            res.sendStatus(404);
         }
-        res.sendStatus(404);*/
     });
 
 router.delete("/list",
     apiMiddleware.auth,
     apiMiddleware.csrf,
     function(req, res) {
-        //TODO: Implement method
-        res.sendStatus(501);
+        var domain = req.body.domain;
+        var list = req.body.list;
+        if (domain && list) {
+            if (list === "white") {
+                exec("sudo pihole -w -q -d " + domain);
+                res.end();
+            } else if (list === "black") {
+                exec("sudo pihole -b -q -d " + domain);
+                res.end();
+            } else {
+                res.sendStatus(401);
+            }
+        } else {
+            res.sendStatus(404);
+        }
     });
 
 router.post("/enable",

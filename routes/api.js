@@ -4,6 +4,8 @@ const moment = require("moment");
 const fs = require("fs");
 const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
+const exec = require('child_process')
+    .exec;
 var router = express.Router();
 
 const supportedDataQueries = {
@@ -39,6 +41,18 @@ const supportedDataQueries = {
     }
 };
 
+/*
+Special middleware for api endpoint as no login redirect will be shown
+*/
+const apiMiddleware = {
+    auth: function(req, res, next) {
+        if (req.user.authenticated) {
+            next();
+        } else {
+            res.sendStatus(401);
+        }
+    }
+};
 // Potential buildfail fix for node 5 and below
 // polyfill source: https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
 if (typeof Object.assign != "function") {
@@ -241,4 +255,38 @@ router.get("/list", function(req, res) {
     }
 });
 
+router.post("/enable",
+    apiMiddleware.auth,
+    apiMiddleware.csrf,
+    function(req, res) {
+        exec("sudo pihole enable", function(error, stdout, stderr) {
+            if (error || stderr.trim() !== "") {
+                res.sendStatus(500);
+            } else {
+                res.json({
+                    "status": "enabled"
+                });
+            }
+        });
+    }
+);
+
+router.post("/disable",
+    apiMiddleware.auth,
+    apiMiddleware.csrf,
+    function(req, res) {
+        if (req.query.time && !isNaN(req.query.time)) {
+            var disableTime = Math.floor(Number(req.query.time));
+            exec("sudo pihole disable" + (disableTime > 0 ? disableTime + "s" : ""), function(error, stdout, stderr) {
+                if (error || stderr.trim() !== "") {
+                    res.sendStatus(500);
+                } else {
+                    res.json({
+                        "status": "enabled"
+                    });
+                }
+            });
+        }
+    }
+);
 module.exports = router;

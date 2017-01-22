@@ -275,7 +275,8 @@ router.post("/list",
         } else {
             res.sendStatus(404);
         }
-    });
+    }
+);
 
 router.delete("/list",
     apiMiddleware.auth,
@@ -296,7 +297,8 @@ router.delete("/list",
         } else {
             res.sendStatus(404);
         }
-    });
+    }
+);
 
 router.post("/enable",
     apiMiddleware.auth,

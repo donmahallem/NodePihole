@@ -21,6 +21,12 @@ describe("Testing api endpoints", function() {
         sandbox.restore();
     });
     describe("/api", function() {
+        describe("/enable", function() {
+			
+		});
+        describe("/disable", function() {
+			
+		});
         describe("/list", function() {
             describe("get", function() {
                 describe("authenticated", function() {

@@ -322,7 +322,7 @@ router.post("/disable",
     function(req, res) {
         if (req.body.time && !isNaN(req.body.time)) {
             var disableTime = Math.floor(Number(req.body.time));
-            childProcess.exec("sudo pihole disable" + (disableTime > 0 ? disableTime + "s" : ""), function(error, stdout, stderr) {
+            childProcess.exec("sudo pihole disable" + (disableTime > 0 ? " " + disableTime + "s" : ""), function(error, stdout, stderr) {
                 if (error || stderr.trim() !== "") {
                     res.sendStatus(500);
                 } else {

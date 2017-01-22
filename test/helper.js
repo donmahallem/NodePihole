@@ -76,6 +76,8 @@ describe("helper tests", function() {
                 };
                 var res = {
                     "sendStatus": function(code) {
+                        expect(code)
+                            .to.be.equal(401);
                         done();
                     }
                 };
@@ -96,6 +98,30 @@ describe("helper tests", function() {
                 };
                 var res = {
                     "sendStatus": function(code) {
+                        expect(code)
+                            .to.be.equal(401);
+                        done();
+                    }
+                };
+                helper.express.csrfMiddleware(req, res, next);
+            });
+            it("should not succeed ", function(done) {
+                var req = {
+                    "body": {
+                        "wrongToken": "token"
+                    },
+                    "user": {
+                        "authenticated": true,
+                        "csrfToken": "token"
+                    }
+                };
+                var next = function() {
+                    done(new Error("should not be called"));
+                };
+                var res = {
+                    "sendStatus": function(code) {
+                        expect(code)
+                            .to.be.equal(400);
                         done();
                     }
                 };

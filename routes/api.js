@@ -275,7 +275,8 @@ router.post("/list",
         } else {
             res.sendStatus(404);
         }
-    });
+    }
+);
 
 router.delete("/list",
     apiMiddleware.auth,
@@ -296,7 +297,8 @@ router.delete("/list",
         } else {
             res.sendStatus(404);
         }
-    });
+    }
+);
 
 router.post("/enable",
     apiMiddleware.auth,
@@ -320,7 +322,7 @@ router.post("/disable",
     function(req, res) {
         if (req.body.time && !isNaN(req.body.time)) {
             var disableTime = Math.floor(Number(req.body.time));
-            childProcess.exec("sudo pihole disable" + (disableTime > 0 ? disableTime + "s" : ""), function(error, stdout, stderr) {
+            childProcess.exec("sudo pihole disable" + (disableTime > 0 ? " " + disableTime + "s" : ""), function(error, stdout, stderr) {
                 if (error || stderr.trim() !== "") {
                     res.sendStatus(500);
                 } else {

@@ -55,10 +55,14 @@ helper.express.verifyAuthCookie = function(req, res, next) {
 };
 
 helper.express.csrfMiddleware = function(req, res, next) {
-    if (req.body.token && req.body.token === helper.hashWithSalt(req.user.csrfToken, appDefaults.csrfSecret)) {
-        next();
+    if (req.body.token) {
+        if (req.body.token === helper.hashWithSalt(req.user.csrfToken, appDefaults.csrfSecret)) {
+            next();
+        } else {
+            res.sendStatus(401);
+        }
     } else {
-        res.sendStatus(401);
+        res.sendStatus(400);
     }
 };
 helper.express.corsMiddleware = function(req, res, next) {

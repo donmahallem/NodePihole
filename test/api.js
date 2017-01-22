@@ -25,7 +25,7 @@ describe("Testing api endpoints", function() {
             var execStub;
             before(function() {
                 execStub = sandbox.stub(childProcess, "exec", function(arg, callback) {
-
+                    callback(false, "", "");
                 });
             });
             afterEach(function() {
@@ -49,17 +49,97 @@ describe("Testing api endpoints", function() {
                 });
             });
             describe("post", function() {
-                it("should not succeed", function(done) {
-                    chai.request(server.app)
-                        .post("/api/enable")
-                        .end(function(err, res) {
-                            expect(err)
-                                .to.not.be.null;
-                            expect(res.status)
-                                .to.equal(401);
-                            sinon.assert.callCount(execStub, 0);
-                            done();
+                describe("authenticated", function() {
+                    var verifyCookieStub, csrfStub;
+                    before(function() {
+                        csrfStub = sandbox.stub(helper, "hashWithSalt");
+                        csrfStub.returns("token");
+                        verifyCookieStub = sandbox.stub(helper.express, "verifyAuthCookie", function(req, res, next) {
+                            req.user = {
+                                authenticated: true
+                            };
+                            next();
                         });
+                    });
+                    afterEach(function() {
+                        sinon.assert.calledOnce(verifyCookieStub);
+                        verifyCookieStub.reset();
+                        csrfStub.reset();
+                    });
+                    after(function() {
+                        verifyCookieStub.restore();
+                        csrfStub.restore();
+                    });
+                    it("should succeed", function(done) {
+                        chai.request(server.app)
+                            .post("/api/enable")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "token": "token"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.be.null;
+                                expect(res.status)
+                                    .to.equal(200);
+                                sinon.assert.calledOnce(execStub);
+                                sinon.assert.calledOnce(csrfStub);
+                                expect(res.body)
+                                    .to.deep.equal({
+                                        "status": "enabled"
+                                    });
+                                sinon.assert.calledWith(execStub, "sudo pihole enable");
+                                done();
+                            });
+                    });
+                    it("should not succeed for wrong csrf", function(done) {
+                        chai.request(server.app)
+                            .post("/api/enable")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "token": "wrongtoken"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                sinon.assert.calledOnce(csrfStub);
+                                sinon.assert.callCount(execStub, 0);
+                                done();
+                            });
+                    });
+                    it("should not succeed for no csrf", function(done) {
+                        chai.request(server.app)
+                            .post("/api/enable")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(400);
+                                sinon.assert.callCount(csrfStub, 0);
+                                sinon.assert.callCount(execStub, 0);
+                                done();
+                            });
+                    });
+                });
+                describe("not authenticated", function() {
+                    it("should not succeed", function(done) {
+                        chai.request(server.app)
+                            .post("/api/enable")
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(401);
+                                sinon.assert.callCount(execStub, 0);
+                                done();
+                            });
+                    });
                 });
             });
         });
@@ -104,7 +184,6 @@ describe("Testing api endpoints", function() {
                         });
                     });
                     afterEach(function() {
-                        sinon.assert.calledOnce(csrfStub);
                         sinon.assert.calledOnce(verifyCookieStub);
                         verifyCookieStub.reset();
                         csrfStub.reset();
@@ -121,7 +200,7 @@ describe("Testing api endpoints", function() {
                                 .set("Host", "localhost")
                                 .send({
                                     "time": time,
-                                    "token": "token",
+                                    "token": "token"
                                 })
                                 .end(function(err, res) {
                                     expect(err)
@@ -129,6 +208,7 @@ describe("Testing api endpoints", function() {
                                     expect(res.status)
                                         .to.equal(200);
                                     sinon.assert.calledOnce(execStub);
+                                    sinon.assert.calledOnce(csrfStub);
                                     expect(res.body)
                                         .to.deep.equal({
                                             "status": "disabled"
@@ -145,13 +225,69 @@ describe("Testing api endpoints", function() {
                             .set("Host", "localhost")
                             .send({
                                 "time": 0,
-                                "token": "wrongtoken",
+                                "token": "wrongtoken"
                             })
                             .end(function(err, res) {
                                 expect(err)
                                     .to.not.be.null;
                                 expect(res.status)
                                     .to.equal(401);
+                                sinon.assert.calledOnce(csrfStub);
+                                sinon.assert.callCount(execStub, 0);
+                                done();
+                            });
+                    });
+                    it("should not succeed for no csrf", function(done) {
+                        chai.request(server.app)
+                            .post("/api/disable")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "time": 0
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(400);
+                                sinon.assert.callCount(csrfStub, 0);
+                                sinon.assert.callCount(execStub, 0);
+                                done();
+                            });
+                    });
+                    it("should not succeed for no time", function(done) {
+                        chai.request(server.app)
+                            .post("/api/disable")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "token": "token"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(400);
+                                sinon.assert.calledOnce(csrfStub);
+                                sinon.assert.callCount(execStub, 0);
+                                done();
+                            });
+                    });
+                    it("should not succeed for string in time", function(done) {
+                        chai.request(server.app)
+                            .post("/api/disable")
+                            .type("form")
+                            .set("Host", "localhost")
+                            .send({
+                                "time": "a0",
+                                "token": "token"
+                            })
+                            .end(function(err, res) {
+                                expect(err)
+                                    .to.not.be.null;
+                                expect(res.status)
+                                    .to.equal(400);
+                                sinon.assert.calledOnce(csrfStub);
                                 sinon.assert.callCount(execStub, 0);
                                 done();
                             });

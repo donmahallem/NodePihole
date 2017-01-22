@@ -50,10 +50,10 @@ describe("Testing api endpoints", function() {
             });
             describe("post", function() {
                 describe("authenticated", function() {
-                    var verifyCookieStub, csrfStub;
+                    var verifyCookieStub, hashWithSaltStub;
                     before(function() {
-                        csrfStub = sandbox.stub(helper, "hashWithSalt");
-                        csrfStub.returns("token");
+                        hashWithSaltStub = sandbox.stub(helper, "hashWithSalt");
+                        hashWithSaltStub.returns("token");
                         verifyCookieStub = sandbox.stub(helper.express, "verifyAuthCookie", function(req, res, next) {
                             req.user = {
                                 authenticated: true
@@ -64,11 +64,11 @@ describe("Testing api endpoints", function() {
                     afterEach(function() {
                         sinon.assert.calledOnce(verifyCookieStub);
                         verifyCookieStub.reset();
-                        csrfStub.reset();
+                        hashWithSaltStub.reset();
                     });
                     after(function() {
                         verifyCookieStub.restore();
-                        csrfStub.restore();
+                        hashWithSaltStub.restore();
                     });
                     it("should succeed", function(done) {
                         chai.request(server.app)
@@ -84,7 +84,7 @@ describe("Testing api endpoints", function() {
                                 expect(res.status)
                                     .to.equal(200);
                                 sinon.assert.calledOnce(execStub);
-                                sinon.assert.calledOnce(csrfStub);
+                                sinon.assert.calledOnce(hashWithSaltStub);
                                 expect(res.body)
                                     .to.deep.equal({
                                         "status": "enabled"
@@ -106,7 +106,7 @@ describe("Testing api endpoints", function() {
                                     .to.not.be.null;
                                 expect(res.status)
                                     .to.equal(401);
-                                sinon.assert.calledOnce(csrfStub);
+                                sinon.assert.calledOnce(hashWithSaltStub);
                                 sinon.assert.callCount(execStub, 0);
                                 done();
                             });
@@ -121,7 +121,7 @@ describe("Testing api endpoints", function() {
                                     .to.not.be.null;
                                 expect(res.status)
                                     .to.equal(400);
-                                sinon.assert.callCount(csrfStub, 0);
+                                sinon.assert.callCount(hashWithSaltStub, 0);
                                 sinon.assert.callCount(execStub, 0);
                                 done();
                             });
@@ -172,10 +172,10 @@ describe("Testing api endpoints", function() {
             });
             describe("post", function() {
                 describe("authenticated", function() {
-                    var verifyCookieStub, csrfStub;
+                    var verifyCookieStub, hashWithSaltStub;
                     before(function() {
-                        csrfStub = sandbox.stub(helper, "hashWithSalt");
-                        csrfStub.returns("token");
+                        hashWithSaltStub = sandbox.stub(helper, "hashWithSalt");
+                        hashWithSaltStub.returns("token");
                         verifyCookieStub = sandbox.stub(helper.express, "verifyAuthCookie", function(req, res, next) {
                             req.user = {
                                 authenticated: true
@@ -186,11 +186,11 @@ describe("Testing api endpoints", function() {
                     afterEach(function() {
                         sinon.assert.calledOnce(verifyCookieStub);
                         verifyCookieStub.reset();
-                        csrfStub.reset();
+                        hashWithSaltStub.reset();
                     });
                     after(function() {
                         verifyCookieStub.restore();
-                        csrfStub.restore();
+                        hashWithSaltStub.restore();
                     });
                     [0, 10, 40, 90].forEach(function(time) {
                         it("should succeed for time: " + time, function(done) {
@@ -208,7 +208,7 @@ describe("Testing api endpoints", function() {
                                     expect(res.status)
                                         .to.equal(200);
                                     sinon.assert.calledOnce(execStub);
-                                    sinon.assert.calledOnce(csrfStub);
+                                    sinon.assert.calledOnce(hashWithSaltStub);
                                     expect(res.body)
                                         .to.deep.equal({
                                             "status": "disabled"
@@ -232,7 +232,7 @@ describe("Testing api endpoints", function() {
                                     .to.not.be.null;
                                 expect(res.status)
                                     .to.equal(401);
-                                sinon.assert.calledOnce(csrfStub);
+                                sinon.assert.calledOnce(hashWithSaltStub);
                                 sinon.assert.callCount(execStub, 0);
                                 done();
                             });
@@ -250,7 +250,7 @@ describe("Testing api endpoints", function() {
                                     .to.not.be.null;
                                 expect(res.status)
                                     .to.equal(400);
-                                sinon.assert.callCount(csrfStub, 0);
+                                sinon.assert.callCount(hashWithSaltStub, 0);
                                 sinon.assert.callCount(execStub, 0);
                                 done();
                             });
@@ -268,7 +268,7 @@ describe("Testing api endpoints", function() {
                                     .to.not.be.null;
                                 expect(res.status)
                                     .to.equal(400);
-                                sinon.assert.calledOnce(csrfStub);
+                                sinon.assert.calledOnce(hashWithSaltStub);
                                 sinon.assert.callCount(execStub, 0);
                                 done();
                             });
@@ -287,7 +287,7 @@ describe("Testing api endpoints", function() {
                                     .to.not.be.null;
                                 expect(res.status)
                                     .to.equal(400);
-                                sinon.assert.calledOnce(csrfStub);
+                                sinon.assert.calledOnce(hashWithSaltStub);
                                 sinon.assert.callCount(execStub, 0);
                                 done();
                             });
@@ -416,10 +416,10 @@ describe("Testing api endpoints", function() {
                     execStub.restore();
                 });
                 describe("authenticated", function() {
-                    var csrfStub, verifyCookieStub;
+                    var hashWithSaltStub, verifyCookieStub;
                     before(function() {
-                        csrfStub = sandbox.stub(helper, "hashWithSalt");
-                        csrfStub.returns("token");
+                        hashWithSaltStub = sandbox.stub(helper, "hashWithSalt");
+                        hashWithSaltStub.returns("token");
                         verifyCookieStub = sandbox.stub(helper.express, "verifyAuthCookie", function(req, res, next) {
                             req.user = {
                                 authenticated: true
@@ -428,13 +428,13 @@ describe("Testing api endpoints", function() {
                         });
                     });
                     afterEach(function() {
-                        sinon.assert.calledOnce(csrfStub);
+                        sinon.assert.calledOnce(hashWithSaltStub);
                         sinon.assert.calledOnce(verifyCookieStub);
-                        csrfStub.reset();
+                        hashWithSaltStub.reset();
                         verifyCookieStub.reset();
                     });
                     after(function() {
-                        csrfStub.restore();
+                        hashWithSaltStub.restore();
                         verifyCookieStub.restore();
                     });
                     it("should not succeed for missing list name", function(done) {
@@ -567,10 +567,10 @@ describe("Testing api endpoints", function() {
                     execStub.restore();
                 });
                 describe("authenticated", function() {
-                    var csrfStub, verifyCookieStub;
+                    var hashWithSaltStub, verifyCookieStub;
                     before(function() {
-                        csrfStub = sandbox.stub(helper, "hashWithSalt");
-                        csrfStub.returns("token");
+                        hashWithSaltStub = sandbox.stub(helper, "hashWithSalt");
+                        hashWithSaltStub.returns("token");
                         verifyCookieStub = sandbox.stub(helper.express, "verifyAuthCookie", function(req, res, next) {
                             req.user = {
                                 authenticated: true
@@ -579,13 +579,13 @@ describe("Testing api endpoints", function() {
                         });
                     });
                     afterEach(function() {
-                        sinon.assert.calledOnce(csrfStub);
+                        sinon.assert.calledOnce(hashWithSaltStub);
                         sinon.assert.calledOnce(verifyCookieStub);
-                        csrfStub.reset();
+                        hashWithSaltStub.reset();
                         verifyCookieStub.reset();
                     });
                     after(function() {
-                        csrfStub.restore();
+                        hashWithSaltStub.restore();
                         verifyCookieStub.restore();
                     });
                     it("should not succeed for missing list name", function(done) {

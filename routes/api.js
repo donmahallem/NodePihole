@@ -8,6 +8,10 @@ const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
 const helper = require("./../helper.js");
 const childProcess = require("child_process");
+
+/**
+* @exports apiRouter
+*/
 var router = express.Router();
 
 const supportedDataQueries = {

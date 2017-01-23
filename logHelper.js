@@ -11,13 +11,15 @@ const dns = require("dns");
 const isWin = /^win/.test(os.platform());
 
 /**
- * Class holding helper functions
- */
+* @exports logHelper
+*/
 var logHelper = {
 
 };
+
 /**
  * Parses the provided line
+ * @type {Function}
  * @param {String} line to parse
  * @returns {Object|Boolean} the parsed line or false if not recognized
  */
@@ -66,9 +68,45 @@ logHelper.parseLine = function(line) {
     }
 };
 
+/** 
+ * Creates a new Summary Object
+ * @class 
+ */
+var Summary = function() {
+    /** 
+     *  ads blocked total
+     *@member {Number}
+     */
+    this.adsBlockedToday = 0;
+    /** 
+     *  dns queries total
+     *@member {Number}
+     */
+    this.dnsQueriesToday = 0;
+    /** 
+     *  ads percentage
+     *@member {Number}
+     */
+    this.adsPercentageToday = 0;
+    /** 
+     * dns being blocked in total
+     * @member {Number}
+     */
+    this.domainsBeingBlocked = 0;
+};
+
+/**
+ *  @typedef Summary2
+ *  @type {object}
+ *  @property {number} adsBlockedToday - Total blocked queries
+ *  @property {number} dnsQueriesToday - Total dns queries
+ *  @property {number} adsPercentageToday - Percentage of blocked requests
+ *  @property {number} domainsBeingBlocked - Domains being blocked in total
+ */
+
 /**
  * Creates a summary of the log file
- * @returns {Promise} a Promise providing a summary of the log file
+ * @returns {Promise} a Promise providing a {@link Summary2} of the log file
  */
 logHelper.getSummary = function() {
     return new Promise(function(resolve, reject) {
@@ -116,7 +154,7 @@ logHelper.getSummary = function() {
 /**
  * Auxilary function for windows to count non empty lines in a file
  * @param {String} filename to count the lines in
- * @param {Function} callback for the result
+ * @param {logHelper~lineNumberCallback} callback - callback for the result
  */
 logHelper.getFileLineCountWindows = function(filename, callback) {
     exec("find /c /v \"\" \"" + filename + "\"", function(err, stdout, stderr) {
@@ -134,9 +172,15 @@ logHelper.getFileLineCountWindows = function(filename, callback) {
 };
 
 /**
+ * This callback is displayed as part of the Requester class.
+ * @callback logHelper~lineNumberCallback
+ * @param {Number} Line count
+ */
+
+/**
  * Auxilary function for *nix to count non empty lines in a file
  * @param {String} filename to count the lines in
- * @param {Function} callback for the result
+ * @param {logHelper~lineNumberCallback} callback - callback for the result
  */
 logHelper.getFileLineCountUnix = function(filename, callback) {
     exec("grep -c ^ " + filename, function(err, stdout, stderr) {
@@ -339,7 +383,7 @@ const excludeFromList = function(source, excl) {
 
 /**
  * Tries to resolve the domain of the ip
- * @param {String} ip to check
+ * @param {String} ip - ip to check
  * @returns {Promise} a Promise either returning the ip or domains|ip
  */
 const resolveIP = function(ip) {

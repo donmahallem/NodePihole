@@ -11,7 +11,7 @@ opts.break_chained_methods = True
 opts.preserve_newlines = True
 opts.max_preserve_newlines = 2
 
-excludedDirs=["node_modules",".git","vendor"]
+excludedDirs=["node_modules",".git","vendor","docs"]
 
 for root, dirs, files in os.walk(os.getcwd(), topdown=True):
     #for dir in dirs:

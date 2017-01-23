@@ -11,17 +11,38 @@ const dns = require("dns");
 const isWin = /^win/.test(os.platform());
 
 /**
-* @exports logHelper
-*/
+ * @exports logHelper
+ */
 var logHelper = {
 
 };
 
 /**
+ * Object containing information about the summary
+ *  @typedef Query
+ *  @type {object}
+ *  @property {String} timestamp - Iso Timestamp of the query
+ *  @property {String} type - always "query"
+ *  @property {String} domain - The queried domain
+ *  @property {String} client - The client that issued the query
+ *  @property {String} queryType - e.g. AA or AAAA
+ */
+
+/**
+ * Object containing information about the summary
+ *  @typedef Block
+ *  @type {object}
+ *  @property {String} timestamp - Iso Timestamp of the block
+ *  @property {String} type - always "block"
+ *  @property {String} domain - The blocked domain
+ *  @property {String} list - the list that blocked the domain
+ */
+
+/**
  * Parses the provided line
  * @type {Function}
  * @param {String} line to parse
- * @returns {Object|Boolean} the parsed line or false if not recognized
+ * @returns {module:logHelper~Query|module:logHelper~Block|Boolean} the parsed line or false if not recognized
  */
 logHelper.parseLine = function(line) {
     if (typeof line === "undefined" || line.trim() === "") {
@@ -68,35 +89,9 @@ logHelper.parseLine = function(line) {
     }
 };
 
-/** 
- * Creates a new Summary Object
- * @class 
- */
-var Summary = function() {
-    /** 
-     *  ads blocked total
-     *@member {Number}
-     */
-    this.adsBlockedToday = 0;
-    /** 
-     *  dns queries total
-     *@member {Number}
-     */
-    this.dnsQueriesToday = 0;
-    /** 
-     *  ads percentage
-     *@member {Number}
-     */
-    this.adsPercentageToday = 0;
-    /** 
-     * dns being blocked in total
-     * @member {Number}
-     */
-    this.domainsBeingBlocked = 0;
-};
-
 /**
- *  @typedef Summary2
+ * Object containing information about the summary
+ *  @typedef Summary
  *  @type {object}
  *  @property {number} adsBlockedToday - Total blocked queries
  *  @property {number} dnsQueriesToday - Total dns queries
@@ -106,7 +101,7 @@ var Summary = function() {
 
 /**
  * Creates a summary of the log file
- * @returns {Promise} a Promise providing a {@link Summary2} of the log file
+ * @returns {Promise} a Promise providing a [Summary]{@link module:logHelper~Summary} of the log file
  */
 logHelper.getSummary = function() {
     return new Promise(function(resolve, reject) {
@@ -154,7 +149,7 @@ logHelper.getSummary = function() {
 /**
  * Auxilary function for windows to count non empty lines in a file
  * @param {String} filename to count the lines in
- * @param {logHelper~lineNumberCallback} callback - callback for the result
+ * @param {module:logHelper~lineNumberCallback} callback - callback for the result
  */
 logHelper.getFileLineCountWindows = function(filename, callback) {
     exec("find /c /v \"\" \"" + filename + "\"", function(err, stdout, stderr) {
@@ -172,15 +167,9 @@ logHelper.getFileLineCountWindows = function(filename, callback) {
 };
 
 /**
- * This callback is displayed as part of the Requester class.
- * @callback logHelper~lineNumberCallback
- * @param {Number} Line count
- */
-
-/**
  * Auxilary function for *nix to count non empty lines in a file
  * @param {String} filename to count the lines in
- * @param {logHelper~lineNumberCallback} callback - callback for the result
+ * @param {module:logHelper~lineNumberCallback} callback - callback for the result
  */
 logHelper.getFileLineCountUnix = function(filename, callback) {
     exec("grep -c ^ " + filename, function(err, stdout, stderr) {
@@ -383,7 +372,10 @@ const excludeFromList = function(source, excl) {
 
 /**
  * Tries to resolve the domain of the ip
+ * @method resolveIP
  * @param {String} ip - ip to check
+ * @memberof logHelper
+ * @private
  * @returns {Promise} a Promise either returning the ip or domains|ip
  */
 const resolveIP = function(ip) {
@@ -398,6 +390,14 @@ const resolveIP = function(ip) {
     });
 };
 
+/**
+ * Tries to resolve the domain of the ip
+ * @method resolveIPs
+ * @param {String[]} ips - ips to check
+ * @memberof logHelper
+ * @private
+ * @returns {Promise} a Promise
+ */
 const resolveIPs = function(ips) {
     var queries = [];
     for (var ip in ips) {
@@ -582,3 +582,9 @@ logHelper.getTopItems = function(argument) {
 };
 
 module.exports = logHelper;
+
+/**
+ * This callback is displayed as part of the Requester class.
+ * @callback lineNumberCallback
+ * @param {Number} count - Line number count
+ */

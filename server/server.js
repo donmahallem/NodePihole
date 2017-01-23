@@ -23,13 +23,22 @@ const appDefaults = require("./defaults.js");
 const Tail = require("tail")
     .Tail;
 /**
-* @export PiServer
-*/
+ * @class PiServer
+ * @export PiServer
+ */
 var PiServer = function() {
+    /** 
+     * express app instance of the server
+     *@member {Object} PiServer#app
+     */
     this.app = express();
+    /**
+     * http instance of the server
+     *@member {Object} PiServer#http
+     */
     this.http = server(this.app);
     this.app.set("view engine", "pug");
-	this.app.set('views','./server/views');
+    this.app.set('views', './server/views');
     this.app.use(bodyParser.urlencoded({
         extended: true
     }));
@@ -70,8 +79,9 @@ var PiServer = function() {
 };
 
 /**
-* @method starts the server
-*/
+ *  starts the server
+ * @method PiServer#start
+ */
 PiServer.prototype.start = function() {
     if (!this.started) {
         this.started = true;

@@ -10,9 +10,29 @@ const helper = require("./../helper.js");
 const childProcess = require("child_process");
 
 /**
-* The router for the api endpoints
-* @exports apiRouter
-*/
+ * @apiDefine NotAuthorized
+ * @apiError NotAuthorized The requester is not authorized to access this endpoint
+ * @apiErrorExample NotAuthorized Response:
+ *     HTTP/1.1 401 Not Authorized
+ */
+
+/**
+ * @apiDefine admin AdminUser
+ * A logged in user
+ */
+
+/**
+ * @apiDefine InvalidRequest
+ * @apiError InvalidRequest The request is malformed
+ * @apiErrorExample InvalidRequest Response:
+ *     HTTP/1.1 400 Invalid Request
+ *     
+ */
+
+/**
+ * The router for the api endpoints
+ * @exports apiRouter
+ */
 var router = express.Router();
 
 const supportedDataQueries = {
@@ -125,7 +145,37 @@ if (!Array.prototype.includes) {
     });
 }
 /////////////////////////////////////////////
-
+/**
+ * @api {get} /api/data/ Query data from the log
+ * @apiName Data
+ * @apiGroup Data
+ * @apiParam (Query Parameter) {boolean} summary
+ * @apiParam (Query Parameter) {boolean} overTimeData
+ * @apiParam (Query Parameter) {boolean} overTimeData10mins
+ * @apiParam (Query Parameter) {boolean} topItems
+ * @apiParam (Query Parameter) {boolean} recentItems
+ * @apiParam (Query Parameter) {boolean} getQueryTypes
+ * @apiParam (Query Parameter) {boolean} getForwardDestinations
+ * @apiParam (Query Parameter) {boolean} getAllQueries
+ * @apiParam (Query Parameter) {boolean} getQuerySources
+ *
+ * @apiSuccess {Object} summary The object summary
+ * @apiSuccess {Number} summary.adsBlockedToday Total blocked queries
+ * @apiSuccess {Number} summary.dnsQueriesToday Total dns queries
+ * @apiSuccess {Number} summary.adsPercentageToday Percentage of blocked requests
+ * @apiSuccess {Number} summary.domainsBeingBlocked Domains being blocked in total
+ * @apiSuccess {Number[]} domainsOverTime Domain count queried over time
+ * @apiSuccess {Object[]} topSources Top query sources
+ * @apiSuccess {String} topSources.source Query source
+ * @apiSuccess {Number} topSources.count Number of queries from this source
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "status": "disabled"
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
 router.get("/data", function(req, res) {
     // Filter query types so only valid ones pass
     var args = {};
@@ -191,6 +241,13 @@ router.get("/data", function(req, res) {
         });
 });
 
+/**
+ * @api {get} /api/taillog/ Opens an eventsource stream that tails the log file
+ * @apiName GetTaillog
+ * @apiGroup Taillog
+ * @apiPermission admin
+ * @apiUse NotAuthorized
+ */
 router.get("/taillog",
     apiMiddleware.auth,
     function(req, res) {
@@ -224,8 +281,18 @@ router.get("/taillog",
             res.write("event: dns\n");
             res.write("data: {\"timestamp\":\"2017-01-18T21:34:20Z\",\"type\":\"query\"}\n\n");
         }, 1000);
-    });
+    }
+);
 
+/**
+ * @api {get} /api/list/ Gets the white/black list
+ * @apiName GetDomains
+ * @apiGroup Lists
+ * @apiParam (Query Parameter) {string} list either <tt>white</tt> or black
+ * @apiPermission admin
+ * @apiSuccess {String} firstname Firstname of the User.
+ * @apiSuccess {String} lastname  Lastname of the User.
+ */
 router.get("/list", apiMiddleware.auth, function(req, res) {
     if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
         var filepath;
@@ -261,6 +328,16 @@ router.get("/list", apiMiddleware.auth, function(req, res) {
     }
 });
 
+/**
+ * @api {post} /api/list/ Adds a domain to the specified list
+ * @apiName AddDomain
+ * @apiGroup Lists
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {string} list either <tt>white</tt> or black
+ * @apiSuccess {String} firstname Firstname of the User.
+ * @apiSuccess {String} lastname  Lastname of the User.
+ */
 router.post("/list",
     apiMiddleware.auth,
     helper.express.csrfMiddleware,
@@ -283,6 +360,19 @@ router.post("/list",
     }
 );
 
+/**
+ * @api {delete} /api/list/ Deletes a domain from the specified list
+ * @apiName DeleteDomain
+ * @apiGroup Lists
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {string} list either <code>white</code> or <code>white</code>
+ * @apiSuccess {String} firstname Firstname of the User.
+ * @apiSuccess {String} lastname  Lastname of the User.
+ * @apiError NotFound The <code>list</code> is unknown to the server
+ * @apiUse NotAuthorized
+ * @apiUse InvalidRequest
+ */
 router.delete("/list",
     apiMiddleware.auth,
     helper.express.csrfMiddleware,
@@ -305,6 +395,16 @@ router.delete("/list",
     }
 );
 
+/**
+ * @api {post} /api/enable/ Enable Pihole
+ * @apiName Enables the Pi Hole
+ * @apiGroup Status
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiSuccess {String} status the status of the pihole
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
 router.post("/enable",
     apiMiddleware.auth,
     helper.express.csrfMiddleware,
@@ -321,6 +421,22 @@ router.post("/enable",
     }
 );
 
+/**
+ * @api {post} /api/disable/ Disable Pihole
+ * @apiName Disables the Pi Hole
+ * @apiGroup Status
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiParam (Body) {Number} time a positive number in seconds for how long to disable the pihole. 0 disables indefinitely
+ * @apiSuccess {String} status the status of the pihole
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "status": "disabled"
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
 router.post("/disable",
     apiMiddleware.auth,
     helper.express.csrfMiddleware,

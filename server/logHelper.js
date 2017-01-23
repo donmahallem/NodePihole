@@ -383,7 +383,10 @@ const excludeFromList = function(source, excl) {
 
 /**
  * Tries to resolve the domain of the ip
+ * @method resolveIP
  * @param {String} ip - ip to check
+ * @memberof logHelper
+ * @private
  * @returns {Promise} a Promise either returning the ip or domains|ip
  */
 const resolveIP = function(ip) {
@@ -398,6 +401,14 @@ const resolveIP = function(ip) {
     });
 };
 
+/**
+ * Tries to resolve the domain of the ip
+ * @method resolveIPs
+ * @param {String[]} ips - ips to check
+ * @memberof logHelper
+ * @private
+ * @returns {Promise} a Promise
+ */
 const resolveIPs = function(ips) {
     var queries = [];
     for (var ip in ips) {

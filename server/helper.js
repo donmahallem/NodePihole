@@ -14,6 +14,7 @@ const url = require("url");
 var helper = {};
 /**
  * creates the default hash of the password for the admin panel
+ * @method hashPassword
  * @param {String} pwd - string to hash
  * @returns {String} hash - returns the hash
  */
@@ -28,6 +29,7 @@ helper.hashPassword = function(pwd) {
 
 /**
  * creates the default hash of the provided string with a salt
+ * @method hashWithSalt
  * @param {String} pwd - password
  * @param {String} salt - the salt
  * @returns {String} hash - returns the hash

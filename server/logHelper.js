@@ -11,8 +11,8 @@ const dns = require("dns");
 const isWin = /^win/.test(os.platform());
 
 /**
-* @exports logHelper
-*/
+ * @exports logHelper
+ */
 var logHelper = {
 
 };

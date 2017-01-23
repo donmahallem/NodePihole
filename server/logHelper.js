@@ -10,10 +10,19 @@ const dns = require("dns");
 
 const isWin = /^win/.test(os.platform());
 
+/**
+* @exports logHelper
+*/
 var logHelper = {
 
 };
 
+/**
+ * Parses the provided line
+ * @type {Function}
+ * @param {String} line to parse
+ * @returns {Object|Boolean} the parsed line or false if not recognized
+ */
 logHelper.parseLine = function(line) {
     if (typeof line === "undefined" || line.trim() === "") {
         return false;
@@ -59,6 +68,46 @@ logHelper.parseLine = function(line) {
     }
 };
 
+/** 
+ * Creates a new Summary Object
+ * @class 
+ */
+var Summary = function() {
+    /** 
+     *  ads blocked total
+     *@member {Number}
+     */
+    this.adsBlockedToday = 0;
+    /** 
+     *  dns queries total
+     *@member {Number}
+     */
+    this.dnsQueriesToday = 0;
+    /** 
+     *  ads percentage
+     *@member {Number}
+     */
+    this.adsPercentageToday = 0;
+    /** 
+     * dns being blocked in total
+     * @member {Number}
+     */
+    this.domainsBeingBlocked = 0;
+};
+
+/**
+ *  @typedef Summary2
+ *  @type {object}
+ *  @property {number} adsBlockedToday - Total blocked queries
+ *  @property {number} dnsQueriesToday - Total dns queries
+ *  @property {number} adsPercentageToday - Percentage of blocked requests
+ *  @property {number} domainsBeingBlocked - Domains being blocked in total
+ */
+
+/**
+ * Creates a summary of the log file
+ * @returns {Promise} a Promise providing a {@link Summary2} of the log file
+ */
 logHelper.getSummary = function() {
     return new Promise(function(resolve, reject) {
             var lineReader = readline
@@ -102,6 +151,11 @@ logHelper.getSummary = function() {
         });
 };
 
+/**
+ * Auxilary function for windows to count non empty lines in a file
+ * @param {String} filename to count the lines in
+ * @param {logHelper~lineNumberCallback} callback - callback for the result
+ */
 logHelper.getFileLineCountWindows = function(filename, callback) {
     exec("find /c /v \"\" \"" + filename + "\"", function(err, stdout, stderr) {
         if (err || stderr !== "") {
@@ -117,6 +171,17 @@ logHelper.getFileLineCountWindows = function(filename, callback) {
     });
 };
 
+/**
+ * This callback is displayed as part of the Requester class.
+ * @callback logHelper~lineNumberCallback
+ * @param {Number} Line count
+ */
+
+/**
+ * Auxilary function for *nix to count non empty lines in a file
+ * @param {String} filename to count the lines in
+ * @param {logHelper~lineNumberCallback} callback - callback for the result
+ */
 logHelper.getFileLineCountUnix = function(filename, callback) {
     exec("grep -c ^ " + filename, function(err, stdout, stderr) {
         if (err || stderr !== "") {
@@ -127,6 +192,11 @@ logHelper.getFileLineCountUnix = function(filename, callback) {
     });
 };
 
+/**
+ * Counts non empty lines in a file
+ * @param {String} filename to count the lines in
+ * @returns {Promise} a Promise providing the line count
+ */
 logHelper.getFileLineCount = function(filename) {
     return new Promise(function(resolve, reject) {
         fs.access(filename, fs.F_OK | fs.R_OK, function(err) {
@@ -148,6 +218,10 @@ logHelper.getFileLineCount = function(filename) {
     });
 };
 
+/**
+ * Counts the blocked domains
+ * @returns {Promise} a Promise with the number of blocked domains
+ */
 logHelper.getGravityCount = function() {
     return Promise.all([logHelper.getFileLineCount(appDefaults.gravityListFile),
             logHelper.getFileLineCount(appDefaults.blackListFile)
@@ -159,6 +233,11 @@ logHelper.getGravityCount = function() {
         });
 };
 
+/**
+ * Gets all domains listed in the specified file
+ * @param {String} file to read
+ * @returns {Promise} a Promise providing the line domains
+ */
 logHelper.getDomains = function(file) {
     return new Promise(function(resolve, reject) {
         fs.access(file, fs.F_OK | fs.R_OK, function(err) {
@@ -186,6 +265,10 @@ logHelper.getDomains = function(file) {
     });
 };
 
+/**
+ * Merges all blacklist files and removes the whitelisted domains
+ * @returns {Promise} a Promise providing blocked domains
+ */
 logHelper.getGravity = function() {
     return Promise.all([logHelper.getDomains(appDefaults.blackListFile),
             logHelper.getDomains(appDefaults.gravityListFile),
@@ -208,6 +291,10 @@ logHelper.getGravity = function() {
         });
 };
 
+/**
+ * Returns all query entries from the log
+ * @returns {Promise} a Promise providing all queries
+ */
 logHelper.getAllQueries = function() {
     return new Promise(function(resolve, reject) {
         var lineReader = require("readline")
@@ -247,6 +334,10 @@ logHelper.getAllQueries = function() {
     });
 };
 
+/**
+ * Counts the Query types
+ * @returns {Promise} a Promise providing the number queries for each type
+ */
 logHelper.getQueryTypes = function() {
     return new Promise(function(resolve, reject) {
         fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
@@ -290,6 +381,11 @@ const excludeFromList = function(source, excl) {
     return source;
 };
 
+/**
+ * Tries to resolve the domain of the ip
+ * @param {String} ip - ip to check
+ * @returns {Promise} a Promise either returning the ip or domains|ip
+ */
 const resolveIP = function(ip) {
     return new Promise(function(resolve, reject) {
         dns.reverse(ip, function(err, result) {
@@ -317,6 +413,10 @@ const resolveIPs = function(ips) {
         });
 };
 
+/**
+ * Gets the top clients of the pihole
+ * @returns {Promise} a Promise returning all information
+ */
 logHelper.getQuerySources = function() {
     return new Promise(function(resolve, reject) {
             var lineReader = readline
@@ -357,6 +457,10 @@ logHelper.getQuerySources = function() {
         });
 };
 
+/**
+ * Gets the forward destinations from the log file
+ * @returns {Promise} a Promise providing the forward destinations
+ */
 logHelper.getForwardDestinations = function() {
     return new Promise(function(resolve, reject) {
         fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
@@ -390,6 +494,10 @@ logHelper.getForwardDestinations = function() {
     });
 };
 
+/**
+ * Gets the number of queries divided into 10 minute timeframes
+ * @returns {Promise} a Promise returning a object containing information about ads and domains over time
+ */
 logHelper.getOverTimeData10mins = function() {
     return new Promise(function(resolve, reject) {
         var lineReader = readline

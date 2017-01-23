@@ -22,7 +22,9 @@ const csp = require("csp-header");
 const appDefaults = require("./defaults.js");
 const Tail = require("tail")
     .Tail;
-
+/**
+* @export PiServer
+*/
 var PiServer = function() {
     this.app = express();
     this.http = server(this.app);
@@ -66,6 +68,10 @@ var PiServer = function() {
     this.app.get("/list", frontEnd.list.get);
     this.started = false;
 };
+
+/**
+* @method starts the server
+*/
 PiServer.prototype.start = function() {
     if (!this.started) {
         this.started = true;

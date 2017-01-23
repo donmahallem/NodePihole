@@ -28,7 +28,7 @@ const childProcess = require("child_process");
  *     HTTP/1.1 400 Invalid Request
  *     
  */
-
+ 
 /**
  * The router for the api endpoints
  * @exports apiRouter
@@ -146,32 +146,77 @@ if (!Array.prototype.includes) {
 }
 /////////////////////////////////////////////
 /**
- * @api {get} /api/data/ Query data from the log
+ * @api {get} /api/data Query data from the log
  * @apiName Data
  * @apiGroup Data
- * @apiParam (Query Parameter) {boolean} summary
- * @apiParam (Query Parameter) {boolean} overTimeData
- * @apiParam (Query Parameter) {boolean} overTimeData10mins
- * @apiParam (Query Parameter) {boolean} topItems
- * @apiParam (Query Parameter) {boolean} recentItems
- * @apiParam (Query Parameter) {boolean} getQueryTypes
- * @apiParam (Query Parameter) {boolean} getForwardDestinations
- * @apiParam (Query Parameter) {boolean} getAllQueries
- * @apiParam (Query Parameter) {boolean} getQuerySources
+ * @apiVersion 1.0.0
+ * @apiParam (Query Parameter) {boolean} [summary=false] Gets the summary
+ * @apiParam (Query Parameter) {boolean} [overTimeData=false] Gets the overtime data
+ * @apiParam (Query Parameter) {boolean} [overTimeData10mins=false] Gets the overtime data grouped into 10  minute frames
+ * @apiParam (Query Parameter) {boolean} [topItems=false] Gets the top items
+ * @apiParam (Query Parameter) {boolean} [recentItems=false] Gets the recent queries
+ * @apiParam (Query Parameter) {boolean} [getQueryTypes=false] Get types of queries
+ * @apiParam (Query Parameter) {boolean} [getForwardDestinations=false] Get the forward destinations
+ * @apiParam (Query Parameter) {boolean} [getAllQueries=false] Gets all queries from the log
+ * @apiParam (Query Parameter) {boolean} [getQuerySources=false] Gets the sources where the queries originated from
+ *
+ * @apiSuccess (Success - Summary) {Object} summary The object summary
+ * @apiSuccess (Success - Summary) {Number} summary.adsBlockedToday Total blocked queries
+ * @apiSuccess (Success - Summary) {Number} summary.dnsQueriesToday Total dns queries
+ * @apiSuccess (Success - Summary) {Number} summary.adsPercentageToday Percentage of blocked requests
+ * @apiSuccess (Success - Summary) {Number} summary.domainsBeingBlocked Domains being blocked in total
+ * @apiSuccess (Success - DomainsOverTime) {Number[]} domainsOverTime Domain count queried over time
+ * @apiSuccess (Success - TopSources) {Object[]} topSources Top query sources
+ * @apiSuccess (Success - TopSources) {String} topSources.source Query source
+ * @apiSuccess (Success - TopSources) {Number} topSources.count Number of queries from this source
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "status": "disabled"
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+/**
+ * @api {get} /api/data Get Summary
+ * @apiName GetDataSummary
+ * @apiGroup Data
+ * @apiVersion 1.0.0
+ * @apiParam (Query Parameter) {boolean=true} summary Gets the summary
  *
  * @apiSuccess {Object} summary The object summary
  * @apiSuccess {Number} summary.adsBlockedToday Total blocked queries
  * @apiSuccess {Number} summary.dnsQueriesToday Total dns queries
  * @apiSuccess {Number} summary.adsPercentageToday Percentage of blocked requests
  * @apiSuccess {Number} summary.domainsBeingBlocked Domains being blocked in total
- * @apiSuccess {Number[]} domainsOverTime Domain count queried over time
- * @apiSuccess {Object[]} topSources Top query sources
- * @apiSuccess {String} topSources.source Query source
- * @apiSuccess {Number} topSources.count Number of queries from this source
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
- *       "status": "disabled"
+ *       "adsBlockedToday": 10,
+ *       "dnsQueriesToday": 100,
+ *       "adsPercentageToday": 10.0,
+ *       "domainsBeingBlocked": 1337
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+/**
+ * @api {get} /api/data Get Querytypes
+ * @apiName GetDataQueryTypes
+ * @apiGroup Data
+ * @apiVersion 1.0.0
+ * @apiParam (Query Parameter) {boolean=true} getQueryTypes Gets the query types
+ *
+ * @apiSuccess {Object[]} queryTypes Array with query types
+ * @apiSuccess {Number} queryTypes.type query type
+ * @apiSuccess {Number} queryTypes.count number of queries with this type
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "adsBlockedToday": 10,
+ *       "dnsQueriesToday": 100,
+ *       "adsPercentageToday": 10.0,
+ *       "domainsBeingBlocked": 1337
  *     }
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
@@ -245,6 +290,7 @@ router.get("/data", function(req, res) {
  * @api {get} /api/taillog/ Opens an eventsource stream that tails the log file
  * @apiName GetTaillog
  * @apiGroup Taillog
+ * @apiVersion 1.0.0
  * @apiPermission admin
  * @apiUse NotAuthorized
  */
@@ -288,10 +334,12 @@ router.get("/taillog",
  * @api {get} /api/list/ Gets the white/black list
  * @apiName GetDomains
  * @apiGroup Lists
- * @apiParam (Query Parameter) {string} list either <tt>white</tt> or black
+ * @apiVersion 1.0.0
  * @apiPermission admin
- * @apiSuccess {String} firstname Firstname of the User.
- * @apiSuccess {String} lastname  Lastname of the User.
+ * @apiParam (Query Parameter) {string="white","black"} The list name
+ * @apiError NotFound The <code>list</code> is unknown to the server
+ * @apiUse NotAuthorized
+ * @apiUse InvalidRequest
  */
 router.get("/list", apiMiddleware.auth, function(req, res) {
     if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
@@ -334,9 +382,10 @@ router.get("/list", apiMiddleware.auth, function(req, res) {
  * @apiGroup Lists
  * @apiVersion 1.0.0
  * @apiPermission admin
- * @apiParam (Query Parameter) {string} list either <tt>white</tt> or black
- * @apiSuccess {String} firstname Firstname of the User.
- * @apiSuccess {String} lastname  Lastname of the User.
+ * @apiParam (Query Parameter) {string="white","black"} The list name
+ * @apiError NotFound The <code>list</code> is unknown to the server
+ * @apiUse NotAuthorized
+ * @apiUse InvalidRequest
  */
 router.post("/list",
     apiMiddleware.auth,
@@ -366,9 +415,7 @@ router.post("/list",
  * @apiGroup Lists
  * @apiVersion 1.0.0
  * @apiPermission admin
- * @apiParam (Query Parameter) {string} list either <code>white</code> or <code>white</code>
- * @apiSuccess {String} firstname Firstname of the User.
- * @apiSuccess {String} lastname  Lastname of the User.
+ * @apiParam (Query Parameter) {string="white","black"} The list name
  * @apiError NotFound The <code>list</code> is unknown to the server
  * @apiUse NotAuthorized
  * @apiUse InvalidRequest

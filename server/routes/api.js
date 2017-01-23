@@ -10,6 +10,7 @@ const helper = require("./../helper.js");
 const childProcess = require("child_process");
 
 /**
+* The router for the api endpoints
 * @exports apiRouter
 */
 var router = express.Router();

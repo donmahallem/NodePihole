@@ -27,6 +27,7 @@ var PiServer = function() {
     this.app = express();
     this.http = server(this.app);
     this.app.set("view engine", "pug");
+	this.app.set('views','./server/views');
     this.app.use(bodyParser.urlencoded({
         extended: true
     }));

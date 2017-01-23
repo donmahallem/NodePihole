@@ -1,15 +1,15 @@
 process.env.NODE_ENV = "test";
 const chai = require("chai");
 const chaiHttp = require("chai-http");
-const Backend = require("../server.js");
+const Backend = require("./../server/server.js");
 const jwt = require("jsonwebtoken");
 const sinon = require("sinon");
 const should = chai.should();
 const expect = chai.expect;
-const helper = require("./../helper.js");
+const helper = require("./../server/helper.js");
 chai.use(chaiHttp);
-const appDefaults = require("./../defaults.js");
-const logHelper = require("./../logHelper.js");
+const appDefaults = require("./../server/defaults.js");
+const logHelper = require("./../server/logHelper.js");
 var server = new Backend();
 var sandbox;
 describe("Check endpoints", function() {

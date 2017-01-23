@@ -3,6 +3,7 @@
     "type": "get",
     "url": "/api/data",
     "title": "Query data from the log",
+    "description": "<p>You can choose any combination of the following query parameters to combine those. Some need authentication(Please refer to the detailed listing of the parameters for response types and parameters)</p>",
     "name": "Data",
     "group": "Data",
     "version": "1.0.0",
@@ -15,7 +16,7 @@
             "optional": true,
             "field": "summary",
             "defaultValue": "false",
-            "description": "<p>Gets the summary</p>"
+            "description": "<p>Please refer to <a href=\"#api-Data-GetDataSummary\">summary</a></p>"
           },
           {
             "group": "Query Parameter",
@@ -23,7 +24,7 @@
             "optional": true,
             "field": "overTimeData",
             "defaultValue": "false",
-            "description": "<p>Gets the overtime data</p>"
+            "description": "<p>Please refer to <a href=\"#api-Data-GetDataSummary\">overTimeData</a></p>"
           },
           {
             "group": "Query Parameter",
@@ -31,7 +32,7 @@
             "optional": true,
             "field": "overTimeData10mins",
             "defaultValue": "false",
-            "description": "<p>Gets the overtime data grouped into 10  minute frames</p>"
+            "description": "<p>Please refer to <a href=\"#api-Data-GetDataOverTimeData10mins\">overTimeData10mins</a></p>"
           },
           {
             "group": "Query Parameter",
@@ -39,7 +40,7 @@
             "optional": true,
             "field": "topItems",
             "defaultValue": "false",
-            "description": "<p>Gets the top items</p>"
+            "description": "<p>Please refer to <a href=\"#api-Data-GetDataTopItems\">topItems</a></p>"
           },
           {
             "group": "Query Parameter",
@@ -47,7 +48,7 @@
             "optional": true,
             "field": "recentItems",
             "defaultValue": "false",
-            "description": "<p>Gets the recent queries</p>"
+            "description": "<p>Please refer to <a href=\"#api-Data-GetDataRecentItems\">recentItems</a></p>"
           },
           {
             "group": "Query Parameter",
@@ -55,7 +56,7 @@
             "optional": true,
             "field": "getQueryTypes",
             "defaultValue": "false",
-            "description": "<p>Get types of queries</p>"
+            "description": "<p>Please refer to <a href=\"#api-Data-GetDataQueryTypes\">queryTypes</a></p>"
           },
           {
             "group": "Query Parameter",
@@ -249,7 +250,7 @@
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "HTTP/1.1 200 OK\n{\n  \"adsBlockedToday\": 10,\n  \"dnsQueriesToday\": 100,\n  \"adsPercentageToday\": 10.0,\n  \"domainsBeingBlocked\": 1337\n}",
+          "content": "HTTP/1.1 200 OK\n[\n  {\n    \"type\": \"AAAA\",\n    \"count\": 299\n  },\n  {\n    \"type\": \"AA\",\n    \"count\": 100\n  }\n]",
           "type": "json"
         }
       ]

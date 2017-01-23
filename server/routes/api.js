@@ -147,15 +147,16 @@ if (!Array.prototype.includes) {
 /////////////////////////////////////////////
 /**
  * @api {get} /api/data Query data from the log
+ * @apiDescription You can choose any combination of the following query parameters to combine those. Some need authentication(Please refer to the detailed listing of the parameters for response types and parameters)
  * @apiName Data
  * @apiGroup Data
  * @apiVersion 1.0.0
- * @apiParam (Query Parameter) {boolean} [summary=false] Gets the summary
- * @apiParam (Query Parameter) {boolean} [overTimeData=false] Gets the overtime data
- * @apiParam (Query Parameter) {boolean} [overTimeData10mins=false] Gets the overtime data grouped into 10  minute frames
- * @apiParam (Query Parameter) {boolean} [topItems=false] Gets the top items
- * @apiParam (Query Parameter) {boolean} [recentItems=false] Gets the recent queries
- * @apiParam (Query Parameter) {boolean} [getQueryTypes=false] Get types of queries
+ * @apiParam (Query Parameter) {boolean} [summary=false] Please refer to [summary](#api-Data-GetDataSummary)
+ * @apiParam (Query Parameter) {boolean} [overTimeData=false] Please refer to [overTimeData](#api-Data-GetDataSummary)
+ * @apiParam (Query Parameter) {boolean} [overTimeData10mins=false] Please refer to [overTimeData10mins](#api-Data-GetDataOverTimeData10mins)
+ * @apiParam (Query Parameter) {boolean} [topItems=false] Please refer to [topItems](#api-Data-GetDataTopItems)
+ * @apiParam (Query Parameter) {boolean} [recentItems=false] Please refer to [recentItems](#api-Data-GetDataRecentItems)
+ * @apiParam (Query Parameter) {boolean} [getQueryTypes=false] Please refer to [queryTypes](#api-Data-GetDataQueryTypes)
  * @apiParam (Query Parameter) {boolean} [getForwardDestinations=false] Get the forward destinations
  * @apiParam (Query Parameter) {boolean} [getAllQueries=false] Gets all queries from the log
  * @apiParam (Query Parameter) {boolean} [getQuerySources=false] Gets the sources where the queries originated from
@@ -212,12 +213,16 @@ if (!Array.prototype.includes) {
  * @apiSuccess {Number} queryTypes.count number of queries with this type
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
- *     {
- *       "adsBlockedToday": 10,
- *       "dnsQueriesToday": 100,
- *       "adsPercentageToday": 10.0,
- *       "domainsBeingBlocked": 1337
- *     }
+ *     [
+ *       {
+ *         "type": "AAAA",
+ *         "count": 299
+ *       },
+ *       {
+ *         "type": "AA",
+ *         "count": 100
+ *       }
+ *     ]
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
  */

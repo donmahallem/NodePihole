@@ -10,6 +10,7 @@ const url = require("url");
 /**
  * module providing common helper function
  * @exports helper
+ * @module helper
  */
 var helper = {};
 /**
@@ -17,6 +18,8 @@ var helper = {};
  * @method hashPassword
  * @param {String} pwd - string to hash
  * @returns {String} hash - returns the hash
+ * @memberof module:helper
+ * @static
  */
 helper.hashPassword = function(pwd) {
     const tempHash = crypto.createHash("sha256", "utf8")
@@ -33,6 +36,8 @@ helper.hashPassword = function(pwd) {
  * @param {String} pwd - password
  * @param {String} salt - the salt
  * @returns {String} hash - returns the hash
+ * @memberof module:helper
+ * @static
  */
 helper.hashWithSalt = function(pwd, salt) {
     const tempHash = crypto.createHash("sha256", "utf8")
@@ -44,17 +49,17 @@ helper.hashWithSalt = function(pwd, salt) {
         .update(salt)
         .digest("hex");
 };
-
-/**
- * @namespace {Object} express
- */
 helper.express = {};
 
 /**
  * Verifies the provided cookie
+ * @alias express.verifyAuthCookie
+ * @method express.verifyAuthCookie
+ * @memberof module:helper.express
  * @param {Object} req - express request object
  * @param {Object} res - express response object
  * @param {Function} next - next callback
+ * @static
  */
 helper.express.verifyAuthCookie = function(req, res, next) {
     if (req.signedCookies.auth) {

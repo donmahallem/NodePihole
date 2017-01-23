@@ -1,2877 +1,669 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-  <meta charset='utf-8' />
-  <title>pi1 1.0.0 | Documentation</title>
-  <meta name='viewport' content='width=device-width,initial-scale=1'>
-  <link href='assets/bass.css' type='text/css' rel='stylesheet' />
-  <link href='assets/style.css' type='text/css' rel='stylesheet' />
-  <link href='assets/github.css' type='text/css' rel='stylesheet' />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Loading...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <link href="vendor/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link href="vendor/prettify.css" rel="stylesheet" media="screen">
+  <link href="css/style.css" rel="stylesheet" media="screen, print">
+  <link href="img/favicon.ico" rel="icon" type="image/x-icon">
+  <script src="vendor/polyfill.js"></script>
 </head>
-<body class='documentation'>
-  <div class='max-width-4 mx-auto'>
-    <div class='clearfix md-mxn2'>
-      <div class='fixed xs-hide fix-3 overflow-auto max-height-100'>
-        <div class='py1 px2'>
-          <h3 class='mb0 no-anchor'>pi1</h3>
-          <div class='mb1'><code>1.0.0</code></div>
-          <input
-            placeholder='Filter'
-            id='filter-input'
-            class='col12 block input'
-            type='text' />
-          <div id='toc'>
-            <ul class='list-reset h5 py1-ul'>
-              
-                
-                <li><a
-                  href='#piserver'
-                  class=" toggle-sibling">
-                  PiServer
-                  <span class='icon'>▸</span>
-                </a>
-                
-                <div class='toggle-target display-none'>
-                  
-                  
-                    <ul class='list-reset py1-ul pl1'>
-                      <li class='h5'><span>Instance members</span></li>
-                      
-                      <li><a
-                        href='#PiServer#app'
-                        class='regular pre-open'>
-                        #app
-                      </a></li>
-                      
-                      <li><a
-                        href='#PiServer#http'
-                        class='regular pre-open'>
-                        #http
-                      </a></li>
-                      
-                      <li><a
-                        href='#PiServer#start'
-                        class='regular pre-open'>
-                        #start
-                      </a></li>
-                      
-                    </ul>
-                  
-                  
+<body>
+
+<script id="template-sidenav" type="text/x-handlebars-template">
+<nav id="scrollingNav">
+  <div class="sidenav-search">
+    <input class="form-control search" type="text" placeholder="{{__ "Filter..."}}">
+    <span class="search-reset">x</span>
+  </div>
+  <ul class="sidenav nav nav-list list">
+  {{#each nav}}
+    {{#if title}}
+      {{#if isHeader}}
+        {{#if isFixed}}
+          <li class="nav-fixed nav-header navbar-btn nav-list-item" data-group="{{group}}"><a href="#api-{{group}}">{{underscoreToSpace title}}</a></li>
+        {{else}}
+          <li class="nav-header nav-list-item" data-group="{{group}}"><a href="#api-{{group}}">{{underscoreToSpace title}}</a></li>
+        {{/if}}
+      {{else}}
+        <li class="{{#if hidden}}hide {{/if}}" data-group="{{group}}" data-name="{{name}}" data-version="{{version}}">
+          <a href="#api-{{group}}-{{name}}" class="nav-list-item">{{title}}</a>
+        </li>
+      {{/if}}
+    {{/if}}
+  {{/each}}
+  </ul>
+</nav>
+</script>
+
+<script id="template-project" type="text/x-handlebars-template">
+  <div class="pull-left">
+    <h1>{{name}}</h1>
+    {{#if description}}<h2>{{{nl2br description}}}</h2>{{/if}}
+  </div>
+  {{#if template.withCompare}}
+  <div class="pull-right">
+    <div class="btn-group">
+      <button id="version" class="btn btn-lg btn-default dropdown-toggle" data-toggle="dropdown">
+        <strong>{{version}}</strong>&nbsp;<span class="caret"></span>
+      </button>
+      <ul id="versions" class="dropdown-menu open-left">
+        <li><a id="compareAllWithPredecessor" href="#">{{__ "Compare all with predecessor"}}</a></li>
+        <li class="divider"></li>
+        <li class="disabled"><a href="#">{{__ "show up to version:"}}</a></li>
+      {{#each versions}}
+        <li class="version"><a href="#">{{this}}</a></li>
+      {{/each}}
+      </ul>
+    </div>
+  </div>
+  {{/if}}
+  <div class="clearfix"></div>
+</script>
+
+<script id="template-header" type="text/x-handlebars-template">
+  {{#if content}}
+    <div id="api-_">{{{content}}}</div>
+  {{/if}}
+</script>
+
+<script id="template-footer" type="text/x-handlebars-template">
+  {{#if content}}
+    <div id="api-_footer">{{{content}}}</div>
+  {{/if}}
+</script>
+
+<script id="template-generator" type="text/x-handlebars-template">
+  {{#if template.withGenerator}}
+    {{#if generator}}
+      <div class="content">
+        {{__ "Generated with"}} <a href="{{{generator.url}}}">{{{generator.name}}}</a> {{{generator.version}}} - {{{generator.time}}}
+      </div>
+    {{/if}}
+  {{/if}}
+</script>
+
+<script id="template-sections" type="text/x-handlebars-template">
+  <section id="api-{{group}}">
+    <h1>{{underscoreToSpace title}}</h1>
+    {{#if description}}
+      <p>{{{nl2br description}}}</p>
+    {{/if}}
+    {{#each articles}}
+      <div id="api-{{group}}-{{name}}">
+        {{{article}}}
+      </div>
+    {{/each}}
+  </section>
+</script>
+
+<script id="template-article" type="text/x-handlebars-template">
+  <article id="api-{{article.group}}-{{article.name}}-{{article.version}}" {{#if hidden}}class="hide"{{/if}} data-group="{{article.group}}" data-name="{{article.name}}" data-version="{{article.version}}">
+    <div class="pull-left">
+      <h1>{{article.groupTitle}}{{#if article.title}} - {{article.title}}{{/if}}</h1>
+    </div>
+    {{#if template.withCompare}}
+    <div class="pull-right">
+      <div class="btn-group">
+        <button class="version btn btn-default dropdown-toggle" data-toggle="dropdown">
+          <strong>{{article.version}}</strong>&nbsp;<span class="caret"></span>
+        </button>
+        <ul class="versions dropdown-menu open-left">
+          <li class="disabled"><a href="#">{{__ "compare changes to:"}}</a></li>
+        {{#each versions}}
+          <li class="version"><a href="#">{{this}}</a></li>
+        {{/each}}
+        </ul>
+      </div>
+    </div>
+    {{/if}}
+    <div class="clearfix"></div>
+
+    {{#if article.deprecated}}
+      <p class="deprecated"><span>{{__ "DEPRECATED"}}</span>
+        {{{markdown article.deprecated.content}}}
+      </p>
+    {{/if}}
+
+    {{#if article.description}}
+      <p>{{{nl2br article.description}}}</p>
+    {{/if}}
+    <span class="type type__{{toLowerCase article.type}}">{{toLowerCase article.type}}</span>
+    <pre class="prettyprint language-html" data-type="{{toLowerCase article.type}}"><code>{{article.url}}</code></pre>
+
+    {{#if article.permission}}
+      <p>
+        {{__ "Permission:"}}
+        {{#each article.permission}}
+          {{name}}
+          {{#if title}}
+          <button type="button" class="btn btn-info btn-xs" data-title="{{title}}" data-content="{{nl2br description}}" data-html="true" data-toggle="popover" data-placement="right" data-trigger="hover">
+              <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+          </button>
+          {{/if}}
+        {{/each}}
+      </p>
+    {{/if}}
+
+    {{#if_gt article.examples.length compare=0}}
+      <ul class="nav nav-tabs nav-tabs-examples">
+        {{#each article.examples}}
+          <li{{#if_eq @index compare=0}} class="active"{{/if_eq}}>
+            <a href="#examples-{{../id}}-{{@index}}">{{title}}</a>
+          </li>
+        {{/each}}
+      </ul>
+
+      <div class="tab-content">
+      {{#each article.examples}}
+        <div class="tab-pane{{#if_eq @index compare=0}} active{{/if_eq}}" id="examples-{{../id}}-{{@index}}">
+          <pre class="prettyprint language-{{type}}" data-type="{{type}}"><code>{{content}}</code></pre>
+        </div>
+      {{/each}}
+      </div>
+    {{/if_gt}}
+
+    {{subTemplate "article-param-block" params=article.header _hasType=_hasTypeInHeaderFields section="header"}}
+    {{subTemplate "article-param-block" params=article.parameter _hasType=_hasTypeInParameterFields section="parameter"}}
+    {{subTemplate "article-param-block" params=article.success _hasType=_hasTypeInSuccessFields section="success"}}
+    {{subTemplate "article-param-block" params=article.error _col1="Name" _hasType=_hasTypeInErrorFields section="error"}}
+
+    {{subTemplate "article-sample-request" article=article id=id}}
+  </article>
+</script>
+
+<script id="template-article-param-block" type="text/x-handlebars-template">
+  {{#if params}}
+    {{#each params.fields}}
+      <h2>{{__ @key}}</h2>
+      <table>
+        <thead>
+          <tr>
+          <th style="width: 30%">{{#if ../_col1}}{{__ ../_col1}}{{else}}{{__ "Field"}}{{/if}}</th>
+            {{#if ../_hasType}}<th style="width: 10%">{{__ "Type"}}</th>{{/if}}
+            <th style="width: {{#if ../_hasType}}60%{{else}}70%{{/if}}">{{__ "Description"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+        {{#each this}}
+          <tr>
+            <td class="code">{{{splitFill field "." "&nbsp;&nbsp;"}}}{{#if optional}} <span class="label label-optional">{{__ "optional"}}</span>{{/if}}</td>
+            {{#if ../../_hasType}}
+              <td>
+                {{{type}}}
+              </td>
+            {{/if}}
+            <td>
+            {{{nl2br description}}}
+            {{#if defaultValue}}<p class="default-value">{{__ "Default value:"}} <code>{{{defaultValue}}}</code></p>{{/if}}
+            {{#if size}}<p class="type-size">{{__ "Size range:"}} <code>{{{size}}}</code></p>{{/if}}
+            {{#if allowedValues}}<p class="type-size">{{__ "Allowed values:"}}
+              {{#each allowedValues}}
+                <code>{{{this}}}</code>{{#unless @last}}, {{/unless}}
+              {{/each}}
+              </p>
+            {{/if}}
+            </td>
+          </tr>
+        {{/each}}
+        </tbody>
+      </table>
+    {{/each}}
+    {{#if_gt params.examples.length compare=0}}
+      <ul class="nav nav-tabs nav-tabs-examples">
+      {{#each params.examples}}
+        <li{{#if_eq @index compare=0}} class="active"{{/if_eq}}>
+          <a href="#{{../section}}-examples-{{../id}}-{{@index}}">{{title}}</a>
+        </li>
+      {{/each}}
+      </ul>
+
+      <div class="tab-content">
+      {{#each params.examples}}
+        <div class="tab-pane{{#if_eq @index compare=0}} active{{/if_eq}}" id="{{../section}}-examples-{{../id}}-{{@index}}">
+        <pre class="prettyprint language-{{type}}" data-type="{{type}}"><code>{{{reformat content type}}}</code></pre>
+        </div>
+      {{/each}}
+      </div>
+    {{/if_gt}}
+  {{/if}}
+</script>
+
+<script id="template-article-sample-request" type="text/x-handlebars-template">
+    {{#if article.sampleRequest}}
+      <h2>{{__ "Send a Sample Request"}}</h2>
+      <form class="form-horizontal">
+        <fieldset>
+            <div class="form-group">
+              <label class="col-md-3 control-label" for="{{../id}}-sample-request-url"></label>
+              <div class="input-group">
+                <input id="{{../id}}-sample-request-url" type="text" class="form-control sample-request-url" value="{{article.sampleRequest.0.url}}" />
+                <span class="input-group-addon">{{__ "url"}}</span>
+              </div>
+            </div>
+
+      {{#if article.header}}
+        {{#if article.header.fields}}
+          <h3>{{__ "Headers"}}</h3>
+          {{#each article.header.fields}}
+            <h4><input type="radio" data-sample-request-header-group-id="sample-request-header-{{@index}}" name="{{../id}}-sample-request-header" value="{{@index}}" class="sample-request-header sample-request-switch" {{#if_eq @index compare=0}} checked{{/if_eq}} />{{@key}}</h4>
+            <div class="{{../id}}-sample-request-header-fields{{#if_gt @index compare=0}} hide{{/if_gt}}">
+              {{#each this}}
+              <div class="form-group">
+                <label class="col-md-3 control-label" for="sample-request-header-field-{{field}}">{{field}}</label>
+                <div class="input-group">
+                  <input type="text" placeholder="{{field}}" id="sample-request-header-field-{{field}}" class="form-control sample-request-header" data-sample-request-header-name="{{field}}" data-sample-request-header-group="sample-request-header-{{@../index}}">
+                  <span class="input-group-addon">{{{type}}}</span>
                 </div>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#router'
-                  class="">
-                  router
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#helper'
-                  class=" toggle-sibling">
-                  helper
-                  <span class='icon'>▸</span>
-                </a>
-                
-                <div class='toggle-target display-none'>
-                  
-                  <ul class='list-reset py1-ul pl1'>
-                    <li class='h5'><span>Static members</span></li>
-                    
-                      <li><a
-                        href='#helper.hashPassword'
-                        class='regular pre-open'>
-                        .hashPassword
-                      </a></li>
-                    
-                      <li><a
-                        href='#helper.hashWithSalt'
-                        class='regular pre-open'>
-                        .hashWithSalt
-                      </a></li>
-                    
-                      <li><a
-                        href='#helper.express'
-                        class='regular pre-open'>
-                        .express
-                      </a></li>
-                    
-                      <li><a
-                        href='#helper.jwtVerify'
-                        class='regular pre-open'>
-                        .jwtVerify
-                      </a></li>
-                    
-                    </ul>
-                  
-                  
-                  
+              </div>
+              {{/each}}
+            </div>
+          {{/each}}
+        {{/if}}
+      {{/if}}
+
+      {{#if article.parameter}}
+        {{#if article.parameter.fields}}
+          <h3>{{__ "Parameters"}}</h3>
+          {{#each article.parameter.fields}}
+            <h4><input type="radio" data-sample-request-param-group-id="sample-request-param-{{@index}}"  name="{{../id}}-sample-request-param" value="{{@index}}" class="sample-request-param sample-request-switch" {{#if_eq @index compare=0}} checked{{/if_eq}} />{{@key}}</h4>
+            <div class="form-group {{../id}}-sample-request-param-fields{{#if_gt @index compare=0}} hide{{/if_gt}}">
+              {{#each this}}
+                <label class="col-md-3 control-label" for="sample-request-param-field-{{field}}">{{field}}</label>
+                <div class="input-group">
+                  <input id="sample-request-param-field-{{field}}" type="text" placeholder="{{field}}" class="form-control sample-request-param" data-sample-request-param-name="{{field}}" data-sample-request-param-group="sample-request-param-{{@../index}}">
+                  <div class="input-group-addon">{{{type}}}</div>
                 </div>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#loghelper'
-                  class=" toggle-sibling">
-                  logHelper
-                  <span class='icon'>▸</span>
-                </a>
-                
-                <div class='toggle-target display-none'>
-                  
-                  <ul class='list-reset py1-ul pl1'>
-                    <li class='h5'><span>Static members</span></li>
-                    
-                      <li><a
-                        href='#logHelper.parseLine'
-                        class='regular pre-open'>
-                        .parseLine
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getSummary'
-                        class='regular pre-open'>
-                        .getSummary
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getSummary'
-                        class='regular pre-open'>
-                        .getSummary
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getFileLineCountWindows'
-                        class='regular pre-open'>
-                        .getFileLineCountWindows
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.logHelper~lineNumberCallback'
-                        class='regular pre-open'>
-                        .logHelper~lineNumberCallback
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getFileLineCountUnix'
-                        class='regular pre-open'>
-                        .getFileLineCountUnix
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getFileLineCount'
-                        class='regular pre-open'>
-                        .getFileLineCount
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getGravityCount'
-                        class='regular pre-open'>
-                        .getGravityCount
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getDomains'
-                        class='regular pre-open'>
-                        .getDomains
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getGravity'
-                        class='regular pre-open'>
-                        .getGravity
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getAllQueries'
-                        class='regular pre-open'>
-                        .getAllQueries
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getQueryTypes'
-                        class='regular pre-open'>
-                        .getQueryTypes
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelperresolveIP'
-                        class='regular pre-open'>
-                        .resolveIP
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelperresolveIPs'
-                        class='regular pre-open'>
-                        .resolveIPs
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getQuerySources'
-                        class='regular pre-open'>
-                        .getQuerySources
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getForwardDestinations'
-                        class='regular pre-open'>
-                        .getForwardDestinations
-                      </a></li>
-                    
-                      <li><a
-                        href='#logHelper.getOverTimeData10mins'
-                        class='regular pre-open'>
-                        .getOverTimeData10mins
-                      </a></li>
-                    
-                    </ul>
-                  
-                  
-                  
-                </div>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#summary'
-                  class=" toggle-sibling">
-                  Summary
-                  <span class='icon'>▸</span>
-                </a>
-                
-                <div class='toggle-target display-none'>
-                  
-                  
-                    <ul class='list-reset py1-ul pl1'>
-                      <li class='h5'><span>Instance members</span></li>
-                      
-                      <li><a
-                        href='#Summary#adsBlockedToday'
-                        class='regular pre-open'>
-                        #adsBlockedToday
-                      </a></li>
-                      
-                      <li><a
-                        href='#Summary#dnsQueriesToday'
-                        class='regular pre-open'>
-                        #dnsQueriesToday
-                      </a></li>
-                      
-                      <li><a
-                        href='#Summary#adsPercentageToday'
-                        class='regular pre-open'>
-                        #adsPercentageToday
-                      </a></li>
-                      
-                      <li><a
-                        href='#Summary#domainsBeingBlocked'
-                        class='regular pre-open'>
-                        #domainsBeingBlocked
-                      </a></li>
-                      
-                    </ul>
-                  
-                  
-                </div>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#appdefaults'
-                  class="">
-                  appDefaults
-                  
-                </a>
-                
-                </li>
-              
-            </ul>
+              {{/each}}
+            </div>
+          {{/each}}
+        {{/if}}
+      {{/if}}
+
+          <div class="form-group">
+            <div class="controls pull-right">
+              <button class="btn btn-primary sample-request-send" data-sample-request-type="{{article.type}}">{{__ "Send"}}</button>
+            </div>
           </div>
-          <div class='mt1 h6 quiet'>
-            <a href='http://documentation.js.org/reading-documentation.html'>Need help reading this?</a>
+          <div class="form-group sample-request-response" style="display: none;">
+            <h3>
+              {{__ "Response"}}
+              <button class="btn btn-default btn-xs pull-right sample-request-clear">X</button>
+            </h3>
+            <pre class="prettyprint language-json" data-type="json"><code class="sample-request-response-json"></code></pre>
           </div>
-        </div>
-      </div>
-      <div class='fix-margin-3'>
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
+        </fieldset>
+      </form>
+    {{/if}}
+</script>
 
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='piserver'>
-      PiServer
-    </h3>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/server.js#L29-L79'>
-      <span>server/server.js</span>
-      </a>
-    
-  </div>
-  
+<script id="template-compare-article" type="text/x-handlebars-template">
+  <article id="api-{{article.group}}-{{article.name}}-{{article.version}}" {{#if hidden}}class="hide"{{/if}} data-group="{{article.group}}" data-name="{{article.name}}" data-version="{{article.version}}" data-compare-version="{{compare.version}}">
+    <div class="pull-left">
+      <h1>{{underscoreToSpace article.group}} - {{{showDiff article.title compare.title}}}</h1>
+    </div>
 
-  
-
-  <div class='pre p1 fill-light mt0'>new PiServer()</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Instance Members</div>
-    <div class="clearfix">
-  
-    <div class='border-bottom' id='PiServer#app'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>app</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/server.js#L34-L34'>
-      <span>server/server.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>express app instance of the server</p>
-
-
-  <div class='pre p1 fill-light mt0'>app</div>
-  
-    <p>
-      Type:
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-    </p>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
+    <div class="pull-right">
+      <div class="btn-group">
+        <button class="btn btn-success" disabled>
+          <strong>{{article.version}}</strong> {{__ "compared to"}}
+        </button>
+        <button class="version btn btn-danger dropdown-toggle" data-toggle="dropdown">
+          <strong>{{compare.version}}</strong>&nbsp;<span class="caret"></span>
+        </button>
+        <ul class="versions dropdown-menu open-left">
+          <li class="disabled"><a href="#">{{__ "compare changes to:"}}</a></li>
+          <li class="divider"></li>
+        {{#each versions}}
+          <li class="version"><a href="#">{{this}}</a></li>
+        {{/each}}
+        </ul>
       </div>
     </div>
-  
-    <div class='border-bottom' id='PiServer#http'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>http</span>
+    <div class="clearfix"></div>
+
+    {{#if article.description}}
+      <p>{{{showDiff article.description compare.description "nl2br"}}}</p>
+    {{else}}
+      {{#if compare.description}}
+      <p>{{{showDiff "" compare.description "nl2br"}}}</p>
+      {{/if}}
+    {{/if}}
+
+    <pre class="prettyprint language-html" data-type="{{toLowerCase article.type}}"><code>{{{showDiff article.url compare.url}}}</code></pre>
+
+    {{subTemplate "article-compare-permission" article=article compare=compare}}
+
+    <ul class="nav nav-tabs nav-tabs-examples">
+    {{#each_compare_title article.examples compare.examples}}
+      {{#if typeSame}}
+        <li{{#if_eq index compare=0}} class="active"{{/if_eq}}>
+          <a href="#compare-examples-{{../../article.id}}-{{index}}">{{{showDiff source.title compare.title}}}</a>
+        </li>
+      {{/if}}
+
+      {{#if typeIns}}
+        <li{{#if_eq index compare=0}} class="active"{{/if_eq}}>
+          <a href="#compare-examples-{{../../article.id}}-{{index}}"><ins>{{{source.title}}}</ins></a>
+        </li>
+      {{/if}}
+
+      {{#if typeDel}}
+        <li{{#if_eq index compare=0}} class="active"{{/if_eq}}>
+          <a href="#compare-examples-{{../../article.id}}-{{index}}"><del>{{{compare.title}}}</del></a>
+        </li>
+      {{/if}}
+    {{/each_compare_title}}
+    </ul>
+
+    <div class="tab-content">
+    {{#each_compare_title article.examples compare.examples}}
+
+      {{#if typeSame}}
+        <div class="tab-pane{{#if_eq index compare=0}} active{{/if_eq}}" id="compare-examples-{{../../article.id}}-{{index}}">
+          <pre class="prettyprint language-{{source.type}}" data-type="{{source.type}}"><code>{{{showDiff source.content compare.content}}}</code></pre>
         </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
+      {{/if}}
 
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/server.js#L39-L39'>
-      <span>server/server.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>http instance of the server</p>
-
-
-  <div class='pre p1 fill-light mt0'>http</div>
-  
-    <p>
-      Type:
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-    </p>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='PiServer#start'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>start()</span>
+      {{#if typeIns}}
+        <div class="tab-pane{{#if_eq index compare=0}} active{{/if_eq}}" id="compare-examples-{{../../article.id}}-{{index}}">
+          <pre class="prettyprint language-{{source.type}}" data-type="{{source.type}}"><code>{{{source.content}}}</code></pre>
         </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
+      {{/if}}
 
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/server.js#L84-L100'>
-      <span>server/server.js</span>
-      </a>
-    
-  </div>
-  
+      {{#if typeDel}}
+        <div class="tab-pane{{#if_eq index compare=0}} active{{/if_eq}}" id="compare-examples-{{../../article.id}}-{{index}}">
+          <pre class="prettyprint language-{{source.type}}" data-type="{{compare.type}}"><code>{{{compare.content}}}</code></pre>
+        </div>
+      {{/if}}
 
-  
-
-  <div class='pre p1 fill-light mt0'>start()</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
+    {{/each_compare_title}}
     </div>
-  
+
+    {{subTemplate "article-compare-param-block" source=article.parameter compare=compare.parameter _hasType=_hasTypeInParameterFields section="parameter"}}
+    {{subTemplate "article-compare-param-block" source=article.success compare=compare.success _hasType=_hasTypeInSuccessFields section="success"}}
+    {{subTemplate "article-compare-param-block" source=article.error compare=compare.error _col1="Name" _hasType=_hasTypeInErrorFields section="error"}}
+
+    {{subTemplate "article-sample-request" article=article id=id}}
+
+  </article>
+</script>
+
+<script id="template-article-compare-permission" type="text/x-handlebars-template">
+  <p>
+  {{__ "Permission:"}}
+  {{#each_compare_list_field article.permission compare.permission field="name"}}
+    {{#if source}}
+      {{#if typeSame}}
+        {{source.name}}
+        {{#if source.title}}
+          <button type="button" class="btn btn-info btn-xs" data-title="{{source.title}}" data-content="{{nl2br source.description}}" data-html="true" data-toggle="popover" data-placement="right" data-trigger="hover">
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+          </button>
+          {{#unless _last}}, {{/unless}}
+        {{/if}}
+      {{/if}}
+
+      {{#if typeIns}}
+        <ins>{{source.name}}</ins>
+        {{#if source.title}}
+          <button type="button" class="btn btn-info btn-xs" data-title="{{source.title}}" data-content="{{nl2br source.description}}" data-html="true" data-toggle="popover" data-placement="right" data-trigger="hover">
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+          </button>
+          {{#unless _last}}, {{/unless}}
+        {{/if}}
+      {{/if}}
+
+      {{#if typeDel}}
+        <del>{{source.name}}</del>
+        {{#if source.title}}
+          <button type="button" class="btn btn-info btn-xs" data-title="{{source.title}}" data-content="{{nl2br source.description}}" data-html="true" data-toggle="popover" data-placement="right" data-trigger="hover">
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+          </button>
+          {{#unless _last}}, {{/unless}}
+        {{/if}}
+      {{/if}}
+    {{else}}
+      {{#if typeSame}}
+        {{compare.name}}
+        {{#if compare.title}}
+          <button type="button" class="btn btn-info btn-xs" data-title="{{compare.title}}" data-content="{{nl2br compare.description}}" data-html="true" data-toggle="popover" data-placement="right" data-trigger="hover">
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+          </button>
+          {{#unless _last}}, {{/unless}}
+        {{/if}}
+      {{/if}}
+
+      {{#if typeIns}}
+        <ins>{{compare.name}}</ins>
+        {{#if compare.title}}
+          <button type="button" class="btn btn-info btn-xs" data-title="{{compare.title}}" data-content="{{nl2br compare.description}}" data-html="true" data-toggle="popover" data-placement="right" data-trigger="hover">
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+          </button>
+          {{#unless _last}}, {{/unless}}
+        {{/if}}
+      {{/if}}
+
+      {{#if typeDel}}
+        <del>{{compare.name}}</del>
+        {{#if compare.title}}
+          <button type="button" class="btn btn-info btn-xs" data-title="{{compare.title}}" data-content="{{nl2br compare.description}}" data-html="true" data-toggle="popover" data-placement="right" data-trigger="hover">
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+          </button>
+          {{#unless _last}}, {{/unless}}
+        {{/if}}
+      {{/if}}
+    {{/if}}
+  {{/each_compare_list_field}}
+  </p>
+</script>
+
+<script id="template-article-compare-param-block" type="text/x-handlebars-template">
+  {{#if source}}
+    {{#each_compare_keys source.fields compare.fields}}
+      {{#if typeSame}}
+        <h2>{{__ source.key}}</h2>
+        <table>
+        <thead>
+          <tr>
+            <th style="width: 30%">{{#if ../_col1}}{{__ ../_col1}}{{else}}{{__ "Field"}}{{/if}}</th>
+            {{#if ../_hasType}}<th style="width: 10%">{{__ "Type"}}</th>{{/if}}
+            <th style="width: {{#if ../_hasType}}60%{{else}}70%{{/if}}">{{__ "Description"}}</th>
+          </tr>
+        </thead>
+        {{subTemplate "article-compare-param-block-body" source=source.value compare=compare.value _hasType=../_hasType}}
+        </table>
+      {{/if}}
+
+      {{#if typeIns}}
+        <h2><ins>{{__ source.key}}</ins></h2>
+        <table class="ins">
+        <thead>
+          <tr>
+            <th style="width: 30%">{{#if ../_col1}}{{__ ../_col1}}{{else}}{{__ "Field"}}{{/if}}</th>
+            {{#if ../_hasType}}<th style="width: 10%">{{__ "Type"}}</th>{{/if}}
+            <th style="width: {{#if ../_hasType}}60%{{else}}70%{{/if}}">{{__ "Description"}}</th>
+          </tr>
+        </thead>
+        {{subTemplate "article-compare-param-block-body" source=source.value compare=source.value _hasType=../_hasType}}
+        </table>
+      {{/if}}
+
+      {{#if typeDel}}
+        <h2><del>{{__ compare.key}}</del></h2>
+        <table class="del">
+        <thead>
+          <tr>
+            <th style="width: 30%">{{#if ../_col1}}{{__ ../_col1}}{{else}}{{__ "Field"}}{{/if}}</th>
+            {{#if ../_hasType}}<th style="width: 10%">{{__ "Type"}}</th>{{/if}}
+            <th style="width: {{#if ../_hasType}}60%{{else}}70%{{/if}}">{{__ "Description"}}</th>
+          </tr>
+        </thead>
+        {{subTemplate "article-compare-param-block-body" source=compare.value compare=compare.value _hasType=../_hasType}}
+        </table>
+      {{/if}}
+    {{/each_compare_keys}}
+
+    {{#if source.examples}}
+    <ul class="nav nav-tabs nav-tabs-examples">
+    {{#each_compare_title source.examples compare.examples}}
+      {{#if typeSame}}
+        <li{{#if_eq index compare=0}} class="active"{{/if_eq}}>
+          <a href="#{{../../section}}-compare-examples-{{../../article.id}}-{{index}}">{{{showDiff source.title compare.title}}}</a>
+        </li>
+      {{/if}}
+
+      {{#if typeIns}}
+        <li{{#if_eq index compare=0}} class="active"{{/if_eq}}>
+          <a href="#{{../../section}}-compare-examples-{{../../article.id}}-{{index}}"><ins>{{{source.title}}}</ins></a>
+        </li>
+      {{/if}}
+
+      {{#if typeDel}}
+        <li{{#if_eq index compare=0}} class="active"{{/if_eq}}>
+          <a href="#{{../../section}}-compare-examples-{{../../article.id}}-{{index}}"><del>{{{compare.title}}}</del></a>
+        </li>
+      {{/if}}
+    {{/each_compare_title}}
+    </ul>
+
+    <div class="tab-content">
+    {{#each_compare_title source.examples compare.examples}}
+
+      {{#if typeSame}}
+        <div class="tab-pane{{#if_eq index compare=0}} active{{/if_eq}}" id="{{../../section}}-compare-examples-{{../../article.id}}-{{index}}">
+          <pre class="prettyprint language-{{source.type}}" data-type="{{source.type}}"><code>{{{showDiff source.content compare.content}}}</code></pre>
+        </div>
+      {{/if}}
+
+      {{#if typeIns}}
+        <div class="tab-pane{{#if_eq index compare=0}} active{{/if_eq}}" id="{{../../section}}-compare-examples-{{../../article.id}}-{{index}}">
+          <pre class="prettyprint language-{{source.type}}" data-type="{{source.type}}"><code>{{{source.content}}}</code></pre>
+        </div>
+      {{/if}}
+
+      {{#if typeDel}}
+        <div class="tab-pane{{#if_eq index compare=0}} active{{/if_eq}}" id="{{../../section}}-compare-examples-{{../../article.id}}-{{index}}">
+          <pre class="prettyprint language-{{source.type}}" data-type="{{compare.type}}"><code>{{{compare.content}}}</code></pre>
+        </div>
+      {{/if}}
+    {{/each_compare_title}}
+    </div>
+    {{/if}}
+  {{/if}}
+</script>
+
+<script id="template-article-compare-param-block-body" type="text/x-handlebars-template">
+  <tbody>
+    {{#each_compare_field source compare}}
+      {{#if typeSame}}
+        <tr>
+          <td class="code">
+            {{{splitFill source.field "." "&nbsp;&nbsp;"}}}
+            {{#if source.optional}}
+              {{#if compare.optional}} <span class="label label-optional">{{__ "optional"}}</span>
+              {{else}} <span class="label label-optional label-ins">{{__ "optional"}}</span>
+              {{/if}}
+            {{else}}
+              {{#if compare.optional}} <span class="label label-optional label-del">{{__ "optional"}}</span>{{/if}}
+            {{/if}}
+          </td>
+
+        {{#if source.type}}
+          {{#if compare.type}}
+          <td>{{{showDiff source.type compare.type}}}</td>
+          {{else}}
+          <td>{{{source.type}}}</td>
+          {{/if}}
+        {{else}}
+          {{#if compare.type}}
+          <td>{{{compare.type}}}</td>
+          {{else}}
+            {{#if ../../../../_hasType}}<td></td>{{/if}}
+          {{/if}}
+        {{/if}}
+          <td>
+            {{{showDiff source.description compare.description "nl2br"}}}
+            {{#if source.defaultValue}}<p class="default-value">{{__ "Default value:"}} <code>{{{showDiff source.defaultValue compare.defaultValue}}}</code><p>{{/if}}
+          </td>
+        </tr>
+      {{/if}}
+
+      {{#if typeIns}}
+        <tr class="ins">
+          <td class="code">
+            {{{splitFill source.field "." "&nbsp;&nbsp;"}}}
+            {{#if source.optional}} <span class="label label-optional label-ins">{{__ "optional"}}</span>{{/if}}
+          </td>
+
+        {{#if source.type}}
+          <td>{{{source.type}}}</td>
+        {{else}}
+          {{{typRowTd}}}
+        {{/if}}
+
+          <td>
+            {{{nl2br source.description}}}
+            {{#if source.defaultValue}}<p class="default-value">{{__ "Default value:"}} <code>{{{source.defaultValue}}}</code><p>{{/if}}
+          </td>
+        </tr>
+      {{/if}}
+
+      {{#if typeDel}}
+        <tr class="del">
+          <td class="code">
+            {{{splitFill compare.field "." "&nbsp;&nbsp;"}}}
+            {{#if compare.optional}} <span class="label label-optional label-del">{{__ "optional"}}</span>{{/if}}
+          </td>
+
+        {{#if compare.type}}
+          <td>{{{compare.type}}}</td>
+        {{else}}
+          {{{typRowTd}}}
+        {{/if}}
+
+          <td>
+            {{{nl2br compare.description}}}
+            {{#if compare.defaultValue}}<p class="default-value">{{__ "Default value:"}} <code>{{{compare.defaultValue}}}</code><p>{{/if}}
+          </td>
+        </tr>
+      {{/if}}
+
+    {{/each_compare_field}}
+  </tbody>
+</script>
+
+<div class="container-fluid">
+  <div class="row">
+    <div id="sidenav" class="span2"></div>
+    <div id="content">
+      <div id="project"></div>
+      <div id="header"></div>
+      <div id="sections"></div>
+      <div id="footer"></div>
+      <div id="generator"></div>
+    </div>
+  </div>
 </div>
 
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='router'>
-      router
-    </h3>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/routes/api.js#L16-L16'>
-      <span>server/routes/api.js</span>
-      </a>
-    
+<div id="loader">
+  <div class="spinner">
+    <div class="spinner-container container1">
+      <div class="circle1"></div><div class="circle2"></div><div class="circle3"></div><div class="circle4"></div>
+    </div>
+    <div class="spinner-container container2">
+      <div class="circle1"></div><div class="circle2"></div><div class="circle3"></div><div class="circle4"></div>
+    </div>
+    <div class="spinner-container container3">
+      <div class="circle1"></div><div class="circle2"></div><div class="circle3"></div><div class="circle4"></div>
+    </div>
+    <p>Loading...</p>
   </div>
-  
-
-  <p>The router for the api endpoints</p>
-
-
-  <div class='pre p1 fill-light mt0'>router</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='helper'>
-      helper
-    </h3>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/helper.js#L14-L14'>
-      <span>server/helper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>module providing common helper function</p>
-
-
-  <div class='pre p1 fill-light mt0'>helper</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Static Members</div>
-    <div class="clearfix">
-  
-    <div class='border-bottom' id='helper.hashPassword'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>hashPassword(pwd)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/helper.js#L21-L28'>
-      <span>server/helper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>creates the default hash of the password for the admin panel</p>
-
-
-  <div class='pre p1 fill-light mt0'>hashPassword(pwd: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>pwd</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    string to hash
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code>:
-        hash - returns the hash
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='helper.hashWithSalt'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>hashWithSalt(pwd, salt)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/helper.js#L37-L46'>
-      <span>server/helper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>creates the default hash of the provided string with a salt</p>
-
-
-  <div class='pre p1 fill-light mt0'>hashWithSalt(pwd: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, salt: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>pwd</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    password
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>salt</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    the salt
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code>:
-        hash - returns the hash
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='helper.express'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>express</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/helper.js#L51-L51'>
-      <span>server/helper.js</span>
-      </a>
-    
-  </div>
-  
-
-  
-
-  <div class='pre p1 fill-light mt0'>express</div>
-  
-    <p>
-      Type:
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-    </p>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Static Members</div>
-    <div class="clearfix">
-  
-    <div class='border-bottom' id='helper.express.verifyAuthCookie'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>verifyAuthCookie(req, res, next)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/helper.js#L59-L81'>
-      <span>server/helper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Verifies the provided cookie</p>
-
-
-  <div class='pre p1 fill-light mt0'>verifyAuthCookie(req: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>, res: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>, next: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">Function</a>)</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>req</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    express request object
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>res</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    express response object
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>next</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">Function</a>)</code>
-	    next callback
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='helper.express.csrfMiddleware'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>csrfMiddleware(req, res, next)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/helper.js#L89-L99'>
-      <span>server/helper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Verifies the csrf token in the request body</p>
-
-
-  <div class='pre p1 fill-light mt0'>csrfMiddleware(req: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>, res: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>, next: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">Function</a>)</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>req</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    express request object
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>res</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    express response object
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>next</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">Function</a>)</code>
-	    next callback
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='helper.express.corsMiddleware'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>corsMiddleware(req, res, next)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/helper.js#L107-L138'>
-      <span>server/helper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Verifies cors information</p>
-
-
-  <div class='pre p1 fill-light mt0'>corsMiddleware(req: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>, res: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>, next: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">Function</a>)</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>req</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    express request object
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>res</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    express response object
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>next</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">Function</a>)</code>
-	    next callback
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
 </div>
 
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='helper.jwtVerify'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>jwtVerify(token, callback)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/helper.js#L145-L151'>
-      <span>server/helper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Verifies the provided jwt token</p>
-
-
-  <div class='pre p1 fill-light mt0'>jwtVerify(token: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, callback: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">Function</a>)</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>token</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    the token to check
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>callback</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">Function</a>)</code>
-	    the callback to call
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-</div>
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='loghelper'>
-      logHelper
-    </h3>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L16-L18'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  
-
-  <div class='pre p1 fill-light mt0'>logHelper</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Static Members</div>
-    <div class="clearfix">
-  
-    <div class='border-bottom' id='logHelper.parseLine'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>parseLine(line)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L26-L69'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Parses the provided line</p>
-
-
-  <div class='pre p1 fill-light mt0'>parseLine(line: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): (<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>)</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>line</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    to parse
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>)</code>:
-        the parsed line or false if not recognized
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getSummary'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getSummary()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L111-L152'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Creates a summary of the log file</p>
-
-
-  <div class='pre p1 fill-light mt0'>getSummary(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        a Promise providing a 
-<a href="Summary2">Summary2</a>
- of the log file
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getSummary'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getSummary()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L111-L152'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  
-
-  <div class='pre p1 fill-light mt0'>getSummary()</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Properties</div>
-    <div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>adsBlockedToday</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>)</code>
-          : Total blocked queries
-
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>dnsQueriesToday</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>)</code>
-          : Total dns queries
-
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>adsPercentageToday</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>)</code>
-          : Percentage of blocked requests
-
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>domainsBeingBlocked</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>)</code>
-          : Domains being blocked in total
-
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getFileLineCountWindows'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getFileLineCountWindows(filename, callback)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L159-L172'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Auxilary function for windows to count non empty lines in a file</p>
-
-
-  <div class='pre p1 fill-light mt0'>getFileLineCountWindows(filename: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, callback: logHelper~lineNumberCallback)</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>filename</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    to count the lines in
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>callback</span> <code class='quiet'>(logHelper~lineNumberCallback)</code>
-	    callback for the result
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.logHelper~lineNumberCallback'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>logHelper~lineNumberCallback</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L185-L193'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>This callback is displayed as part of the Requester class.</p>
-
-
-  <div class='pre p1 fill-light mt0'>logHelper~lineNumberCallback</div>
-  
-    <p>
-      Type:
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">Function</a>
-    </p>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>Line</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
-	    count
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>filename</span> <code class='quiet'>(any)</code>
-	    
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>callback</span> <code class='quiet'>(any)</code>
-	    
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getFileLineCountUnix'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getFileLineCountUnix(filename, callback)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L185-L193'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Auxilary function for *nix to count non empty lines in a file</p>
-
-
-  <div class='pre p1 fill-light mt0'>getFileLineCountUnix(filename: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, callback: logHelper~lineNumberCallback)</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>filename</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    to count the lines in
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>callback</span> <code class='quiet'>(logHelper~lineNumberCallback)</code>
-	    callback for the result
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getFileLineCount'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getFileLineCount(filename)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L200-L219'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Counts non empty lines in a file</p>
-
-
-  <div class='pre p1 fill-light mt0'>getFileLineCount(filename: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>filename</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    to count the lines in
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        a Promise providing the line count
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getGravityCount'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getGravityCount()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L225-L234'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Counts the blocked domains</p>
-
-
-  <div class='pre p1 fill-light mt0'>getGravityCount(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        a Promise with the number of blocked domains
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getDomains'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getDomains(file)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L241-L266'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Gets all domains listed in the specified file</p>
-
-
-  <div class='pre p1 fill-light mt0'>getDomains(file: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>file</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    to read
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        a Promise providing the line domains
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getGravity'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getGravity()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L272-L292'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Merges all blacklist files and removes the whitelisted domains</p>
-
-
-  <div class='pre p1 fill-light mt0'>getGravity(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        a Promise providing blocked domains
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getAllQueries'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getAllQueries()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L298-L335'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Returns all query entries from the log</p>
-
-
-  <div class='pre p1 fill-light mt0'>getAllQueries(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        a Promise providing all queries
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getQueryTypes'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getQueryTypes()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L341-L371'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Counts the Query types</p>
-
-
-  <div class='pre p1 fill-light mt0'>getQueryTypes(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        a Promise providing the number queries for each type
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelperresolveIP'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>resolveIP(ip)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L392-L402'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Tries to resolve the domain of the ip</p>
-
-
-  <div class='pre p1 fill-light mt0'>resolveIP(ip: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>ip</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    ip to check
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        a Promise either returning the ip or domains|ip
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelperresolveIPs'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>resolveIPs(ips)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L412-L425'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Tries to resolve the domain of the ip</p>
-
-
-  <div class='pre p1 fill-light mt0'>resolveIPs(ips: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>ips</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>>)</code>
-	    ips to check
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        a Promise
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getQuerySources'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getQuerySources()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L431-L469'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Gets the top clients of the pihole</p>
-
-
-  <div class='pre p1 fill-light mt0'>getQuerySources(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        a Promise returning all information
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getForwardDestinations'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getForwardDestinations()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L475-L506'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Gets the forward destinations from the log file</p>
-
-
-  <div class='pre p1 fill-light mt0'>getForwardDestinations(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        a Promise providing the forward destinations
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='logHelper.getOverTimeData10mins'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getOverTimeData10mins()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L512-L548'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Gets the number of queries divided into 10 minute timeframes</p>
-
-
-  <div class='pre p1 fill-light mt0'>getOverTimeData10mins(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        a Promise returning a object containing information about ads and domains over time
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-</div>
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='summary'>
-      Summary
-    </h3>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L75-L96'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Creates a new Summary Object</p>
-
-
-  <div class='pre p1 fill-light mt0'>new Summary()</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Instance Members</div>
-    <div class="clearfix">
-  
-    <div class='border-bottom' id='Summary#adsBlockedToday'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>adsBlockedToday</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L80-L80'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>ads blocked total</p>
-
-
-  <div class='pre p1 fill-light mt0'>adsBlockedToday</div>
-  
-    <p>
-      Type:
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>
-    </p>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='Summary#dnsQueriesToday'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>dnsQueriesToday</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L85-L85'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>dns queries total</p>
-
-
-  <div class='pre p1 fill-light mt0'>dnsQueriesToday</div>
-  
-    <p>
-      Type:
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>
-    </p>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='Summary#adsPercentageToday'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>adsPercentageToday</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L90-L90'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>ads percentage</p>
-
-
-  <div class='pre p1 fill-light mt0'>adsPercentageToday</div>
-  
-    <p>
-      Type:
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>
-    </p>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='Summary#domainsBeingBlocked'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>domainsBeingBlocked</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/logHelper.js#L95-L95'>
-      <span>server/logHelper.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>dns being blocked in total</p>
-
-
-  <div class='pre p1 fill-light mt0'>domainsBeingBlocked</div>
-  
-    <p>
-      Type:
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>
-    </p>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-</div>
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='appdefaults'>
-      appDefaults
-    </h3>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/donmahallem/NodePihole/blob/8dbd06329df8c3c2ca92e025940c9fe877c5c522/server/defaults.js#L20-L30'>
-      <span>server/defaults.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Module containing app defaults that are loaded at start</p>
-
-
-  <div class='pre p1 fill-light mt0'>appDefaults</div>
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Properties</div>
-    <div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>logFile</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-          : The default number of players.
-
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>setupVars</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-          : The default level for the party.
-
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>whiteListFile</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-          : The default treasure.
-
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>blackListFile</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-          : How much gold the party starts with.
-
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>port</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
-          : How much gold the party starts with.
-
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>csrfSecret</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-          : How much gold the party starts with.
-
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>jwtSecret</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-          : How much gold the party starts with.
-
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>cookieSecret</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-          : How much gold the party starts with.
-
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <span class='code bold'>gravityListFile</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-          : How much gold the party starts with.
-
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-      </div>
-    </div>
-  </div>
-  <script src='assets/anchor.js'></script>
-  <script src='assets/site.js'></script>
+<script data-main="main.js" src="vendor/require.min.js"></script>
 </body>
 </html>

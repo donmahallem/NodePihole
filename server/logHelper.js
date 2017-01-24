@@ -495,10 +495,13 @@ logHelper.getForwardDestinations = function() {
 };
 
 /**
- * Gets the number of queries divided into 10 minute timeframes
+ * Gets the number of queries divided into frameSize minute frames
+ * @param {Number} frameSize - either 1, 10 or 60
  * @returns {Promise} a Promise returning a object containing information about ads and domains over time
  */
-logHelper.getOverTimeData = function(frameSize = 10) {
+logHelper.getOverTimeData = function(frameSize) {
+    // Check if frameSize is set. defaults to 10
+    frameSize = (typeof frameSize !== 'undefined') ? frameSize : 10;
     return new Promise(function(resolve, reject) {
         var lineReader = readline
             .createInterface({

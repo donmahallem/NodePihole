@@ -14,6 +14,12 @@ const childProcess = require("child_process");
  * @apiError NotAuthorized The requester is not authorized to access this endpoint
  * @apiErrorExample NotAuthorized Response:
  *     HTTP/1.1 401 Not Authorized
+ *     {
+ *       "error":{
+ *         "code":401,
+ *         "message":"Not authorized"
+ *       }
+ *     }
  */
 
 /**
@@ -22,11 +28,34 @@ const childProcess = require("child_process");
  */
 
 /**
+ * @apiDefine none public
+ * This api endpoint is public
+ */
+
+/**
  * @apiDefine InvalidRequest
  * @apiError InvalidRequest The request is malformed
  * @apiErrorExample InvalidRequest Response:
  *     HTTP/1.1 400 Invalid Request
- *     
+ *     {
+ *       "error":{
+ *         "code":400,
+ *         "message":"Bad Request"
+ *       }
+ *     }
+ */
+
+/**
+ * @apiDefine ErrorNotFound
+ * @apiError NotFound The requested resource is unknown to the server
+ * @apiErrorExample NotFound Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "error":{
+ *         "code":404,
+ *         "message":"Not found"
+ *       }
+ *     }
  */
 
 /**
@@ -39,13 +68,7 @@ const supportedDataQueries = {
     "summary": {
         "authRequired": false
     },
-    "summaryRaw": {
-        "authRequired": false
-    },
     "overTimeData": {
-        "authRequired": true
-    },
-    "overTimeData10mins": {
         "authRequired": false
     },
     "topItems": {
@@ -54,16 +77,16 @@ const supportedDataQueries = {
     "recentItems": {
         "authRequired": true
     },
-    "getQueryTypes": {
+    "queryTypes": {
         "authRequired": true
     },
-    "getForwardDestinations": {
+    "forwardDestinations": {
         "authRequired": true
     },
-    "getAllQueries": {
+    "allQueries": {
         "authRequired": true
     },
-    "getQuerySources": {
+    "querySources": {
         "authRequired": true
     }
 };
@@ -77,7 +100,13 @@ const apiMiddleware = {
             next();
         } else {
             console.log("authentication failed: " + req.method + "(" + req.originalUrl + ")");
-            res.sendStatus(401);
+            res.status(401);
+            res.json({
+                "error": {
+                    "code": 401,
+                    "message": "Not authenticated"
+                }
+            });
         }
     }
 };
@@ -146,32 +175,175 @@ if (!Array.prototype.includes) {
 }
 /////////////////////////////////////////////
 /**
- * @api {get} /api/data/ Query data from the log
+ * @api {get} /api/data Query data from the log
+ * @apiDescription You can choose any combination of the following query parameters to combine those. Some need authentication(Please refer to the detailed listing of the parameters for response types and parameters)
  * @apiName Data
  * @apiGroup Data
- * @apiParam (Query Parameter) {boolean} summary
- * @apiParam (Query Parameter) {boolean} overTimeData
- * @apiParam (Query Parameter) {boolean} overTimeData10mins
- * @apiParam (Query Parameter) {boolean} topItems
- * @apiParam (Query Parameter) {boolean} recentItems
- * @apiParam (Query Parameter) {boolean} getQueryTypes
- * @apiParam (Query Parameter) {boolean} getForwardDestinations
- * @apiParam (Query Parameter) {boolean} getAllQueries
- * @apiParam (Query Parameter) {boolean} getQuerySources
+ * @apiVersion 1.0.0
+ * @apiParam (Query Parameter) {Boolean} [summary=false] Please refer to [summary](#api-Data-GetDataSummary)
+ * @apiParam (Query Parameter) {Boolean} [overTimeData=false] Please refer to [overTimeData](#api-Data-GetDataOverTimeData)
+ * @apiParam (Query Parameter) {Boolean} [topItems=false] Please refer to [topItems](#api-Data-GetDataTopItems)
+ * @apiParam (Query Parameter) {Boolean} [recentItems=false] Please refer to [recentItems](#api-Data-GetDataRecentItems)
+ * @apiParam (Query Parameter) {Boolean} [queryTypes=false] Please refer to [queryTypes](#api-Data-GetDataQueryTypes)
+ * @apiParam (Query Parameter) {Boolean} [forwardDestinations=false] Please refer to [forwardDestinations](#api-Data-GetDataForwardDestinations)
+ * @apiParam (Query Parameter) {Boolean} [allQueries=false] Please refer to [allQueries](#api-Data-GetDataAllQueries)
+ * @apiParam (Query Parameter) {Boolean} [querySources=false] Please refer to [querySources](#api-Data-GetDataQuerySources)
+ * @apiParamExample {query} Request-Example:
+ *     ?summary&topItems
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "summary": {...}
+ *       "topItems": {...}
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+/**
+ * @api {get} /api/data Get Summary
+ * @apiName GetDataSummary
+ * @apiGroup Data
+ * @apiVersion 1.0.0
+ * @apiPermission none
+ * @apiParam (Query Parameter) {Boolean=true} summary Gets the summary
  *
  * @apiSuccess {Object} summary The object summary
  * @apiSuccess {Number} summary.adsBlockedToday Total blocked queries
  * @apiSuccess {Number} summary.dnsQueriesToday Total dns queries
  * @apiSuccess {Number} summary.adsPercentageToday Percentage of blocked requests
  * @apiSuccess {Number} summary.domainsBeingBlocked Domains being blocked in total
- * @apiSuccess {Number[]} domainsOverTime Domain count queried over time
- * @apiSuccess {Object[]} topSources Top query sources
- * @apiSuccess {String} topSources.source Query source
- * @apiSuccess {Number} topSources.count Number of queries from this source
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
- *       "status": "disabled"
+ *       "summary":{
+ *         "adsBlockedToday": 10,
+ *         "dnsQueriesToday": 100,
+ *         "adsPercentageToday": 10.0,
+ *         "domainsBeingBlocked": 1337
+ *       }
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+/**
+ * @api {get} /api/data Get Querytypes
+ * @apiName GetDataQueryTypes
+ * @apiGroup Data
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {Boolean=true} queryTypes Gets the query types
+ *
+ * @apiSuccess {Object[]} queryTypes Array with query types
+ * @apiSuccess {String} queryTypes.type query type
+ * @apiSuccess {Number} queryTypes.count number of queries with this type
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "queryTypes":[
+ *         {
+ *           "type": "AAAA",
+ *           "count": 299
+ *         },
+ *         {
+ *           "type": "AA",
+ *           "count": 100
+ *         }
+ *       ]
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+/**
+ * @api {get} /api/data Get query sources
+ * @apiName GetDataQuerySources
+ * @apiGroup Data
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {Boolean=true} querySources Gets the query sources
+ *
+ * @apiSuccess {Object[]} querySources Array with query sources
+ * @apiSuccess {String} querySource.ip source ip
+ * @apiSuccess {String} [querySource.domain] source domain if known
+ * @apiSuccess {Number} querySource.count number of queries from this source
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "querySources":[
+ *         {
+ *           "ip": "127.0.0.1",
+ *           "domain": "localhost",
+ *           "count":20
+ *         },
+ *         {
+ *           "ip": "192.168.178.1",
+ *           "count":29
+ *         }
+ *       ]
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+/**
+ * @api {get} /api/data Get forward Destinations
+ * @apiName GetDataForwardDestinations
+ * @apiGroup Data
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {Boolean=true} forwardDestinations forward destinations
+ *
+ * @apiSuccess {Object[]} forwardDestinations Array with query sources
+ * @apiSuccess {String} forwardDestinations.destination name of destination
+ * @apiSuccess {Number} forwardDestinations.count number of queries to this destination
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "forwardDestinations":[
+ *         {
+ *           "destination": "8.8.8.8",
+ *           "count":20
+ *         },
+ *         {
+ *           "destination": "8.8.4.4",
+ *           "count":29
+ *         }
+ *       ]
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+/**
+ * @api {get} /api/data Get OverTimeData
+ * @apiName GetDataOverTimeData
+ * @apiGroup Data
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {Boolean=true} overTimeData Gets the queries over time in 10 minute frames
+ * @apiParam (Query Parameter) {Number=1,10,60} [frameSize=10] Sets the overtime timeframe size in minutes
+ *
+ * @apiSuccess {Object[]} overTimeData10mins Array with query data
+ * @apiSuccess {Number{0-..}} overTimeData10mins.ads number of ads in that timeframe
+ * @apiSuccess {Number} overTimeData10mins.queries number of queries in that timeframe
+ * @apiSuccess {Number} overTimeData10mins.frame the frame number
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "overTimeData10mins":[
+ *         {
+ *           "ads":20,
+ *           "queries":200,
+ *           "frame":0
+ *         },
+ *         {
+ *           "ads":20,
+ *           "queries":200,
+ *           "frame":1
+ *         },
+ *         {
+ *           "ads":20,
+ *           "queries":200,
+ *           "frame":2
+ *         }
+ *       ]
  *     }
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
@@ -187,7 +359,13 @@ router.get("/data", function(req, res) {
             if (supportedDataQueries[query].authRequired && !req.user.authenticated) {
                 // User needs to be authenticated for this query
                 console.log("User is not authenticated for: " + req.method + "(" + req.originalUrl + ")");
-                res.sendStatus(401);
+                res.status(401);
+                res.json({
+                    "error": {
+                        "code": 401,
+                        "message": "Not authenticated"
+                    }
+                });
                 return;
             }
             args[query] = req.query[query];
@@ -200,7 +378,10 @@ router.get("/data", function(req, res) {
         res.sendStatus(400);
         return;
     }
-
+    // Sanitize eventual frameSize query parameter
+    if (req.query.frameSize && !isNaN(parseInt(req.query.frameSize))) {
+        args.frameSize = parseInt(req.query.frameSize);
+    }
     var data = {};
     var promises = [];
     if ("summary" in args) {
@@ -209,22 +390,27 @@ router.get("/data", function(req, res) {
     if ("summaryRaw" in args) {
         promises.push(logHelper.getSummary());
     }
-    if ("overTimeData10mins" in args) {
-        promises.push(logHelper.getOverTimeData10mins());
+    if ("overTimeData" in args) {
+        var frameSize = 10;
+        // check if frameSize is specified and either 1,10 or 60
+        if ("frameSize" in args && [1, 10, 60].indexOf(args.frameSize) !== -1) {
+            frameSize = args.frameSize;
+        }
+        promises.push(logHelper.getOverTimeData(frameSize));
     }
     if ("topItems" in args) {
         promises.push(logHelper.getTopItems());
     }
-    if ("getQueryTypes" in args) {
+    if ("queryTypes" in args) {
         promises.push(logHelper.getQueryTypes());
     }
-    if ("getForwardDestinations" in args) {
+    if ("forwardDestinations" in args) {
         promises.push(logHelper.getForwardDestinations());
     }
-    if ("getAllQueries" in args) {
+    if ("allQueries" in args) {
         promises.push(logHelper.getAllQueries());
     }
-    if ("getQuerySources" in args) {
+    if ("querySources" in args) {
         promises.push(logHelper.getQuerySources());
     }
     Promise.all(promises)
@@ -245,6 +431,7 @@ router.get("/data", function(req, res) {
  * @api {get} /api/taillog/ Opens an eventsource stream that tails the log file
  * @apiName GetTaillog
  * @apiGroup Taillog
+ * @apiVersion 1.0.0
  * @apiPermission admin
  * @apiUse NotAuthorized
  */
@@ -288,10 +475,13 @@ router.get("/taillog",
  * @api {get} /api/list/ Gets the white/black list
  * @apiName GetDomains
  * @apiGroup Lists
- * @apiParam (Query Parameter) {string} list either <tt>white</tt> or black
+ * @apiVersion 1.0.0
  * @apiPermission admin
- * @apiSuccess {String} firstname Firstname of the User.
- * @apiSuccess {String} lastname  Lastname of the User.
+ * @apiParam (Query Parameter) {string="white","black"} The list name
+ * @apiError NotFound The <code>list</code> is unknown to the server
+ * @apiUse NotAuthorized
+ * @apiUse InvalidRequest
+ * @apiUse ErrorNotFound
  */
 router.get("/list", apiMiddleware.auth, function(req, res) {
     if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
@@ -334,9 +524,11 @@ router.get("/list", apiMiddleware.auth, function(req, res) {
  * @apiGroup Lists
  * @apiVersion 1.0.0
  * @apiPermission admin
- * @apiParam (Query Parameter) {string} list either <tt>white</tt> or black
- * @apiSuccess {String} firstname Firstname of the User.
- * @apiSuccess {String} lastname  Lastname of the User.
+ * @apiParam (Query Parameter) {string="white","black"} The list name
+ * @apiError NotFound The <code>list</code> is unknown to the server
+ * @apiUse NotAuthorized
+ * @apiUse InvalidRequest
+ * @apiUse ErrorNotFound
  */
 router.post("/list",
     apiMiddleware.auth,
@@ -366,12 +558,11 @@ router.post("/list",
  * @apiGroup Lists
  * @apiVersion 1.0.0
  * @apiPermission admin
- * @apiParam (Query Parameter) {string} list either <code>white</code> or <code>white</code>
- * @apiSuccess {String} firstname Firstname of the User.
- * @apiSuccess {String} lastname  Lastname of the User.
+ * @apiParam (Query Parameter) {string="white","black"} The list name
  * @apiError NotFound The <code>list</code> is unknown to the server
  * @apiUse NotAuthorized
  * @apiUse InvalidRequest
+ * @apiUse ErrorNotFound
  */
 router.delete("/list",
     apiMiddleware.auth,

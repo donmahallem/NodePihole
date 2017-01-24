@@ -178,7 +178,7 @@ var queryTimelineUpdater = {};
         return a - b;
     };
     qTU.pollData = function() {
-        $.getJSON("/api/data?overTimeData10mins", function(data) {
+        $.getJSON("/api/data?overTimeData", function(data) {
                 // Remove possibly already existing data
                 tableData = data;
                 qTU.updateTable();

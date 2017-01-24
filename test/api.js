@@ -708,7 +708,7 @@ describe("Testing api endpoints", function() {
         describe("/data", function() {
             var stubs = [];
             before(function() {
-                stubs.push(sandbox.stub(logHelper, "getOverTimeData10mins", function() {
+                stubs.push(sandbox.stub(logHelper, "getOverTimeData", function() {
                     return new Promise(function(resolve, reject) {
                         resolve({
                             "success": true
@@ -762,22 +762,19 @@ describe("Testing api endpoints", function() {
                     "summary": {
                         "authRequired": false
                     },
-                    "summaryRaw": {
-                        "authRequired": false
-                    },
-                    "overTimeData10mins": {
+                    "overTimeData": {
                         "authRequired": false
                     },
                     "topItems": {
                         "authRequired": true
                     },
-                    "getQueryTypes": {
+                    "queryTypes": {
                         "authRequired": true
                     },
-                    "getForwardDestinations": {
+                    "forwardDestinations": {
                         "authRequired": true
                     },
-                    "getAllQueries": {
+                    "allQueries": {
                         "authRequired": true
                     }
                 };
@@ -823,22 +820,19 @@ describe("Testing api endpoints", function() {
                     "summary": {
                         "authRequired": false
                     },
-                    "summaryRaw": {
-                        "authRequired": false
-                    },
-                    "overTimeData10mins": {
+                    "overTimeData": {
                         "authRequired": false
                     },
                     "topItems": {
                         "authRequired": true
                     },
-                    "getQueryTypes": {
+                    "queryTypes": {
                         "authRequired": true
                     },
-                    "getForwardDestinations": {
+                    "forwardDestinations": {
                         "authRequired": true
                     },
-                    "getAllQueries": {
+                    "allQueries": {
                         "authRequired": true
                     }
                 };

@@ -56,7 +56,7 @@ const supportedDataQueries = {
         "authRequired": false
     },
     "overTimeData": {
-        "authRequired": true
+        "authRequired": false
     },
     "topItems": {
         "authRequired": true
@@ -372,16 +372,16 @@ router.get("/data", function(req, res) {
     if ("topItems" in args) {
         promises.push(logHelper.getTopItems());
     }
-    if ("getQueryTypes" in args) {
+    if ("queryTypes" in args) {
         promises.push(logHelper.getQueryTypes());
     }
-    if ("getForwardDestinations" in args) {
+    if ("forwardDestinations" in args) {
         promises.push(logHelper.getForwardDestinations());
     }
-    if ("getAllQueries" in args) {
+    if ("allQueries" in args) {
         promises.push(logHelper.getAllQueries());
     }
-    if ("getQuerySources" in args) {
+    if ("querySources" in args) {
         promises.push(logHelper.getQuerySources());
     }
     Promise.all(promises)

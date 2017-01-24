@@ -730,45 +730,25 @@ describe("Testing api endpoints", function() {
                 overTimeDataStub
                     .returns(new Promise(function(resolve, reject) {
                         reject({
-                            "wrong": true
+                            "error": true
                         });
                     }));
                 stubs.push(overTimeDataStub);
-                stubs.push(sandbox.stub(logHelper, "getForwardDestinations", function() {
-                    return new Promise(function(resolve, reject) {
-                        resolve({
-                            "success": true
+                const methods = ["getForwardDestinations",
+                    "getTopItems",
+                    "getAllQueries",
+                    "getSummary",
+                    "getQueryTypes"
+                ];
+                methods.forEach(function(method) {
+                    stubs.push(sandbox.stub(logHelper, method, function() {
+                        return new Promise(function(resolve, reject) {
+                            resolve({
+                                "success": true
+                            });
                         });
-                    });
-                }));
-                stubs.push(sandbox.stub(logHelper, "getTopItems", function() {
-                    return new Promise(function(resolve, reject) {
-                        resolve({
-                            "success": true
-                        });
-                    });
-                }));
-                stubs.push(sandbox.stub(logHelper, "getAllQueries", function() {
-                    return new Promise(function(resolve, reject) {
-                        resolve({
-                            "success": true
-                        });
-                    });
-                }));
-                stubs.push(sandbox.stub(logHelper, "getSummary", function() {
-                    return new Promise(function(resolve, reject) {
-                        resolve({
-                            "success": true
-                        });
-                    });
-                }));
-                stubs.push(sandbox.stub(logHelper, "getQueryTypes", function() {
-                    return new Promise(function(resolve, reject) {
-                        resolve({
-                            "success": true
-                        });
-                    });
-                }));
+                    }));
+                });
             });
             after(function() {
                 for (var i = 0; i < stubs.length; i++) {
@@ -776,49 +756,118 @@ describe("Testing api endpoints", function() {
                 }
             });
             describe("get unauthenticated", function() {
-
-                const supportedDataQueries = {
-                    "summary": {
-                        "authRequired": false
+                const supportedQueries = [{
+                    "args": {
+                        "summary": true
                     },
-                    "overTimeData": {
-                        "authRequired": false
-                    },
-                    "topItems": {
-                        "authRequired": true
-                    },
-                    "queryTypes": {
-                        "authRequired": true
-                    },
-                    "forwardDestinations": {
-                        "authRequired": true
-                    },
-                    "allQueries": {
-                        "authRequired": true
+                    "response": {
+                        "status": 200,
+                        "body": {
+                            "success": true
+                        }
                     }
-                };
-                for (var query in supportedDataQueries) {
-                    (function(arg, authRequired) {
-                        it("should " + (authRequired ? "not " : "") + "succeed ?" + arg, function(done) {
+                }, {
+                    "args": {
+                        "overTimeData": true
+                    },
+                    "response": {
+                        "status": 200,
+                        "body": {
+                            "success": true
+                        }
+                    }
+                }, {
+                    "args": {
+                        "topItems": true
+                    },
+                    "response": {
+                        "status": 401,
+                        "body": {
+                            "error": {
+                                "code": 401,
+                                "message": ""
+                            }
+                        }
+                    }
+                }, {
+                    "args": {
+                        "queryTypes": true
+                    },
+                    "response": {
+                        "status": 401,
+                        "body": {
+                            "error": {
+                                "code": 401,
+                                "message": ""
+                            }
+                        }
+                    }
+                }, {
+                    "args": {
+                        "forwardDestinations": true
+                    },
+                    "response": {
+                        "status": 401,
+                        "body": {
+                            "error": {
+                                "code": 401,
+                                "message": ""
+                            }
+                        }
+                    }
+                }, {
+                    "args": {
+                        "allQueries": true
+                    },
+                    "response": {
+                        "status": 401,
+                        "body": {
+                            "error": {
+                                "code": 401,
+                                "message": ""
+                            }
+                        }
+                    }
+                }];
+                for (var i = 0; i < supportedQueries.length; i++) {
+                    (function(query) {
+                        var args = "";
+                        for (var q in query.args) {
+                            if (args.length > 0) {
+                                args += "&";
+                            }
+                            args += q + "=" + query.args[q];
+                        }
+                        it("should " + (query.response.status !== 200 ? "not " : "") + "succeed: " + args, function(done) {
                             chai.request(server.app)
-                                .get("/api/data?" + arg)
+                                .get("/api/data?" + args)
                                 .set("Host", "localhost")
                                 .end(function(err, res) {
-                                    if (authRequired) {
+                                    if (query.response.status !== 200) {
                                         expect(err)
                                             .to.not.be.null;
                                         expect(res.status)
-                                            .to.equal(401);
+                                            .to.equal(query.response.status);
+                                        expect(res.body)
+                                            .to.have.all.keys(['error']);
+                                        expect(res.body.error)
+                                            .to.have.all.keys(['code', "message"]);
+                                        expect(res.body.error.code)
+                                            .to.be.a("number");
+                                        expect(res.body.error.message)
+                                            .to.be.a("string");
                                     } else {
                                         expect(err)
                                             .to.be.null;
                                         expect(res.status)
                                             .to.equal(200);
+                                        expect(res.body)
+                                            .to.deep.equal(query.response.body);
                                     }
                                     done();
                                 });
                         });
-                    })(query, supportedDataQueries[query].authRequired);
+                    }(supportedQueries[i]));
                 }
             });
             describe("get authenticated", function() {

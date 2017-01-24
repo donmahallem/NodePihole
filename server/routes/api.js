@@ -353,7 +353,6 @@ router.get("/data", function(req, res) {
         res.sendStatus(400);
         return;
     }
-
     var data = {};
     var promises = [];
     if ("summary" in args) {

@@ -708,20 +708,32 @@ describe("Testing api endpoints", function() {
         describe("/data", function() {
             var stubs = [];
             before(function() {
-                stubs.push(sandbox.stub(logHelper, "getOverTimeData", function() {
-                    return new Promise(function(resolve, reject) {
+                var overTimeDataStub = sandbox.stub(logHelper, "getOverTimeData");
+                overTimeDataStub.withArgs(1)
+                    .returns(new Promise(function(resolve, reject) {
                         resolve({
                             "success": true
                         });
-                    });
-                }));
-                stubs.push(sandbox.stub(logHelper, "getQueryTypes", function() {
-                    return new Promise(function(resolve, reject) {
+                    }));
+                overTimeDataStub.withArgs(60)
+                    .returns(new Promise(function(resolve, reject) {
                         resolve({
                             "success": true
                         });
-                    });
-                }));
+                    }));
+                overTimeDataStub.withArgs(10)
+                    .returns(new Promise(function(resolve, reject) {
+                        resolve({
+                            "success": true
+                        });
+                    }));
+                overTimeDataStub
+                    .returns(new Promise(function(resolve, reject) {
+                        reject({
+                            "wrong": true
+                        });
+                    }));
+                stubs.push(overTimeDataStub);
                 stubs.push(sandbox.stub(logHelper, "getForwardDestinations", function() {
                     return new Promise(function(resolve, reject) {
                         resolve({
@@ -744,6 +756,13 @@ describe("Testing api endpoints", function() {
                     });
                 }));
                 stubs.push(sandbox.stub(logHelper, "getSummary", function() {
+                    return new Promise(function(resolve, reject) {
+                        resolve({
+                            "success": true
+                        });
+                    });
+                }));
+                stubs.push(sandbox.stub(logHelper, "getQueryTypes", function() {
                     return new Promise(function(resolve, reject) {
                         resolve({
                             "success": true
@@ -802,7 +821,7 @@ describe("Testing api endpoints", function() {
                     })(query, supportedDataQueries[query].authRequired);
                 }
             });
-            describe("get unauthenticated", function() {
+            describe("get authenticated", function() {
 
                 var verifyCookieStub;
                 before(function() {

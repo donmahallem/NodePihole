@@ -26,7 +26,7 @@ const childProcess = require("child_process");
  * @apiDefine admin AdminUser
  * A logged in user
  */
- 
+
 /**
  * @apiDefine none public
  * This api endpoint is public
@@ -44,7 +44,7 @@ const childProcess = require("child_process");
  *       }
  *     }
  */
- 
+
 /**
  * The router for the api endpoints
  * @exports apiRouter
@@ -55,14 +55,8 @@ const supportedDataQueries = {
     "summary": {
         "authRequired": false
     },
-    "summaryRaw": {
-        "authRequired": false
-    },
     "overTimeData": {
         "authRequired": true
-    },
-    "overTimeData10mins": {
-        "authRequired": false
     },
     "topItems": {
         "authRequired": true
@@ -70,16 +64,16 @@ const supportedDataQueries = {
     "recentItems": {
         "authRequired": true
     },
-    "getQueryTypes": {
+    "queryTypes": {
         "authRequired": true
     },
-    "getForwardDestinations": {
+    "forwardDestinations": {
         "authRequired": true
     },
-    "getAllQueries": {
+    "allQueries": {
         "authRequired": true
     },
-    "getQuerySources": {
+    "querySources": {
         "authRequired": true
     }
 };
@@ -167,15 +161,14 @@ if (!Array.prototype.includes) {
  * @apiName Data
  * @apiGroup Data
  * @apiVersion 1.0.0
- * @apiParam (Query Parameter) {boolean} [summary=false] Please refer to [summary](#api-Data-GetDataSummary)
- * @apiParam (Query Parameter) {boolean} [overTimeData=false] Please refer to [overTimeData](#api-Data-GetDataOverTimeData)
- * @apiParam (Query Parameter) {boolean} [overTimeData10mins=false] Please refer to [overTimeData10mins](#api-Data-GetDataOverTimeData10mins)
- * @apiParam (Query Parameter) {boolean} [topItems=false] Please refer to [topItems](#api-Data-GetDataTopItems)
- * @apiParam (Query Parameter) {boolean} [recentItems=false] Please refer to [recentItems](#api-Data-GetDataRecentItems)
- * @apiParam (Query Parameter) {boolean} [queryTypes=false] Please refer to [queryTypes](#api-Data-GetDataQueryTypes)
- * @apiParam (Query Parameter) {boolean} [forwardDestinations=false] Please refer to [forwardDestinations](#api-Data-GetDataForwardDestinations)
- * @apiParam (Query Parameter) {boolean} [allQueries=false] Gets all queries from the log
- * @apiParam (Query Parameter) {boolean} [querySources=false] Please refer to [querySources](#api-Data-GetDataQuerySources)
+ * @apiParam (Query Parameter) {Boolean} [summary=false] Please refer to [summary](#api-Data-GetDataSummary)
+ * @apiParam (Query Parameter) {Boolean} [overTimeData=false] Please refer to [overTimeData](#api-Data-GetDataOverTimeData)
+ * @apiParam (Query Parameter) {Boolean} [topItems=false] Please refer to [topItems](#api-Data-GetDataTopItems)
+ * @apiParam (Query Parameter) {Boolean} [recentItems=false] Please refer to [recentItems](#api-Data-GetDataRecentItems)
+ * @apiParam (Query Parameter) {Boolean} [queryTypes=false] Please refer to [queryTypes](#api-Data-GetDataQueryTypes)
+ * @apiParam (Query Parameter) {Boolean} [forwardDestinations=false] Please refer to [forwardDestinations](#api-Data-GetDataForwardDestinations)
+ * @apiParam (Query Parameter) {Boolean} [allQueries=false] Gets all queries from the log
+ * @apiParam (Query Parameter) {Boolean} [querySources=false] Please refer to [querySources](#api-Data-GetDataQuerySources)
  * @apiParamExample {query} Request-Example:
  *     ?summary&topItems
  * @apiSuccessExample Success-Response:
@@ -193,7 +186,7 @@ if (!Array.prototype.includes) {
  * @apiGroup Data
  * @apiVersion 1.0.0
  * @apiPermission none
- * @apiParam (Query Parameter) {boolean=true} summary Gets the summary
+ * @apiParam (Query Parameter) {Boolean=true} summary Gets the summary
  *
  * @apiSuccess {Object} summary The object summary
  * @apiSuccess {Number} summary.adsBlockedToday Total blocked queries
@@ -219,7 +212,7 @@ if (!Array.prototype.includes) {
  * @apiGroup Data
  * @apiVersion 1.0.0
  * @apiPermission admin
- * @apiParam (Query Parameter) {boolean=true} queryTypes Gets the query types
+ * @apiParam (Query Parameter) {Boolean=true} queryTypes Gets the query types
  *
  * @apiSuccess {Object[]} queryTypes Array with query types
  * @apiSuccess {String} queryTypes.type query type
@@ -247,7 +240,7 @@ if (!Array.prototype.includes) {
  * @apiGroup Data
  * @apiVersion 1.0.0
  * @apiPermission admin
- * @apiParam (Query Parameter) {boolean=true} querySources Gets the query sources
+ * @apiParam (Query Parameter) {Boolean=true} querySources Gets the query sources
  *
  * @apiSuccess {Object[]} querySources Array with query sources
  * @apiSuccess {String} querySource.ip source ip
@@ -277,7 +270,7 @@ if (!Array.prototype.includes) {
  * @apiGroup Data
  * @apiVersion 1.0.0
  * @apiPermission admin
- * @apiParam (Query Parameter) {boolean=true} forwardDestinations forward destinations
+ * @apiParam (Query Parameter) {Boolean=true} forwardDestinations forward destinations
  *
  * @apiSuccess {Object[]} forwardDestinations Array with query sources
  * @apiSuccess {String} forwardDestinations.destination name of destination
@@ -300,12 +293,13 @@ if (!Array.prototype.includes) {
  * @apiUse NotAuthorized
  */
 /**
- * @api {get} /api/data Get OverTimeData10Mins
- * @apiName GetDataOverTimeData10mins
+ * @api {get} /api/data Get OverTimeData
+ * @apiName GetDataOverTimeData
  * @apiGroup Data
  * @apiVersion 1.0.0
  * @apiPermission admin
- * @apiParam (Query Parameter) {boolean=true} overTimeData10mins Gets the queries over time in 10 minute frames
+ * @apiParam (Query Parameter) {Boolean=true} overTimeData Gets the queries over time in 10 minute frames
+ * @apiParam (Query Parameter) {Number=1,10,60} [frameSize=10] Sets the overtime timeframe size in minutes
  *
  * @apiSuccess {Object[]} overTimeData10mins Array with query data
  * @apiSuccess {Number{0-..}} overTimeData10mins.ads number of ads in that timeframe
@@ -368,8 +362,12 @@ router.get("/data", function(req, res) {
     if ("summaryRaw" in args) {
         promises.push(logHelper.getSummary());
     }
-    if ("overTimeData10mins" in args) {
-        promises.push(logHelper.getOverTimeData10mins());
+    if ("overTimeData" in args) {
+        var frameSize = 10;
+        if ("frameSize" in args && args.frameSize.match(/^(1|10|60)$/)) {
+            frameSize = parseInt(args.frameSize);
+        }
+        promises.push(logHelper.getOverTimeData(frameSize));
     }
     if ("topItems" in args) {
         promises.push(logHelper.getTopItems());

@@ -498,7 +498,7 @@ logHelper.getForwardDestinations = function() {
  * Gets the number of queries divided into 10 minute timeframes
  * @returns {Promise} a Promise returning a object containing information about ads and domains over time
  */
-logHelper.getOverTimeData10mins = function() {
+logHelper.getOverTimeData = function(frameSize) {
     return new Promise(function(resolve, reject) {
         var lineReader = readline
             .createInterface({

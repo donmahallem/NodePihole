@@ -12,7 +12,7 @@
         "Query Parameter": [
           {
             "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "optional": true,
             "field": "summary",
             "defaultValue": "false",
@@ -20,7 +20,7 @@
           },
           {
             "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "optional": true,
             "field": "overTimeData",
             "defaultValue": "false",
@@ -28,15 +28,7 @@
           },
           {
             "group": "Query Parameter",
-            "type": "boolean",
-            "optional": true,
-            "field": "overTimeData10mins",
-            "defaultValue": "false",
-            "description": "<p>Please refer to <a href=\"#api-Data-GetDataOverTimeData10mins\">overTimeData10mins</a></p>"
-          },
-          {
-            "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "optional": true,
             "field": "topItems",
             "defaultValue": "false",
@@ -44,7 +36,7 @@
           },
           {
             "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "optional": true,
             "field": "recentItems",
             "defaultValue": "false",
@@ -52,7 +44,7 @@
           },
           {
             "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "optional": true,
             "field": "queryTypes",
             "defaultValue": "false",
@@ -60,7 +52,7 @@
           },
           {
             "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "optional": true,
             "field": "forwardDestinations",
             "defaultValue": "false",
@@ -68,7 +60,7 @@
           },
           {
             "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "optional": true,
             "field": "allQueries",
             "defaultValue": "false",
@@ -76,7 +68,7 @@
           },
           {
             "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "optional": true,
             "field": "querySources",
             "defaultValue": "false",
@@ -153,7 +145,7 @@
         "Query Parameter": [
           {
             "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "allowedValues": [
               "true"
             ],
@@ -234,8 +226,8 @@
   {
     "type": "get",
     "url": "/api/data",
-    "title": "Get OverTimeData10Mins",
-    "name": "GetDataOverTimeData10mins",
+    "title": "Get OverTimeData",
+    "name": "GetDataOverTimeData",
     "group": "Data",
     "version": "1.0.0",
     "permission": [
@@ -250,13 +242,26 @@
         "Query Parameter": [
           {
             "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "allowedValues": [
               "true"
             ],
             "optional": false,
-            "field": "overTimeData10mins",
+            "field": "overTimeData",
             "description": "<p>Gets the queries over time in 10 minute frames</p>"
+          },
+          {
+            "group": "Query Parameter",
+            "type": "Number",
+            "allowedValues": [
+              "1",
+              "10",
+              "60"
+            ],
+            "optional": true,
+            "field": "frameSize",
+            "defaultValue": "10",
+            "description": "<p>Sets the overtime timeframe size in minutes</p>"
           }
         ]
       }
@@ -355,7 +360,7 @@
         "Query Parameter": [
           {
             "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "allowedValues": [
               "true"
             ],
@@ -459,7 +464,7 @@
         "Query Parameter": [
           {
             "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "allowedValues": [
               "true"
             ],
@@ -556,7 +561,7 @@
         "Query Parameter": [
           {
             "group": "Query Parameter",
-            "type": "boolean",
+            "type": "Boolean",
             "allowedValues": [
               "true"
             ],

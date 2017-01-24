@@ -365,6 +365,10 @@ router.get("/data", function(req, res) {
         res.sendStatus(400);
         return;
     }
+    // Sanitize eventual frameSize query parameter
+    if (req.query.frameSize && !isNaN(parseInt(req.query.frameSize))) {
+        args.frameSize = parseInt(req.query.frameSize);
+    }
     var data = {};
     var promises = [];
     if ("summary" in args) {
@@ -375,8 +379,9 @@ router.get("/data", function(req, res) {
     }
     if ("overTimeData" in args) {
         var frameSize = 10;
-        if ("frameSize" in args && args.frameSize.match(/^(1|10|60)$/)) {
-            frameSize = parseInt(args.frameSize);
+        // check if frameSize is specified and either 1,10 or 60
+        if ("frameSize" in args && [1, 10, 60].indexOf(args.frameSize) !== -1) {
+            frameSize = args.frameSize;
         }
         promises.push(logHelper.getOverTimeData(frameSize));
     }

@@ -712,19 +712,22 @@ describe("Testing api endpoints", function() {
                 overTimeDataStub.withArgs(1)
                     .returns(new Promise(function(resolve, reject) {
                         resolve({
-                            "success": true
+                            "success": true,
+                            "frameSize": 1
                         });
                     }));
                 overTimeDataStub.withArgs(60)
                     .returns(new Promise(function(resolve, reject) {
                         resolve({
-                            "success": true
+                            "success": true,
+                            "frameSize": 60
                         });
                     }));
                 overTimeDataStub.withArgs(10)
                     .returns(new Promise(function(resolve, reject) {
                         resolve({
-                            "success": true
+                            "success": true,
+                            "frameSize": 10
                         });
                     }));
                 overTimeDataStub
@@ -773,7 +776,44 @@ describe("Testing api endpoints", function() {
                     "response": {
                         "status": 200,
                         "body": {
-                            "success": true
+                            "success": true,
+                            "frameSize": 10
+                        }
+                    }
+                }, {
+                    "args": {
+                        "overTimeData": true,
+                        "frameSize": 10
+                    },
+                    "response": {
+                        "status": 200,
+                        "body": {
+                            "success": true,
+                            "frameSize": 10
+                        }
+                    }
+                }, {
+                    "args": {
+                        "overTimeData": true,
+                        "frameSize": 60
+                    },
+                    "response": {
+                        "status": 200,
+                        "body": {
+                            "success": true,
+                            "frameSize": 60
+                        }
+                    }
+                }, {
+                    "args": {
+                        "overTimeData": true,
+                        "frameSize": 28
+                    },
+                    "response": {
+                        "status": 200,
+                        "body": {
+                            "success": true,
+                            "frameSize": 10
                         }
                     }
                 }, {
@@ -886,9 +926,6 @@ describe("Testing api endpoints", function() {
                 });
                 const supportedDataQueries = {
                     "summary": {
-                        "authRequired": false
-                    },
-                    "overTimeData": {
                         "authRequired": false
                     },
                     "topItems": {

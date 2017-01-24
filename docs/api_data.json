@@ -24,7 +24,7 @@
             "optional": true,
             "field": "overTimeData",
             "defaultValue": "false",
-            "description": "<p>Please refer to <a href=\"#api-Data-GetDataSummary\">overTimeData</a></p>"
+            "description": "<p>Please refer to <a href=\"#api-Data-GetDataOverTimeData\">overTimeData</a></p>"
           },
           {
             "group": "Query Parameter",
@@ -54,7 +54,7 @@
             "group": "Query Parameter",
             "type": "boolean",
             "optional": true,
-            "field": "getQueryTypes",
+            "field": "queryTypes",
             "defaultValue": "false",
             "description": "<p>Please refer to <a href=\"#api-Data-GetDataQueryTypes\">queryTypes</a></p>"
           },
@@ -62,15 +62,15 @@
             "group": "Query Parameter",
             "type": "boolean",
             "optional": true,
-            "field": "getForwardDestinations",
+            "field": "forwardDestinations",
             "defaultValue": "false",
-            "description": "<p>Get the forward destinations</p>"
+            "description": "<p>Please refer to <a href=\"#api-Data-GetDataForwardDestinations\">forwardDestinations</a></p>"
           },
           {
             "group": "Query Parameter",
             "type": "boolean",
             "optional": true,
-            "field": "getAllQueries",
+            "field": "allQueries",
             "defaultValue": "false",
             "description": "<p>Gets all queries from the log</p>"
           },
@@ -78,9 +78,9 @@
             "group": "Query Parameter",
             "type": "boolean",
             "optional": true,
-            "field": "getQuerySources",
+            "field": "querySources",
             "defaultValue": "false",
-            "description": "<p>Gets the sources where the queries originated from</p>"
+            "description": "<p>Please refer to <a href=\"#api-Data-GetDataQuerySources\">querySources</a></p>"
           }
         ]
       }
@@ -187,12 +187,12 @@
       "examples": [
         {
           "title": "InvalidRequest Response:",
-          "content": "HTTP/1.1 400 Invalid Request",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
           "type": "json"
         },
         {
           "title": "NotAuthorized Response:",
-          "content": "HTTP/1.1 401 Not Authorized",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
           "type": "json"
         }
       ]
@@ -201,10 +201,17 @@
   {
     "type": "get",
     "url": "/api/data",
-    "title": "Get Querytypes",
-    "name": "GetDataQueryTypes",
+    "title": "Get forward Destinations",
+    "name": "GetDataForwardDestinations",
     "group": "Data",
     "version": "1.0.0",
+    "permission": [
+      {
+        "name": "admin",
+        "title": "AdminUser",
+        "description": "<p>A logged in user</p>"
+      }
+    ],
     "parameter": {
       "fields": {
         "Query Parameter": [
@@ -215,8 +222,8 @@
               "true"
             ],
             "optional": false,
-            "field": "getQueryTypes",
-            "description": "<p>Gets the query types</p>"
+            "field": "forwardDestinations",
+            "description": "<p>forward destinations</p>"
           }
         ]
       }
@@ -228,29 +235,29 @@
             "group": "Success 200",
             "type": "Object[]",
             "optional": false,
-            "field": "queryTypes",
-            "description": "<p>Array with query types</p>"
+            "field": "forwardDestinations",
+            "description": "<p>Array with query sources</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "forwardDestinations.destination",
+            "description": "<p>name of destination</p>"
           },
           {
             "group": "Success 200",
             "type": "Number",
             "optional": false,
-            "field": "queryTypes.type",
-            "description": "<p>query type</p>"
-          },
-          {
-            "group": "Success 200",
-            "type": "Number",
-            "optional": false,
-            "field": "queryTypes.count",
-            "description": "<p>number of queries with this type</p>"
+            "field": "forwardDestinations.count",
+            "description": "<p>number of queries to this destination</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "HTTP/1.1 200 OK\n[\n  {\n    \"type\": \"AAAA\",\n    \"count\": 299\n  },\n  {\n    \"type\": \"AA\",\n    \"count\": 100\n  }\n]",
+          "content": "HTTP/1.1 200 OK\n{\n  \"forwardDestinations\":[\n    {\n      \"destination\": \"8.8.8.8\",\n      \"count\":20\n    },\n    {\n      \"destination\": \"8.8.4.4\",\n      \"count\":29\n    }\n  ]\n}",
           "type": "json"
         }
       ]
@@ -277,12 +284,318 @@
       "examples": [
         {
           "title": "InvalidRequest Response:",
-          "content": "HTTP/1.1 400 Invalid Request",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
           "type": "json"
         },
         {
           "title": "NotAuthorized Response:",
-          "content": "HTTP/1.1 401 Not Authorized",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
+    "type": "get",
+    "url": "/api/data",
+    "title": "Get OverTimeData10Mins",
+    "name": "GetDataOverTimeData10mins",
+    "group": "Data",
+    "version": "1.0.0",
+    "permission": [
+      {
+        "name": "admin",
+        "title": "AdminUser",
+        "description": "<p>A logged in user</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Query Parameter": [
+          {
+            "group": "Query Parameter",
+            "type": "boolean",
+            "allowedValues": [
+              "true"
+            ],
+            "optional": false,
+            "field": "overTimeData10mins",
+            "description": "<p>Gets the queries over time in 10 minute frames</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object[]",
+            "optional": false,
+            "field": "overTimeData10mins",
+            "description": "<p>Array with query data</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Number",
+            "size": "0-..",
+            "optional": false,
+            "field": "overTimeData10mins.ads",
+            "description": "<p>number of ads in that timeframe</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Number",
+            "optional": false,
+            "field": "overTimeData10mins.queries",
+            "description": "<p>number of queries in that timeframe</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Number",
+            "optional": false,
+            "field": "overTimeData10mins.frame",
+            "description": "<p>the frame number</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "HTTP/1.1 200 OK\n{\n  \"overTimeData10mins\":[\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":0\n    },\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":1\n    },\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":2\n    }\n  ]\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "server/routes/api.js",
+    "groupTitle": "Data",
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "InvalidRequest",
+            "description": "<p>The request is malformed</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "NotAuthorized",
+            "description": "<p>The requester is not authorized to access this endpoint</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "InvalidRequest Response:",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
+          "type": "json"
+        },
+        {
+          "title": "NotAuthorized Response:",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
+    "type": "get",
+    "url": "/api/data",
+    "title": "Get query sources",
+    "name": "GetDataQuerySources",
+    "group": "Data",
+    "version": "1.0.0",
+    "permission": [
+      {
+        "name": "admin",
+        "title": "AdminUser",
+        "description": "<p>A logged in user</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Query Parameter": [
+          {
+            "group": "Query Parameter",
+            "type": "boolean",
+            "allowedValues": [
+              "true"
+            ],
+            "optional": false,
+            "field": "querySources",
+            "description": "<p>Gets the query sources</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object[]",
+            "optional": false,
+            "field": "querySources",
+            "description": "<p>Array with query sources</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "querySource.ip",
+            "description": "<p>source ip</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": true,
+            "field": "querySource.domain",
+            "description": "<p>source domain if known</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Number",
+            "optional": false,
+            "field": "querySource.count",
+            "description": "<p>number of queries from this source</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "HTTP/1.1 200 OK\n{\n  \"querySources\":[\n    {\n      \"ip\": \"127.0.0.1\",\n      \"domain\": \"localhost\",\n      \"count\":20\n    },\n    {\n      \"ip\": \"192.168.178.1\",\n      \"count\":29\n    }\n  ]\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "server/routes/api.js",
+    "groupTitle": "Data",
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "InvalidRequest",
+            "description": "<p>The request is malformed</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "NotAuthorized",
+            "description": "<p>The requester is not authorized to access this endpoint</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "InvalidRequest Response:",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
+          "type": "json"
+        },
+        {
+          "title": "NotAuthorized Response:",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
+    "type": "get",
+    "url": "/api/data",
+    "title": "Get Querytypes",
+    "name": "GetDataQueryTypes",
+    "group": "Data",
+    "version": "1.0.0",
+    "permission": [
+      {
+        "name": "admin",
+        "title": "AdminUser",
+        "description": "<p>A logged in user</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Query Parameter": [
+          {
+            "group": "Query Parameter",
+            "type": "boolean",
+            "allowedValues": [
+              "true"
+            ],
+            "optional": false,
+            "field": "queryTypes",
+            "description": "<p>Gets the query types</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object[]",
+            "optional": false,
+            "field": "queryTypes",
+            "description": "<p>Array with query types</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "queryTypes.type",
+            "description": "<p>query type</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Number",
+            "optional": false,
+            "field": "queryTypes.count",
+            "description": "<p>number of queries with this type</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "HTTP/1.1 200 OK\n{\n  \"queryTypes\":[\n    {\n      \"type\": \"AAAA\",\n      \"count\": 299\n    },\n    {\n      \"type\": \"AA\",\n      \"count\": 100\n    }\n  ]\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "server/routes/api.js",
+    "groupTitle": "Data",
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "InvalidRequest",
+            "description": "<p>The request is malformed</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "NotAuthorized",
+            "description": "<p>The requester is not authorized to access this endpoint</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "InvalidRequest Response:",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
+          "type": "json"
+        },
+        {
+          "title": "NotAuthorized Response:",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
           "type": "json"
         }
       ]
@@ -295,6 +608,13 @@
     "name": "GetDataSummary",
     "group": "Data",
     "version": "1.0.0",
+    "permission": [
+      {
+        "name": "none",
+        "title": "public",
+        "description": "<p>This api endpoint is public</p>"
+      }
+    ],
     "parameter": {
       "fields": {
         "Query Parameter": [
@@ -354,7 +674,7 @@
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "HTTP/1.1 200 OK\n{\n  \"adsBlockedToday\": 10,\n  \"dnsQueriesToday\": 100,\n  \"adsPercentageToday\": 10.0,\n  \"domainsBeingBlocked\": 1337\n}",
+          "content": "HTTP/1.1 200 OK\n{\n  \"summary\":{\n    \"adsBlockedToday\": 10,\n    \"dnsQueriesToday\": 100,\n    \"adsPercentageToday\": 10.0,\n    \"domainsBeingBlocked\": 1337\n  }\n}",
           "type": "json"
         }
       ]
@@ -381,12 +701,12 @@
       "examples": [
         {
           "title": "InvalidRequest Response:",
-          "content": "HTTP/1.1 400 Invalid Request",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
           "type": "json"
         },
         {
           "title": "NotAuthorized Response:",
-          "content": "HTTP/1.1 401 Not Authorized",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
           "type": "json"
         }
       ]
@@ -449,12 +769,12 @@
       "examples": [
         {
           "title": "NotAuthorized Response:",
-          "content": "HTTP/1.1 401 Not Authorized",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
           "type": "json"
         },
         {
           "title": "InvalidRequest Response:",
-          "content": "HTTP/1.1 400 Invalid Request",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
           "type": "json"
         }
       ]
@@ -519,12 +839,12 @@
       "examples": [
         {
           "title": "NotAuthorized Response:",
-          "content": "HTTP/1.1 401 Not Authorized",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
           "type": "json"
         },
         {
           "title": "InvalidRequest Response:",
-          "content": "HTTP/1.1 400 Invalid Request",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
           "type": "json"
         }
       ]
@@ -589,12 +909,12 @@
       "examples": [
         {
           "title": "NotAuthorized Response:",
-          "content": "HTTP/1.1 401 Not Authorized",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
           "type": "json"
         },
         {
           "title": "InvalidRequest Response:",
-          "content": "HTTP/1.1 400 Invalid Request",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
           "type": "json"
         }
       ]
@@ -671,12 +991,12 @@
       "examples": [
         {
           "title": "InvalidRequest Response:",
-          "content": "HTTP/1.1 400 Invalid Request",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
           "type": "json"
         },
         {
           "title": "NotAuthorized Response:",
-          "content": "HTTP/1.1 401 Not Authorized",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
           "type": "json"
         }
       ]
@@ -731,12 +1051,12 @@
       "examples": [
         {
           "title": "InvalidRequest Response:",
-          "content": "HTTP/1.1 400 Invalid Request",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
           "type": "json"
         },
         {
           "title": "NotAuthorized Response:",
-          "content": "HTTP/1.1 401 Not Authorized",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
           "type": "json"
         }
       ]
@@ -772,7 +1092,7 @@
       "examples": [
         {
           "title": "NotAuthorized Response:",
-          "content": "HTTP/1.1 401 Not Authorized",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
           "type": "json"
         }
       ]

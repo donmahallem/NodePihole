@@ -14,11 +14,22 @@ const childProcess = require("child_process");
  * @apiError NotAuthorized The requester is not authorized to access this endpoint
  * @apiErrorExample NotAuthorized Response:
  *     HTTP/1.1 401 Not Authorized
+ *     {
+ *       "error":{
+ *         "code":401,
+ *         "message":"Not authorized"
+ *       }
+ *     }
  */
 
 /**
  * @apiDefine admin AdminUser
  * A logged in user
+ */
+ 
+/**
+ * @apiDefine none public
+ * This api endpoint is public
  */
 
 /**
@@ -26,7 +37,12 @@ const childProcess = require("child_process");
  * @apiError InvalidRequest The request is malformed
  * @apiErrorExample InvalidRequest Response:
  *     HTTP/1.1 400 Invalid Request
- *     
+ *     {
+ *       "error":{
+ *         "code":400,
+ *         "message":"Bad Request"
+ *       }
+ *     }
  */
  
 /**
@@ -152,14 +168,14 @@ if (!Array.prototype.includes) {
  * @apiGroup Data
  * @apiVersion 1.0.0
  * @apiParam (Query Parameter) {boolean} [summary=false] Please refer to [summary](#api-Data-GetDataSummary)
- * @apiParam (Query Parameter) {boolean} [overTimeData=false] Please refer to [overTimeData](#api-Data-GetDataSummary)
+ * @apiParam (Query Parameter) {boolean} [overTimeData=false] Please refer to [overTimeData](#api-Data-GetDataOverTimeData)
  * @apiParam (Query Parameter) {boolean} [overTimeData10mins=false] Please refer to [overTimeData10mins](#api-Data-GetDataOverTimeData10mins)
  * @apiParam (Query Parameter) {boolean} [topItems=false] Please refer to [topItems](#api-Data-GetDataTopItems)
  * @apiParam (Query Parameter) {boolean} [recentItems=false] Please refer to [recentItems](#api-Data-GetDataRecentItems)
- * @apiParam (Query Parameter) {boolean} [getQueryTypes=false] Please refer to [queryTypes](#api-Data-GetDataQueryTypes)
- * @apiParam (Query Parameter) {boolean} [getForwardDestinations=false] Get the forward destinations
- * @apiParam (Query Parameter) {boolean} [getAllQueries=false] Gets all queries from the log
- * @apiParam (Query Parameter) {boolean} [getQuerySources=false] Gets the sources where the queries originated from
+ * @apiParam (Query Parameter) {boolean} [queryTypes=false] Please refer to [queryTypes](#api-Data-GetDataQueryTypes)
+ * @apiParam (Query Parameter) {boolean} [forwardDestinations=false] Please refer to [forwardDestinations](#api-Data-GetDataForwardDestinations)
+ * @apiParam (Query Parameter) {boolean} [allQueries=false] Gets all queries from the log
+ * @apiParam (Query Parameter) {boolean} [querySources=false] Please refer to [querySources](#api-Data-GetDataQuerySources)
  *
  * @apiSuccess (Success - Summary) {Object} summary The object summary
  * @apiSuccess (Success - Summary) {Number} summary.adsBlockedToday Total blocked queries
@@ -183,6 +199,7 @@ if (!Array.prototype.includes) {
  * @apiName GetDataSummary
  * @apiGroup Data
  * @apiVersion 1.0.0
+ * @apiPermission none
  * @apiParam (Query Parameter) {boolean=true} summary Gets the summary
  *
  * @apiSuccess {Object} summary The object summary
@@ -193,10 +210,12 @@ if (!Array.prototype.includes) {
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
- *       "adsBlockedToday": 10,
- *       "dnsQueriesToday": 100,
- *       "adsPercentageToday": 10.0,
- *       "domainsBeingBlocked": 1337
+ *       "summary":{
+ *         "adsBlockedToday": 10,
+ *         "dnsQueriesToday": 100,
+ *         "adsPercentageToday": 10.0,
+ *         "domainsBeingBlocked": 1337
+ *       }
  *     }
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
@@ -206,23 +225,120 @@ if (!Array.prototype.includes) {
  * @apiName GetDataQueryTypes
  * @apiGroup Data
  * @apiVersion 1.0.0
- * @apiParam (Query Parameter) {boolean=true} getQueryTypes Gets the query types
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {boolean=true} queryTypes Gets the query types
  *
  * @apiSuccess {Object[]} queryTypes Array with query types
- * @apiSuccess {Number} queryTypes.type query type
+ * @apiSuccess {String} queryTypes.type query type
  * @apiSuccess {Number} queryTypes.count number of queries with this type
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
- *     [
- *       {
- *         "type": "AAAA",
- *         "count": 299
- *       },
- *       {
- *         "type": "AA",
- *         "count": 100
- *       }
- *     ]
+ *     {
+ *       "queryTypes":[
+ *         {
+ *           "type": "AAAA",
+ *           "count": 299
+ *         },
+ *         {
+ *           "type": "AA",
+ *           "count": 100
+ *         }
+ *       ]
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+/**
+ * @api {get} /api/data Get query sources
+ * @apiName GetDataQuerySources
+ * @apiGroup Data
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {boolean=true} querySources Gets the query sources
+ *
+ * @apiSuccess {Object[]} querySources Array with query sources
+ * @apiSuccess {String} querySource.ip source ip
+ * @apiSuccess {String} [querySource.domain] source domain if known
+ * @apiSuccess {Number} querySource.count number of queries from this source
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "querySources":[
+ *         {
+ *           "ip": "127.0.0.1",
+ *           "domain": "localhost",
+ *           "count":20
+ *         },
+ *         {
+ *           "ip": "192.168.178.1",
+ *           "count":29
+ *         }
+ *       ]
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+/**
+ * @api {get} /api/data Get forward Destinations
+ * @apiName GetDataForwardDestinations
+ * @apiGroup Data
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {boolean=true} forwardDestinations forward destinations
+ *
+ * @apiSuccess {Object[]} forwardDestinations Array with query sources
+ * @apiSuccess {String} forwardDestinations.destination name of destination
+ * @apiSuccess {Number} forwardDestinations.count number of queries to this destination
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "forwardDestinations":[
+ *         {
+ *           "destination": "8.8.8.8",
+ *           "count":20
+ *         },
+ *         {
+ *           "destination": "8.8.4.4",
+ *           "count":29
+ *         }
+ *       ]
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+/**
+ * @api {get} /api/data Get OverTimeData10Mins
+ * @apiName GetDataOverTimeData10mins
+ * @apiGroup Data
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {boolean=true} overTimeData10mins Gets the queries over time in 10 minute frames
+ *
+ * @apiSuccess {Object[]} overTimeData10mins Array with query data
+ * @apiSuccess {Number{0-..}} overTimeData10mins.ads number of ads in that timeframe
+ * @apiSuccess {Number} overTimeData10mins.queries number of queries in that timeframe
+ * @apiSuccess {Number} overTimeData10mins.frame the frame number
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "overTimeData10mins":[
+ *         {
+ *           "ads":20,
+ *           "queries":200,
+ *           "frame":0
+ *         },
+ *         {
+ *           "ads":20,
+ *           "queries":200,
+ *           "frame":1
+ *         },
+ *         {
+ *           "ads":20,
+ *           "queries":200,
+ *           "frame":2
+ *         }
+ *       ]
+ *     }
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
  */

@@ -64,7 +64,7 @@
             "optional": true,
             "field": "allQueries",
             "defaultValue": "false",
-            "description": "<p>Gets all queries from the log</p>"
+            "description": "<p>Please refer to <a href=\"#api-Data-GetDataAllQueries\">allQueries</a></p>"
           },
           {
             "group": "Query Parameter",
@@ -717,6 +717,11 @@
           "title": "InvalidRequest Response:",
           "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
           "type": "json"
+        },
+        {
+          "title": "NotFound Response:",
+          "content": "HTTP/1.1 404 Not Found\n{\n  \"error\":{\n    \"code\":404,\n    \"message\":\"Not found\"\n  }\n}",
+          "type": "json"
         }
       ]
     },
@@ -787,6 +792,11 @@
           "title": "InvalidRequest Response:",
           "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
           "type": "json"
+        },
+        {
+          "title": "NotFound Response:",
+          "content": "HTTP/1.1 404 Not Found\n{\n  \"error\":{\n    \"code\":404,\n    \"message\":\"Not found\"\n  }\n}",
+          "type": "json"
         }
       ]
     },
@@ -856,6 +866,11 @@
         {
           "title": "InvalidRequest Response:",
           "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
+          "type": "json"
+        },
+        {
+          "title": "NotFound Response:",
+          "content": "HTTP/1.1 404 Not Found\n{\n  \"error\":{\n    \"code\":404,\n    \"message\":\"Not found\"\n  }\n}",
           "type": "json"
         }
       ]

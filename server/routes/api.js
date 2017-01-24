@@ -46,6 +46,19 @@ const childProcess = require("child_process");
  */
 
 /**
+ * @apiDefine ErrorNotFound
+ * @apiError NotFound The requested resource is unknown to the server
+ * @apiErrorExample NotFound Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "error":{
+ *         "code":404,
+ *         "message":"Not found"
+ *       }
+ *     }
+ */
+
+/**
  * The router for the api endpoints
  * @exports apiRouter
  */
@@ -173,7 +186,7 @@ if (!Array.prototype.includes) {
  * @apiParam (Query Parameter) {Boolean} [recentItems=false] Please refer to [recentItems](#api-Data-GetDataRecentItems)
  * @apiParam (Query Parameter) {Boolean} [queryTypes=false] Please refer to [queryTypes](#api-Data-GetDataQueryTypes)
  * @apiParam (Query Parameter) {Boolean} [forwardDestinations=false] Please refer to [forwardDestinations](#api-Data-GetDataForwardDestinations)
- * @apiParam (Query Parameter) {Boolean} [allQueries=false] Gets all queries from the log
+ * @apiParam (Query Parameter) {Boolean} [allQueries=false] Please refer to [allQueries](#api-Data-GetDataAllQueries)
  * @apiParam (Query Parameter) {Boolean} [querySources=false] Please refer to [querySources](#api-Data-GetDataQuerySources)
  * @apiParamExample {query} Request-Example:
  *     ?summary&topItems
@@ -468,6 +481,7 @@ router.get("/taillog",
  * @apiError NotFound The <code>list</code> is unknown to the server
  * @apiUse NotAuthorized
  * @apiUse InvalidRequest
+ * @apiUse ErrorNotFound
  */
 router.get("/list", apiMiddleware.auth, function(req, res) {
     if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
@@ -514,6 +528,7 @@ router.get("/list", apiMiddleware.auth, function(req, res) {
  * @apiError NotFound The <code>list</code> is unknown to the server
  * @apiUse NotAuthorized
  * @apiUse InvalidRequest
+ * @apiUse ErrorNotFound
  */
 router.post("/list",
     apiMiddleware.auth,
@@ -547,6 +562,7 @@ router.post("/list",
  * @apiError NotFound The <code>list</code> is unknown to the server
  * @apiUse NotAuthorized
  * @apiUse InvalidRequest
+ * @apiUse ErrorNotFound
  */
 router.delete("/list",
     apiMiddleware.auth,

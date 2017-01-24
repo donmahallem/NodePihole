@@ -176,20 +176,13 @@ if (!Array.prototype.includes) {
  * @apiParam (Query Parameter) {boolean} [forwardDestinations=false] Please refer to [forwardDestinations](#api-Data-GetDataForwardDestinations)
  * @apiParam (Query Parameter) {boolean} [allQueries=false] Gets all queries from the log
  * @apiParam (Query Parameter) {boolean} [querySources=false] Please refer to [querySources](#api-Data-GetDataQuerySources)
- *
- * @apiSuccess (Success - Summary) {Object} summary The object summary
- * @apiSuccess (Success - Summary) {Number} summary.adsBlockedToday Total blocked queries
- * @apiSuccess (Success - Summary) {Number} summary.dnsQueriesToday Total dns queries
- * @apiSuccess (Success - Summary) {Number} summary.adsPercentageToday Percentage of blocked requests
- * @apiSuccess (Success - Summary) {Number} summary.domainsBeingBlocked Domains being blocked in total
- * @apiSuccess (Success - DomainsOverTime) {Number[]} domainsOverTime Domain count queried over time
- * @apiSuccess (Success - TopSources) {Object[]} topSources Top query sources
- * @apiSuccess (Success - TopSources) {String} topSources.source Query source
- * @apiSuccess (Success - TopSources) {Number} topSources.count Number of queries from this source
+ * @apiParamExample {query} Request-Example:
+ *     ?summary&topItems
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
- *       "status": "disabled"
+ *       "summary": {...}
+ *       "topItems": {...}
  *     }
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized

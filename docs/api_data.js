@@ -83,84 +83,20 @@ define({ "api": [
             "description": "<p>Please refer to <a href=\"#api-Data-GetDataQuerySources\">querySources</a></p>"
           }
         ]
-      }
-    },
-    "success": {
-      "fields": {
-        "Success - Summary": [
-          {
-            "group": "Success - Summary",
-            "type": "Object",
-            "optional": false,
-            "field": "summary",
-            "description": "<p>The object summary</p>"
-          },
-          {
-            "group": "Success - Summary",
-            "type": "Number",
-            "optional": false,
-            "field": "summary.adsBlockedToday",
-            "description": "<p>Total blocked queries</p>"
-          },
-          {
-            "group": "Success - Summary",
-            "type": "Number",
-            "optional": false,
-            "field": "summary.dnsQueriesToday",
-            "description": "<p>Total dns queries</p>"
-          },
-          {
-            "group": "Success - Summary",
-            "type": "Number",
-            "optional": false,
-            "field": "summary.adsPercentageToday",
-            "description": "<p>Percentage of blocked requests</p>"
-          },
-          {
-            "group": "Success - Summary",
-            "type": "Number",
-            "optional": false,
-            "field": "summary.domainsBeingBlocked",
-            "description": "<p>Domains being blocked in total</p>"
-          }
-        ],
-        "Success - DomainsOverTime": [
-          {
-            "group": "Success - DomainsOverTime",
-            "type": "Number[]",
-            "optional": false,
-            "field": "domainsOverTime",
-            "description": "<p>Domain count queried over time</p>"
-          }
-        ],
-        "Success - TopSources": [
-          {
-            "group": "Success - TopSources",
-            "type": "Object[]",
-            "optional": false,
-            "field": "topSources",
-            "description": "<p>Top query sources</p>"
-          },
-          {
-            "group": "Success - TopSources",
-            "type": "String",
-            "optional": false,
-            "field": "topSources.source",
-            "description": "<p>Query source</p>"
-          },
-          {
-            "group": "Success - TopSources",
-            "type": "Number",
-            "optional": false,
-            "field": "topSources.count",
-            "description": "<p>Number of queries from this source</p>"
-          }
-        ]
       },
       "examples": [
         {
+          "title": "Request-Example:",
+          "content": "?summary&topItems",
+          "type": "query"
+        }
+      ]
+    },
+    "success": {
+      "examples": [
+        {
           "title": "Success-Response:",
-          "content": "HTTP/1.1 200 OK\n{\n  \"status\": \"disabled\"\n}",
+          "content": "HTTP/1.1 200 OK\n{\n  \"summary\": {...}\n  \"topItems\": {...}\n}",
           "type": "json"
         }
       ]

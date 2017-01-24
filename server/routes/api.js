@@ -87,7 +87,13 @@ const apiMiddleware = {
             next();
         } else {
             console.log("authentication failed: " + req.method + "(" + req.originalUrl + ")");
-            res.sendStatus(401);
+            res.status(401);
+            res.json({
+                "error": {
+                    "code": 401,
+                    "message": "Not authenticated"
+                }
+            });
         }
     }
 };
@@ -340,7 +346,13 @@ router.get("/data", function(req, res) {
             if (supportedDataQueries[query].authRequired && !req.user.authenticated) {
                 // User needs to be authenticated for this query
                 console.log("User is not authenticated for: " + req.method + "(" + req.originalUrl + ")");
-                res.sendStatus(401);
+                res.status(401);
+                res.json({
+                    "error": {
+                        "code": 401,
+                        "message": "Not authenticated"
+                    }
+                });
                 return;
             }
             args[query] = req.query[query];

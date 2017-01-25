@@ -4,7 +4,7 @@
         "dictionaries" : ["jsdoc", "closure"]
     },
     "source" : {
-        "include" : ["server/"],
+        "include" : ["server/static/scripts/pi-hole/"],
         "includePattern" : ".+\\.js(doc|x)?$",
         "excludePattern" : "(^|\\/|\\\\)_"
     },

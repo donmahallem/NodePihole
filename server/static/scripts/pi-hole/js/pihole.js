@@ -3,6 +3,10 @@
     if (typeof(pihole) !== 'undefined') {
         return;
     }
+    /**
+     * doc pihole
+     * @module pihole
+     */
     var pihole = {};
     const settings = {
         "enable": function() {
@@ -13,58 +17,100 @@
         }
     };
 
+    /**
+     * @module pihole/api
+     */
     pihole.api = {};
+    /**
+     * @module pihole/api/data
+     */
     pihole.api.data = {
-        "get": function(args, successCallback, errorCallback) {
-            $.ajax({
-                url: "/api/data",
-                method: "get",
-                data: args,
-                success: successCallback,
-                error: errorCallback
+        /**
+         * @param {Object} args - args to query
+         * @memberof module:pihole/api/data
+         */
+        get: function(args) {
+            return $.ajax({
+                "url": "/api/data",
+                "headers": {
+                    "Accept": "application/json; charset=utf-8",
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                "method": "get",
+                "dataType": "json",
+                "data": args
             });
         }
     };
+    /**
+     * @module pihole/api/list
+     */
     pihole.api.list = {
-        "get": function(listname, successCallback, errorCallback) {
-            $.ajax({
-                url: "/api/list",
-                method: "get",
-                data: {
+        /**
+         * @param {String} listname - either <code>black</code> or <code>white</code>
+         * @memberof module:pihole/api/list
+         */
+        "get": function(listname) {
+            return $.ajax({
+                "url": "/api/list",
+                "headers": {
+                    "Accept": "application/json; charset=utf-8",
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                "method": "get",
+                "dataType": "json",
+                "data": {
                     "list": listname
-                },
-                success: successCallback,
-                error: errorCallback
+                }
             });
         },
-        "post": function(listname, domain, successCallback, errorCallback) {
-            $.ajax({
-                url: "api/list",
-                method: "post",
-                data: {
+        /**
+         * @param {String} listname - either <code>black</code> or <code>white</code>
+         * @param {String} domain - the domain to add to the list
+         * @memberof module:pihole/api/list
+         */
+        "post": function(listname, domain) {
+            return $.ajax({
+                "url": "/api/list",
+                "headers": {
+                    "Accept": "application/json; charset=utf-8",
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                "method": "post",
+                "dataType": "json",
+                "data": {
                     "domain": domain,
                     "list": listname,
                     "token": pihole.helper.getApiToken()
-                },
-                success: successCallback,
-                error: errorCallback
+                }
             });
         },
-        "delete": function(listname, domain, successCallback, errorCallback) {
-            $.ajax({
-                url: "api/list",
-                method: "delete",
-                data: {
+        /**
+         * @param {String} listname - either <code>black</code> or <code>white</code>
+         * @param {String} domain - the domain to remove from the list
+         * @memberof module:pihole/api/list
+         */
+        "delete": function(listname, domain) {
+            return $.ajax({
+                "url": "/api/list",
+                "headers": {
+                    "Accept": "application/json; charset=utf-8",
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                "method": "delete",
+                "dataType": "json",
+                "data": {
                     "domain": domain,
                     "list": listname,
                     "token": pihole.helper.getApiToken()
-                },
-                success: successCallback,
-                error: errorCallback
+                }
             });
         }
     };
-    pihole.api.taillog = (function() {
+    /**
+     * @module pihole/taillog
+     */
+    pihole.taillog = (function() {
         const supportedEvents = ["dns"];
         var callbacks = {
             "dns": [],
@@ -97,20 +143,33 @@
             emit("open");
         };
         var taillog = {};
-        taillog.on = function(event, callback) {
+        /**
+         * @function subscribe
+         * @param {String} event - the event to subscribe too
+         * @param {Function} callback - the callback to call if the requested event is emitted
+         * @returns {Function} can be called to unsubscribe the callback
+         * @memberof module:pihole/taillog
+         */
+        taillog.subscribe = function(event, callback) {
             if (supportedEvents.indexOf(event) >= 0) {
                 callbacks[event].push(callback);
             }
             return function() {
-                taillog.off(callback);
+                taillog.unsubscribe(callback);
             };
         };
 
-        taillog.off = function(event, callback) {
+        /**
+         * @function unsubscribe
+         * @param {String} event - the event to subscribe too
+         * @param {Function} callback - the callback to call if the requested event is emitted
+         * @memberof module:pihole/taillog
+         */
+        taillog.unsubscribe = function(event, callback) {
             if (supportedEvents.indexOf(event) >= 0) {
                 const callbackIdx = callbacks[event].indexOf(callback);
                 if (callbackIdx !== -1) {
-                    delete callbacks[event][callbackIdx];
+                    callbacks[event].splice(callbackIdx, 1);
                 }
             }
         };
@@ -129,15 +188,44 @@
         };
         return taillog;
     })();
+
+    /**
+     * @module pihole/helper
+     */
     pihole.helper = (function() {
         var apiToken;
         var helper = {};
+        /**
+         * Retrieves the csrf token from the document body if present
+         * @function getApiToken
+         * @returns {String} the api token if available
+         * @memberof module:pihole/helper
+         */
         helper.getApiToken = function() {
             if (apiToken === undefined) {
                 apiToken = $("#token")
                     .html();
             }
             return apiToken;
+        };
+        /**
+         * Converts a timestamp to a frame index number
+         * @function timestampToFrameIdx
+         * @param {Date|String} timestamp - The timestamp to convert
+         * @param {Number} frameSize - The frameSize in Minutes
+         * @returns {Number} the frame index number
+         * @memberof module:pihole/helper
+         */
+        helper.timestampToFrameIdx = function(timestamp, frameSize) {
+            var _timestamp;
+            if (typeof timestamp === "date") {
+                _timestamp = timestamp;
+            } else {
+                _timestamp = new Date(timestamp);
+            }
+            const hours = _timestamp.getHours();
+            const minutes = _timestamp.getMinutes();
+            return Math.floor((hours * 60 + minutes) / frameSize);
         };
         return helper;
     })();

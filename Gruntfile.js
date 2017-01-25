@@ -31,12 +31,20 @@ module.exports = function (grunt) {
             adminpanel : {
                 options : {
                     banner : "/*! <%= pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today(' yyyy - mm - dd ') %> */\n",
-                    mangle : false
+                    mangle : true,
+                    beautify : {
+                        max_line_len : 32000,
+                        quote_keys : false,
+                        screw_ie8 : true,
+                        bracketize : false,
+                        comments : false,
+                        semicolons : true
+                    }
                 },
                 files : [{
                         expand : true,
                         cwd : "server/static/scripts/pi-hole",
-                        src : "**/*.js",
+                        src : ["**/*.js","!**/*.min.js"],
                         dest : "server/static/scripts/pi-hole",
                         ext : ".min.js"
                     }

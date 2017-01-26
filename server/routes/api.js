@@ -348,6 +348,34 @@ if (!Array.prototype.includes) {
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
  */
+/**
+ * @api {get} /api/data Get topItems
+ * @apiName GetDataTopItems
+ * @apiGroup Data
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {Boolean=true} topItems Gets the queries over time in 10 minute frames
+ *
+ * @apiSuccess {Object} topItems Array with query data
+ * @apiSuccess {Object} overTimeData.topQueries number of ads in that timeframe
+ * @apiSuccess {Object} overTimeData.topAds number of queries in that timeframe
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "topItems":{
+ *         "topQueries":{
+ *           "good.domain1":29,
+ *           "good.domain2":39,
+ *         },
+ *         "topAds":{
+ *           "baddomain1":29,
+ *           "baddomain2":39,
+ *         }
+ *       }
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
 router.get("/data", function(req, res) {
     // Filter query types so only valid ones pass
     var args = {};
@@ -385,10 +413,12 @@ router.get("/data", function(req, res) {
     var data = {};
     var promises = [];
     if ("summary" in args) {
-        promises.push(logHelper.getSummary());
-    }
-    if ("summaryRaw" in args) {
-        promises.push(logHelper.getSummary());
+        promises.push(logHelper.getSummary()
+            .then(function(data) {
+                return {
+                    "summary": data
+                }
+            }));
     }
     if ("overTimeData" in args) {
         var frameSize = 10;
@@ -396,22 +426,52 @@ router.get("/data", function(req, res) {
         if ("frameSize" in args && [1, 10, 60].indexOf(args.frameSize) !== -1) {
             frameSize = args.frameSize;
         }
-        promises.push(logHelper.getOverTimeData(frameSize));
+        promises.push(logHelper.getOverTimeData(frameSize)
+            .then(function(data) {
+                return {
+                    "overTimeData": data
+                }
+            }));
     }
     if ("topItems" in args) {
-        promises.push(logHelper.getTopItems());
+        promises.push(logHelper.getTopItems()
+            .then(function(data) {
+                return {
+                    "topItems": data
+                }
+            }));
     }
     if ("queryTypes" in args) {
-        promises.push(logHelper.getQueryTypes());
+        promises.push(logHelper.getQueryTypes()
+            .then(function(data) {
+                return {
+                    "queryTypes": data
+                }
+            }));
     }
     if ("forwardDestinations" in args) {
-        promises.push(logHelper.getForwardDestinations());
+        promises.push(logHelper.getForwardDestinations()
+            .then(function(data) {
+                return {
+                    "forwardDestinations": data
+                }
+            }));
     }
     if ("allQueries" in args) {
-        promises.push(logHelper.getAllQueries());
+        promises.push(logHelper.getAllQueries()
+            .then(function(data) {
+                return {
+                    "allQueries": data
+                }
+            }));
     }
     if ("querySources" in args) {
-        promises.push(logHelper.getQuerySources());
+        promises.push(logHelper.getQuerySources()
+            .then(function(data) {
+                return {
+                    "querySources": data
+                }
+            }));
     }
     Promise.all(promises)
         .then(function(values) {

@@ -111,10 +111,10 @@ logHelper.getSummary = function() {
                         .createReadStream(appDefaults.logFile)
                 });
             var summaryData = {
-                ads_blocked_today: 0,
-                dns_queries_today: 0,
-                ads_percentage_today: 0,
-                domains_being_blocked: 0
+                adsBlockedToday: 0,
+                dnsQueriesToday: 0,
+                adsPercentageToday: 0,
+                domainsBeingBlocked: 0
             };
             lineReader.on("line", function(line) {
                 var lineData = logHelper.parseLine(line);
@@ -122,13 +122,13 @@ logHelper.getSummary = function() {
                     return;
                 }
                 if (lineData.type === "query") {
-                    summaryData.dns_queries_today++;
+                    summaryData.dnsQueriesToday++;
                 } else if (lineData.type === "block") {
-                    summaryData.ads_blocked_today++;
+                    summaryData.adsBlockedToday++;
                 }
             });
             lineReader.on("close", function() {
-                summaryData.ads_percentage_today = (summaryData.dns_queries_today === 0) ? 0 : (summaryData.ads_blocked_today / summaryData.dns_queries_today) * 100;
+                summaryData.adsPercentageToday = (summaryData.dnsQueriesToday === 0) ? 0 : (summaryData.adsBlockedToday / summaryData.dnsQueriesToday) * 100;
                 resolve(summaryData);
             });
         })
@@ -316,9 +316,7 @@ logHelper.getAllQueries = function() {
             }
         });
         lineReader.on("close", function() {
-            resolve({
-                "data": lines
-            });
+            resolve(lines);
         });
     });
 };
@@ -509,8 +507,8 @@ logHelper.getOverTimeData = function(frameSize) {
                     .createReadStream(appDefaults.logFile)
             });
         var data = {
-            domains_over_time: {},
-            ads_over_time: {}
+            "domains": {},
+            "ads": {}
         };
         lineReader.on("line", function(line) {
             if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
@@ -521,22 +519,20 @@ logHelper.getOverTimeData = function(frameSize) {
             var minute = time.minute();
             time = (minute - minute % 10) / 10 + 6 * hour;
             if (Math.random() < 0.5) {
-                if (time in data.ads_over_time) {
-                    data.ads_over_time[time]++;
+                if (time in data.ads) {
+                    data.ads[time]++;
                 } else {
-                    data.ads_over_time[time] = 1;
+                    data.ads[time] = 1;
                 }
             }
-            if (time in data.domains_over_time) {
-                data.domains_over_time[time]++;
+            if (time in data.domains) {
+                data.domains[time]++;
             } else {
-                data.domains_over_time[time] = 1;
+                data.domains[time] = 1;
             }
         });
         lineReader.on("close", function() {
-            resolve({
-                "overTimeData": data
-            });
+            resolve(data);
         });
     });
 };

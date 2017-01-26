@@ -654,6 +654,103 @@ define({ "api": [
     }
   },
   {
+    "type": "get",
+    "url": "/api/data",
+    "title": "Get topItems",
+    "name": "GetDataTopItems",
+    "group": "Data",
+    "version": "1.0.0",
+    "permission": [
+      {
+        "name": "admin",
+        "title": "AdminUser",
+        "description": "<p>A logged in user</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Query Parameter": [
+          {
+            "group": "Query Parameter",
+            "type": "Boolean",
+            "allowedValues": [
+              "true"
+            ],
+            "optional": false,
+            "field": "topItems",
+            "description": "<p>Gets the queries over time in 10 minute frames</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "topItems",
+            "description": "<p>Array with query data</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "overTimeData.topQueries",
+            "description": "<p>number of ads in that timeframe</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "overTimeData.topAds",
+            "description": "<p>number of queries in that timeframe</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "HTTP/1.1 200 OK\n{\n  \"topItems\":{\n    \"topQueries\":{\n      \"good.domain1\":29,\n      \"good.domain2\":39,\n    },\n    \"topAds\":{\n      \"baddomain1\":29,\n      \"baddomain2\":39,\n    }\n  }\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "server/routes/api.js",
+    "groupTitle": "Data",
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "InvalidRequest",
+            "description": "<p>The request is malformed</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "NotAuthorized",
+            "description": "<p>The requester is not authorized to access this endpoint</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "InvalidRequest Response:",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
+          "type": "json"
+        },
+        {
+          "title": "NotAuthorized Response:",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
     "type": "post",
     "url": "/api/list/",
     "title": "Adds a domain to the specified list",

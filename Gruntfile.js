@@ -44,7 +44,8 @@ module.exports = function (grunt) {
                 files : [{
                         expand : true,
                         cwd : "server/static/scripts/pi-hole",
-                        src : ["**/*.js","!**/*.min.js"],
+                        src : ["**/*.js",
+						"!**/*.min.js"],
                         dest : "server/static/scripts/pi-hole",
                         ext : ".min.js"
                     }

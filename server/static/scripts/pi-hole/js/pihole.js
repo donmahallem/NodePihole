@@ -1,33 +1,35 @@
-(function(window, $, undefined) {
+/**
+ *  @typedef PropertiesHash
+ *  @type {object}
+ * @property {string} id - an ID.
+ *  @property {string} name - your name.
+ * @property {number} age - your age.
+ */
+
+/**
+ * Module for communication with the backend
+ * @module pihole
+ * @global
+ * @since 1.0.0
+ */
+var pihole = (function(pihole, $, undefined) {
     'use strict';
-    if (typeof(pihole) !== 'undefined') {
-        return;
-    }
+    var api = pihole.api = pihole.api || {};
     /**
-     * doc pihole
-     * @module pihole
-     */
-    var pihole = {};
-    const settings = {
-        "enable": function() {
-
-        },
-        "disable": function() {
-
-        }
-    };
-
-    /**
+     * Module for communication with the backend
      * @module pihole/api
+     * @since 1.0.0
      */
-    pihole.api = {};
     /**
+     * Api for data endpoint
      * @module pihole/api/data
+     * @since 1.0.0
      */
-    pihole.api.data = {
+    api.data = {
         /**
          * @param {Object} args - args to query
          * @memberof module:pihole/api/data
+         * @since 1.0.0
          */
         get: function(args) {
             return $.ajax({
@@ -43,12 +45,15 @@
         }
     };
     /**
+     * Api for list endpoint
      * @module pihole/api/list
+     * @since 1.0.0
      */
-    pihole.api.list = {
+    api.list = {
         /**
          * @param {String} listname - either <code>black</code> or <code>white</code>
          * @memberof module:pihole/api/list
+         *@since 1.0.0
          */
         "get": function(listname) {
             return $.ajax({
@@ -68,6 +73,7 @@
          * @param {String} listname - either <code>black</code> or <code>white</code>
          * @param {String} domain - the domain to add to the list
          * @memberof module:pihole/api/list
+         * @since 1.0.0
          */
         "post": function(listname, domain) {
             return $.ajax({
@@ -89,6 +95,7 @@
          * @param {String} listname - either <code>black</code> or <code>white</code>
          * @param {String} domain - the domain to remove from the list
          * @memberof module:pihole/api/list
+         * @since 1.0.0
          */
         "delete": function(listname, domain) {
             return $.ajax({
@@ -107,129 +114,141 @@
             });
         }
     };
+    return pihole;
+}(pihole || {}, jQuery));
+var pihole = (function(pihole, $, undefined) {
+    'use strict';
+    var taillog = pihole.taillog = pihole.taillog || {};
     /**
+     * Module for communication with the backend
      * @module pihole/taillog
+     * @since 1.0.0
      */
-    pihole.taillog = (function() {
-        const supportedEvents = ["dns"];
-        var callbacks = {
-            "dns": [],
-            "error": [],
-            "open": []
-        };
-        var isListening = false;
+    const supportedEvents = ["dns"];
+    var callbacks = {
+        "dns": [],
+        "error": [],
+        "open": []
+    };
+    var isListening = false;
 
-        var evSource;
+    var evSource;
 
-        const emit = function(name, event) {
-            callbacks[name].forEach(function(callback) {
-                callback(JSON.parse(event.data));
-            });
-        };
+    const emit = function(name, event) {
+        callbacks[name].forEach(function(callback) {
+            callback(JSON.parse(event.data));
+        });
+    };
 
-        const onError = function(error) {
-            isListening = false;
-            emit("error", error);
-        };
+    const onError = function(error) {
+        isListening = false;
+        emit("error", error);
+    };
 
-        const onDnsEvent = function(event) {
-            emit("dns", event);
-        };
+    const onDnsEvent = function(event) {
+        emit("dns", event);
+    };
 
-        const onMessage = function(data) {};
+    const onMessage = function(data) {};
 
-        const onOpen = function() {
-            isListening = true;
-            emit("open");
+    const onOpen = function() {
+        isListening = true;
+        emit("open");
+    };
+    /**
+     * @function subscribe
+     * @param {String} event - the event to subscribe too
+     * @param {Function} callback - the callback to call if the requested event is emitted
+     * @returns {Function} can be called to unsubscribe the callback
+     * @memberof module:pihole/taillog
+     * @since 1.0.0
+     */
+    taillog.subscribe = function(event, callback) {
+        if (supportedEvents.indexOf(event) >= 0) {
+            callbacks[event].push(callback);
+        }
+        return function() {
+            taillog.unsubscribe(callback);
         };
-        var taillog = {};
-        /**
-         * @function subscribe
-         * @param {String} event - the event to subscribe too
-         * @param {Function} callback - the callback to call if the requested event is emitted
-         * @returns {Function} can be called to unsubscribe the callback
-         * @memberof module:pihole/taillog
-         */
-        taillog.subscribe = function(event, callback) {
-            if (supportedEvents.indexOf(event) >= 0) {
-                callbacks[event].push(callback);
-            }
-            return function() {
-                taillog.unsubscribe(callback);
-            };
-        };
-
-        /**
-         * @function unsubscribe
-         * @param {String} event - the event to subscribe too
-         * @param {Function} callback - the callback to call if the requested event is emitted
-         * @memberof module:pihole/taillog
-         */
-        taillog.unsubscribe = function(event, callback) {
-            if (supportedEvents.indexOf(event) >= 0) {
-                const callbackIdx = callbacks[event].indexOf(callback);
-                if (callbackIdx !== -1) {
-                    callbacks[event].splice(callbackIdx, 1);
-                }
-            }
-        };
-
-        taillog.listen = function() {
-            if (!isListening) {
-                isListening = true;
-                evSource = new EventSource("/api/taillog", {
-                    "withcredentials": true
-                });
-                evSource.onerror = onError;
-                evSource.onmessage = onMessage;
-                evSource.addEventListener("dns", onDnsEvent, false);
-                evSource.onopen = onOpen;
-            }
-        };
-        return taillog;
-    })();
+    };
 
     /**
-     * @module pihole/helper
+     * @function unsubscribe
+     * @param {String} event - the event to subscribe too
+     * @param {Function} callback - the callback to call if the requested event is emitted
+     * @memberof module:pihole/taillog
+     * @since 1.0.0
      */
-    pihole.helper = (function() {
-        var apiToken;
-        var helper = {};
-        /**
-         * Retrieves the csrf token from the document body if present
-         * @function getApiToken
-         * @returns {String} the api token if available
-         * @memberof module:pihole/helper
-         */
-        helper.getApiToken = function() {
-            if (apiToken === undefined) {
-                apiToken = $("#token")
-                    .html();
+    taillog.unsubscribe = function(event, callback) {
+        if (supportedEvents.indexOf(event) >= 0) {
+            const callbackIdx = callbacks[event].indexOf(callback);
+            if (callbackIdx !== -1) {
+                callbacks[event].splice(callbackIdx, 1);
             }
-            return apiToken;
-        };
-        /**
-         * Converts a timestamp to a frame index number
-         * @function timestampToFrameIdx
-         * @param {Date|String} timestamp - The timestamp to convert
-         * @param {Number} frameSize - The frameSize in Minutes
-         * @returns {Number} the frame index number
-         * @memberof module:pihole/helper
-         */
-        helper.timestampToFrameIdx = function(timestamp, frameSize) {
-            var _timestamp;
-            if (typeof timestamp === "date") {
-                _timestamp = timestamp;
-            } else {
-                _timestamp = new Date(timestamp);
-            }
-            const hours = _timestamp.getHours();
-            const minutes = _timestamp.getMinutes();
-            return Math.floor((hours * 60 + minutes) / frameSize);
-        };
-        return helper;
-    })();
+        }
+    };
 
-    pihole.settings = settings;
-    window.pihole = pihole;
-})(window, $);
+    taillog.listen = function() {
+        if (!isListening) {
+            isListening = true;
+            evSource = new EventSource("/api/taillog", {
+                "withcredentials": true
+            });
+            evSource.onerror = onError;
+            evSource.onmessage = onMessage;
+            evSource.addEventListener("dns", onDnsEvent, false);
+            evSource.onopen = onOpen;
+        }
+    };
+    return pihole;
+}(pihole || {}, jQuery));
+
+var pihole = (function(pihole, $, undefined) {
+    'use strict';
+    var helper = pihole.helper = pihole.helper || {};
+    /**
+     * @module {Object} module:pihole/helper
+     * @since 1.0.0
+     */
+
+    /**
+     *@member {String|Null} apiToken
+     * @inner
+     */
+    var apiToken;
+    /**
+     * Retrieves the csrf token from the document body if present
+     * @function getApiToken
+     * @returns {String} the api token if available
+     * @memberof module:pihole/helper
+     * @since 1.0.0
+     */
+    helper.getApiToken = function() {
+        if (apiToken === undefined) {
+            apiToken = $("#token")
+                .html();
+        }
+        return apiToken;
+    };
+    /**
+     * Converts a timestamp to a frame index number
+     * @function timestampToFrameIdx
+     * @param {Date|String} timestamp - The timestamp to convert
+     * @param {Number} frameSize - The frameSize in Minutes
+     * @returns {Number} the frame index number
+     * @memberof module:pihole/helper
+     * @since 1.0.0
+     */
+    helper.timestampToFrameIdx = function(timestamp, frameSize) {
+        var _timestamp;
+        if (typeof timestamp === "date") {
+            _timestamp = timestamp;
+        } else {
+            _timestamp = new Date(timestamp);
+        }
+        const hours = _timestamp.getHours();
+        const minutes = _timestamp.getMinutes();
+        return Math.floor((hours * 60 + minutes) / frameSize);
+    };
+    return pihole;
+}(pihole || {}, jQuery));

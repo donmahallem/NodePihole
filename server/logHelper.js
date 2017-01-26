@@ -534,7 +534,9 @@ logHelper.getOverTimeData = function(frameSize) {
             }
         });
         lineReader.on("close", function() {
-            resolve(data);
+            resolve({
+                "overTimeData": data
+            });
         });
     });
 };

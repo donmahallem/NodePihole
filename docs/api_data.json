@@ -273,7 +273,7 @@
             "group": "Success 200",
             "type": "Object[]",
             "optional": false,
-            "field": "overTimeData10mins",
+            "field": "overTimeData",
             "description": "<p>Array with query data</p>"
           },
           {
@@ -281,21 +281,21 @@
             "type": "Number",
             "size": "0-..",
             "optional": false,
-            "field": "overTimeData10mins.ads",
+            "field": "overTimeData.ads",
             "description": "<p>number of ads in that timeframe</p>"
           },
           {
             "group": "Success 200",
             "type": "Number",
             "optional": false,
-            "field": "overTimeData10mins.queries",
+            "field": "overTimeData.queries",
             "description": "<p>number of queries in that timeframe</p>"
           },
           {
             "group": "Success 200",
             "type": "Number",
             "optional": false,
-            "field": "overTimeData10mins.frame",
+            "field": "overTimeData.frame",
             "description": "<p>the frame number</p>"
           }
         ]
@@ -303,7 +303,7 @@
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "HTTP/1.1 200 OK\n{\n  \"overTimeData10mins\":[\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":0\n    },\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":1\n    },\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":2\n    }\n  ]\n}",
+          "content": "HTTP/1.1 200 OK\n{\n  \"overTimeData\":[\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":0\n    },\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":1\n    },\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":2\n    }\n  ]\n}",
           "type": "json"
         }
       ]

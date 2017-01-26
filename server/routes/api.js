@@ -320,14 +320,14 @@ if (!Array.prototype.includes) {
  * @apiParam (Query Parameter) {Boolean=true} overTimeData Gets the queries over time in 10 minute frames
  * @apiParam (Query Parameter) {Number=1,10,60} [frameSize=10] Sets the overtime timeframe size in minutes
  *
- * @apiSuccess {Object[]} overTimeData10mins Array with query data
- * @apiSuccess {Number{0-..}} overTimeData10mins.ads number of ads in that timeframe
- * @apiSuccess {Number} overTimeData10mins.queries number of queries in that timeframe
- * @apiSuccess {Number} overTimeData10mins.frame the frame number
+ * @apiSuccess {Object[]} overTimeData Array with query data
+ * @apiSuccess {Number{0-..}} overTimeData.ads number of ads in that timeframe
+ * @apiSuccess {Number} overTimeData.queries number of queries in that timeframe
+ * @apiSuccess {Number} overTimeData.frame the frame number
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
- *       "overTimeData10mins":[
+ *       "overTimeData":[
  *         {
  *           "ads":20,
  *           "queries":200,

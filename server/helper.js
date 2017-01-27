@@ -164,7 +164,7 @@ helper.getTemperature = function() {
                 if (err) {
                     reject(err);
                 } else {
-                    fs.readFile(tempPath1, function(err, data) {
+                    fs.readFile(tempPath1, 'utf8', function(err, data) {
                         if (err) {
                             reject(err);
                         } else {
@@ -181,7 +181,7 @@ helper.getTemperature = function() {
                     if (err) {
                         reject(err);
                     } else {
-                        fs.readFile(tempPath1, function(err, data) {
+                        fs.readFile(tempPath1, 'utf8', function(err, data) {
                             if (err) {
                                 reject(err);
                             } else {

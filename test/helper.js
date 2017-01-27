@@ -192,13 +192,24 @@ describe("helper tests", function() {
                 it("should return false", function() {
                     return helper.getFreeMemory()
                         .then(function(result) {
-							console.log("res",result);
                             expect(result)
                                 .to.be.false;
                         });
                 });
             });
-
+            describe("/proc/meminfo read file fails", function() {
+                before(function() {
+                    fsReadFileStub
+                        .callsArgWith(2, true);
+                });
+                it("should return false", function() {
+                    return helper.getFreeMemory()
+                        .then(function(result) {
+                            expect(result)
+                                .to.be.false;
+                        });
+                });
+            });
         });
     });
 });

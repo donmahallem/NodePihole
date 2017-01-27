@@ -93,14 +93,6 @@ PiServer.prototype.start = function() {
                 console.log("Server listening on port " + appDefaults.port + "!");
             }
             .bind(this));
-        var tail = new Tail(appDefaults.logFile);
-        tail.on("line", function(data) {
-            const lineInfo = logHelper.parseLine(data);
-            if (lineInfo === false) {
-                return;
-            }
-        }.bind(this));
-        tail.on("error", function(error) {});
     }
 };
 module.exports = PiServer;

@@ -178,15 +178,13 @@ var queryTimelineUpdater = {};
         return a - b;
     };
     qTU.pollData = function() {
-        $.getJSON("/api/data?overTimeData", function(data) {
+        pihole.api.data.get({
+                "overTimeData": true
+            })
+            .done(function(data) {
                 // Remove possibly already existing data
                 tableData = data.overTimeData;
                 qTU.updateTable();
-            })
-            .done(function() {
-                // Reload graph after 10 minutes
-                failures = 0;
-                setTimeout(qTU.pollData, 600000);
             })
             .fail(function() {
                 failures++;
@@ -195,6 +193,11 @@ var queryTimelineUpdater = {};
                     // than five times in a row
                     setTimeout(qTU.pollData, 60000);
                 }
+            })
+            .always(function() {
+                // Reload graph after 10 minutes
+                failures = 0;
+                setTimeout(qTU.pollData, 600000);
             });
     };
     qTU.updateTable = function() {

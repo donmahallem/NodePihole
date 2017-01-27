@@ -256,6 +256,7 @@ helper.getFreeMemory = function() {
                     lineReader.on("close", function() {
                         const memoryUsed = summary["MemTotal"] - summary["MemFree"] - summary["Buffers"] - summary["Cached"];
                         const memoryTotal = summary["MemTotal"];
+						console.log(summary);
                         resolve(memoryUsed / memoryTotal);
                     });
                 }

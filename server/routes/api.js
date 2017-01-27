@@ -717,10 +717,12 @@ router.post("/disable",
  * @apiPermission admin
  * @apiSuccess {String} temperature Temperature of the pi or false if couldn't be retrieved
  * @apiSuccess {String} status Status of the pi or false if couldn't be retrieved
+ * @apiSuccess {Number} memory Memory usage in percent of the pi or false if couldn't be retrieved
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
- *       "temperature": "disabled"
+ *       "temperature": "21.32",
+ *       "memory": 0.242,
  *       "status":"active"
  *     }
  * @apiUse InvalidRequest

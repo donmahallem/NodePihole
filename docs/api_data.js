@@ -1145,13 +1145,20 @@ define({ "api": [
             "optional": false,
             "field": "status",
             "description": "<p>Status of the pi or false if couldn't be retrieved</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Number",
+            "optional": false,
+            "field": "memory",
+            "description": "<p>Memory usage in percent of the pi or false if couldn't be retrieved</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "HTTP/1.1 200 OK\n{\n  \"temperature\": \"disabled\"\n  \"status\":\"active\"\n}",
+          "content": "HTTP/1.1 200 OK\n{\n  \"temperature\": \"21.32\",\n  \"memory\": 0.242,\n  \"status\":\"active\"\n}",
           "type": "json"
         }
       ]

@@ -233,16 +233,16 @@ var queryTimelineUpdater = {};
         var minute = timestamp.getMinutes();
         var timestampIdx = (minute - minute % 10) / 10 + 6 * hour;
         if (data.type === "block") {
-            if (timestampIdx in tableData.ads_over_time) {
-                tableData.ads_over_time[timestampIdx]++;
+            if (timestampIdx in tableData.ads) {
+                tableData.ads[timestampIdx]++;
             } else {
-                tableData.ads_over_time[timestampIdx] = 1;
+                tableData.ads[timestampIdx] = 1;
             }
         }
-        if (timestampIdx in tableData.domains_over_time) {
-            tableData.domains_over_time[timestampIdx]++;
+        if (timestampIdx in tableData.domains) {
+            tableData.domains[timestampIdx]++;
         } else {
-            tableData.domains_over_time[timestampIdx] = 1;
+            tableData.domains[timestampIdx] = 1;
         }
         qTU.updateTable();
     };
@@ -462,7 +462,7 @@ var topLists = {};
                 domain,
                 percentage;
             // Remove table if there are no results (e.g. privacy mode enabled)
-            if (jQuery.isEmptyObject(data.topQueries)) {
+            if (jQuery.isEmptyObject(data.topItems.topQueries)) {
                 $("#domain-frequency")
                     .parent()
                     .remove();

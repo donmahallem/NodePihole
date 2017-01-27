@@ -103,10 +103,10 @@ describe("logHelper tests", function() {
             gravityCount.then(function(result) {
                     expect(result)
                         .to.deep.equal({
-                            ads_blocked_today: 5,
-                            dns_queries_today: 5,
-                            ads_percentage_today: 100,
-                            domains_being_blocked: 30
+                            adsBlockedToday: 5,
+                            dnsQueriesToday: 5,
+                            adsPercentageToday: 100,
+                            domainsBeingBlocked: 30
                         });
                     done();
                 })

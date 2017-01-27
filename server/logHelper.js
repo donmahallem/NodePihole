@@ -136,12 +136,9 @@ logHelper.getSummary = function() {
             return new Promise(function(resolve, reject) {
                 logHelper.getGravityCount()
                     .then(function(result2) {
-                        result.domains_being_blocked = result2;
+                        result.domainsBeingBlocked = result2;
                         resolve(result);
                     })
-                    .catch(function(err) {
-                        reject(err);
-                    });
             });
         });
 };

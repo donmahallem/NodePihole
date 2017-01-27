@@ -1,6 +1,7 @@
 process.env.NODE_ENV = "test";
 const chai = require("chai");
 const sinon = require("sinon");
+const fs = require("fs");
 const should = chai.should();
 const expect = chai.expect;
 var appDefaults = require("./../server/defaults.js");
@@ -126,6 +127,28 @@ describe("helper tests", function() {
                     }
                 };
                 helper.express.csrfMiddleware(req, res, next);
+            });
+        });
+    });
+    describe("getFreeMemory()", function() {
+        describe("/proc/meminfo doesn't exist", function() {
+            var fsAccessStub;
+            before(function() {
+                fsAccessStub = sandbox.stub(fs, "access",function(path,flags,cb){
+					cb(new Error());
+				});
+            });
+            after(function() {
+                fsAccessStub.restore();
+            });
+            it("should return false", function() {
+                return helper.getFreeMemory()
+                    .then(function(result) {
+						sinon.assert.calledWith(fsAccessStub, "/proc/meminfo");
+						sinon.assert.calledOnce(fsAccessStub);
+                        expect(result)
+                            .to.be.false;
+                    });
             });
         });
     });

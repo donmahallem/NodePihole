@@ -9,6 +9,8 @@ const appDefaults = require("./../server/defaults.js");
 const moment = require("moment");
 const readline = require("readline");
 const childProcess = require("child_process");
+const EventEmitter = require('events')
+    .EventEmitter;
 var sandbox;
 const sourceTimestampFormat = "MMM DD hh:mm:ss"
 const sourceTimestamp = moment()
@@ -249,6 +251,42 @@ describe("logHelper tests", function() {
                 done();
             };
             logHelper.getFileLineCountWindows("filename", callback);
+        });
+    });
+    describe("getOverTimeData()", function() {
+        var createLogParserStub;
+        before(function() {
+            createLogParserStub = sinon.stub(logHelper,
+                "createLogParser",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "timestamp": usedTimestamp.iso
+                            });
+                            self.emitter.emit("line", {
+                                "type": "block",
+                                "timestamp": usedTimestamp.iso
+                            });
+                        };
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                });
+        });
+        after(function() {
+            sinon.assert.calledOnce(createLogParserStub);
+            createLogParserStub.restore();
+        });
+        it("should return 4", function() {
+            return logHelper.getOverTimeData()
+                .then(function(data) {
+                    expect(data)
+                        .to.have.all.keys('ads', 'queries')
+                });
         });
     });
     describe("parseLine()", function() {

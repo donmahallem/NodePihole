@@ -12,9 +12,7 @@ const isWin = /^win/.test(os.platform());
 /**
  * @exports logHelper
  */
-var logHelper = {
-
-};
+var logHelper = {};
 
 /**
  * Object containing information about the summary
@@ -488,6 +486,26 @@ logHelper.getForwardDestinations = function() {
     });
 };
 
+logHelper.createLogParser = function(filename) {
+    var self = this;
+    self.emitter = new EventEmitter();
+    var lineReader = readline
+        .createInterface({
+            input: fs
+                .createReadStream(filename)
+        });
+    lineReader.on("line", function(line) {
+        var info = helper.parseLine(line);
+        if (info !== false) {
+            self.emitter.emit("line", info);
+        }
+    });
+    lineReader.on("close", function() {
+        self.emitter.emit("close");
+    });
+    return emitter;
+};
+
 /**
  * Gets the number of queries divided into frameSize minute frames
  * @param {Number} frameSize - either 1, 10 or 60
@@ -497,37 +515,31 @@ logHelper.getOverTimeData = function(frameSize) {
     // Check if frameSize is set. defaults to 10
     frameSize = (typeof frameSize !== 'undefined') ? frameSize : 10;
     return new Promise(function(resolve, reject) {
-        var lineReader = readline
-            .createInterface({
-                input: require("fs")
-                    .createReadStream(appDefaults.logFile)
-            });
+        var parser = logHelper.createLogParser(appDefaults.logFile);
         var data = {
-            "domains": {},
+            "queries": {},
             "ads": {}
         };
-        lineReader.on("line", function(line) {
-            if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
-                return;
-            }
-            var time = moment(line.substring(0, 16), "MMM DD hh:mm:ss");
-            var hour = time.hour();
-            var minute = time.minute();
-            time = (minute - minute % 10) / 10 + 6 * hour;
-            if (Math.random() < 0.5) {
+        parser.on("line", function(line) {
+            var timestamp = moment(line.timestamp);
+            var minute = timestamp.minute();
+            var hour = timestamp.hour();
+            var time = (minute - minute % 10) / 10 + 6 * hour;
+            if (line.type === "block") {
                 if (time in data.ads) {
                     data.ads[time]++;
                 } else {
                     data.ads[time] = 1;
                 }
-            }
-            if (time in data.domains) {
-                data.domains[time]++;
-            } else {
-                data.domains[time] = 1;
+            } else if (line.type === "query") {
+                if (time in data.queries) {
+                    data.queries[time]++;
+                } else {
+                    data.queries[time] = 1;
+                }
             }
         });
-        lineReader.on("close", function() {
+        parser.on("close", function() {
             resolve(data);
         });
     });

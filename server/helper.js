@@ -6,6 +6,8 @@ const cookieParser = require("cookie-parser");
 const os = require("os");
 const setupVars = require("./setupVars.js");
 const url = require("url");
+const childProcess = require("child_process");
+const fs = require("fs");
 
 /**
  * module providing common helper function
@@ -153,5 +155,83 @@ helper.jwtVerify = function(token, callback) {
         "issuer": "pihole",
         "audience": "piholeuser"
     }, callback);
+};
+
+helper.getTemperature = function() {
+    return new Promise(function(resolve, reject) {
+            const tempPath1 = "/sys/class/thermal/thermal_zone0/temp";
+            fs.access(tempPath1, fs.F_OK | fs.R_OK, function(err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    fs.readFile(tempPath1, function(err, data) {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(data.trim());
+                        }
+                    });
+                }
+            });
+        })
+        .catch(function(err) {
+            return new Promise(function(resolve, reject) {
+                const tempPath1 = "/sys/class/hwmon/hwmon0/temp1_input";
+                fs.access(tempPath1, fs.F_OK | fs.R_OK, function(err) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        fs.readFile(tempPath1, function(err, data) {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(data.trim());
+                            }
+                        });
+                    }
+                });
+            });
+        })
+        .then(function(celsius) {
+            if (isNaN(celsius)) {
+                return celsius;
+            }
+            if (celsius > 1000) {
+                return celsius * 1e-3;
+            } else {
+                return celsius;
+            }
+        })
+        .catch(function(err) {
+            return false;
+        });
+};
+
+helper.getPiholeStatus = function() {
+    return new Promise(function(resolve, reject) {
+            childProcess.exec("sudo pihole status web", function(error, stdout, stderr) {
+                if (error || stderr.trim() !== "") {
+                    reject();
+                } else {
+                    switch (stdout) {
+                        case "1":
+                            resolve("active");
+                            break;
+                        case "0":
+                            resolve("offline");
+                            break;
+                        case "-1":
+                            resolve("dnsoffline");
+                            break;
+                        default:
+                            reject();
+                            break;
+                    }
+                }
+            });
+        })
+        .catch(function(err) {
+            return false;
+        });
 };
 module.exports = helper;

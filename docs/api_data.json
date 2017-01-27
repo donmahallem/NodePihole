@@ -1116,6 +1116,80 @@
     }
   },
   {
+    "type": "post",
+    "url": "/api/status/",
+    "title": "Gets the status of the pihole",
+    "name": "Get_Pihole_Status",
+    "group": "Status",
+    "version": "1.0.0",
+    "permission": [
+      {
+        "name": "admin",
+        "title": "AdminUser",
+        "description": "<p>A logged in user</p>"
+      }
+    ],
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "temperature",
+            "description": "<p>Temperature of the pi or false if couldn't be retrieved</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Status of the pi or false if couldn't be retrieved</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "HTTP/1.1 200 OK\n{\n  \"temperature\": \"disabled\"\n  \"status\":\"active\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "server/routes/api.js",
+    "groupTitle": "Status",
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "InvalidRequest",
+            "description": "<p>The request is malformed</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "NotAuthorized",
+            "description": "<p>The requester is not authorized to access this endpoint</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "InvalidRequest Response:",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
+          "type": "json"
+        },
+        {
+          "title": "NotAuthorized Response:",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
     "type": "get",
     "url": "/api/taillog/",
     "title": "Opens an eventsource stream that tails the log file",

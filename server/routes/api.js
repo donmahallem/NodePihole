@@ -708,4 +708,39 @@ router.post("/disable",
         }
     }
 );
+
+/**
+ * @api {post} /api/status/ Gets the status of the pihole
+ * @apiName Get Pihole Status
+ * @apiGroup Status
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiSuccess {String} temperature Temperature of the pi or false if couldn't be retrieved
+ * @apiSuccess {String} status Status of the pi or false if couldn't be retrieved
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "temperature": "disabled"
+ *       "status":"active"
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+router.get("/status",
+    apiMiddleware.auth,
+    function(req, res) {
+        Promise.all([helper.getTemperature(), helper.getPiholeStatus()])
+            .then(function(data) {
+                res.json({
+                    "temperature": data[0],
+                    "status": data[1]
+                });
+            })
+            .catch(function(err) {
+                console.log(err);
+                res.sendStatus(500);
+            });
+    }
+);
+
 module.exports = router;

@@ -7,6 +7,7 @@ const os = require("os");
 const setupVars = require("./setupVars.js");
 const url = require("url");
 const childProcess = require("child_process");
+const readline = require("readline");
 const fs = require("fs");
 
 /**

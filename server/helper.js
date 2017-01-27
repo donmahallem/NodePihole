@@ -6,6 +6,9 @@ const cookieParser = require("cookie-parser");
 const os = require("os");
 const setupVars = require("./setupVars.js");
 const url = require("url");
+const childProcess = require("child_process");
+const readline = require("readline");
+const fs = require("fs");
 
 /**
  * module providing common helper function
@@ -153,5 +156,121 @@ helper.jwtVerify = function(token, callback) {
         "issuer": "pihole",
         "audience": "piholeuser"
     }, callback);
+};
+
+helper.getTemperature = function() {
+    return new Promise(function(resolve, reject) {
+            const tempPath1 = "/sys/class/thermal/thermal_zone0/temp";
+            fs.access(tempPath1, fs.F_OK | fs.R_OK, function(err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    fs.readFile(tempPath1, "utf8", function(err, data) {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(data.trim());
+                        }
+                    });
+                }
+            });
+        })
+        .catch(function(err) {
+            return new Promise(function(resolve, reject) {
+                const tempPath1 = "/sys/class/hwmon/hwmon0/temp1_input";
+                fs.access(tempPath1, fs.F_OK | fs.R_OK, function(err) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        fs.readFile(tempPath1, "utf8", function(err, data) {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(data.trim());
+                            }
+                        });
+                    }
+                });
+            });
+        })
+        .then(function(celsius) {
+            if (isNaN(celsius)) {
+                return celsius;
+            }
+            if (celsius > 1000) {
+                return celsius * 1e-3;
+            } else {
+                return celsius;
+            }
+        })
+        .catch(function(err) {
+            return false;
+        });
+};
+
+helper.getPiholeStatus = function() {
+    return new Promise(function(resolve, reject) {
+            childProcess.exec("sudo pihole status web", function(error, stdout, stderr) {
+                if (error || stderr.trim() !== "") {
+                    reject();
+                } else {
+                    const status = stdout.trim();
+                    if (status === "1") {
+                        resolve("active");
+                    } else if (status === "0") {
+                        resolve("offline");
+                    } else if (status === "-1") {
+                        resolve("dnsoffline");
+                    } else {
+                        resolve("unknown");
+                    }
+                }
+            });
+        })
+        .catch(function(err) {
+            return false;
+        });
+};
+helper.getFreeMemory = function() {
+    return new Promise(function(resolve, reject) {
+            const meminfoPath = "/proc/meminfo";
+            fs.access(meminfoPath, fs.F_OK | fs.R_OK, function(err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    fs.readFile(meminfoPath, "utf8", function(err, data) {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            var lines = data.split(/[\r\n]+/);
+                            var summary = {};
+                            for (var i = 0; i < lines.length; i++) {
+                                var line = lines[i].trim();
+                                if (line.match(/^(MemTotal|MemFree|Buffers|Cached)/)) {
+                                    var name = line.substring(0, line.indexOf(":"));
+                                    var splits = line.substring(0, line.length - 3)
+                                        .split(":");
+                                    var value = parseInt(splits[1].trim());
+                                    summary[name] = value;
+                                }
+                            }
+                            if (summary.hasOwnProperty("MemTotal") &&
+                                summary.hasOwnProperty("MemFree") &&
+                                summary.hasOwnProperty("Buffers") &&
+                                summary.hasOwnProperty("Cached")) {
+                                const memoryUsed = summary["MemTotal"] - summary["MemFree"] - summary["Buffers"] - summary["Cached"];
+                                const memoryTotal = summary["MemTotal"];
+                                resolve(memoryUsed / memoryTotal);
+                            } else {
+                                reject();
+                            }
+                        }
+                    });
+                }
+            });
+        })
+        .catch(function(err) {
+            return false;
+        });
 };
 module.exports = helper;

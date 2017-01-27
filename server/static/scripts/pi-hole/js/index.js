@@ -26,10 +26,10 @@ function objectToArray(p) {
 var summaryUpdater = {};
 (function(sU) {
     var summaryData = {
-        "ads_blocked_today": -1,
-        "dns_queries_today": -1,
-        "domains_being_blocked": -1,
-        "ads_percentage_today": -1
+        "adsBlockedToday": -1,
+        "dnsQueriesToday": -1,
+        "domainsBeingBlocked": -1,
+        "adsPercentageToday": -1
     };
     var callbacks = {};
     callbacks.socketUpdate = function(data) {
@@ -37,14 +37,14 @@ var summaryUpdater = {};
             return;
         }
         if (data.type === "block") {
-            summaryData["ads_blocked_today"]++;
+            summaryData["adsBlockedToday"]++;
         }
-        summaryData["dns_queries_today"]++;
-        summaryData["ads_percentage_today"] = (summaryData["ads_blocked_today"] / summaryData["dns_queries_today"] * 100);
+        summaryData["dnsQueriesToday"]++;
+        summaryData["adsPercentageToday"] = (summaryData["adsBlockedToday"] / summaryData["dnsQueriesToday"] * 100);
         sU.updateView();
     };
     sU.updateView = function() {
-        ["ads_blocked_today", "dns_queries_today", "domains_being_blocked", "ads_percentage_today"].forEach(function(header, idx) {
+        ["adsBlockedToday", "dnsQueriesToday", "domainsBeingBlocked", "adsPercentageToday"].forEach(function(header, idx) {
             var textData = idx === 3 ? summaryData[header].toFixed(2) + "%" : summaryData[header];
             $("h3#" + header)
                 .text(textData);
@@ -60,7 +60,7 @@ var summaryUpdater = {};
     };
     sU.pollData = function() {
         $.getJSON("/api/data?summary", function LoadSummaryData(data) {
-                summaryData = data;
+                summaryData = data.summary;
             })
             .done(function() {
                 sU.updateView();
@@ -178,15 +178,13 @@ var queryTimelineUpdater = {};
         return a - b;
     };
     qTU.pollData = function() {
-        $.getJSON("/api/data?overTimeData", function(data) {
-                // Remove possibly already existing data
-                tableData = data;
-                qTU.updateTable();
+        pihole.api.data.get({
+                "overTimeData": true
             })
-            .done(function() {
-                // Reload graph after 10 minutes
-                failures = 0;
-                setTimeout(qTU.pollData, 600000);
+            .done(function(data) {
+                // Remove possibly already existing data
+                tableData = data.overTimeData;
+                qTU.updateTable();
             })
             .fail(function() {
                 failures++;
@@ -195,6 +193,11 @@ var queryTimelineUpdater = {};
                     // than five times in a row
                     setTimeout(qTU.pollData, 60000);
                 }
+            })
+            .always(function() {
+                // Reload graph after 10 minutes
+                failures = 0;
+                setTimeout(qTU.pollData, 600000);
             });
     };
     qTU.updateTable = function() {
@@ -202,11 +205,11 @@ var queryTimelineUpdater = {};
         timeLineChart.data.datasets[0].data = [];
         timeLineChart.data.datasets[1].data = [];
         // get all keys of ads datapoints
-        var adsKeys = Object.keys(tableData.ads_over_time)
+        var adsKeys = Object.keys(tableData.ads)
             .map(Number)
             .sort(sortNumberAsc);
         // get all keys of domain datapoints
-        var domainKeys = Object.keys(tableData.domains_over_time)
+        var domainKeys = Object.keys(tableData.domains)
             .map(Number)
             .sort(sortNumberAsc);
         // get the largest datapoint key
@@ -219,8 +222,8 @@ var queryTimelineUpdater = {};
             var d = new Date()
                 .setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0);
             timeLineChart.data.labels.push(d);
-            timeLineChart.data.datasets[0].data.push((timeInterval in tableData.domains_over_time) ? tableData.domains_over_time[timeInterval] : 0);
-            timeLineChart.data.datasets[1].data.push((timeInterval in tableData.ads_over_time) ? tableData.ads_over_time[timeInterval] : 0);
+            timeLineChart.data.datasets[0].data.push((timeInterval in tableData.domains) ? tableData.domains[timeInterval] : 0);
+            timeLineChart.data.datasets[1].data.push((timeInterval in tableData.ads) ? tableData.ads[timeInterval] : 0);
         }
         $("#queries-over-time .overlay")
             .remove();
@@ -233,16 +236,16 @@ var queryTimelineUpdater = {};
         var minute = timestamp.getMinutes();
         var timestampIdx = (minute - minute % 10) / 10 + 6 * hour;
         if (data.type === "block") {
-            if (timestampIdx in tableData.ads_over_time) {
-                tableData.ads_over_time[timestampIdx]++;
+            if (timestampIdx in tableData.ads) {
+                tableData.ads[timestampIdx]++;
             } else {
-                tableData.ads_over_time[timestampIdx] = 1;
+                tableData.ads[timestampIdx] = 1;
             }
         }
-        if (timestampIdx in tableData.domains_over_time) {
-            tableData.domains_over_time[timestampIdx]++;
+        if (timestampIdx in tableData.domains) {
+            tableData.domains[timestampIdx]++;
         } else {
-            tableData.domains_over_time[timestampIdx] = 1;
+            tableData.domains[timestampIdx] = 1;
         }
         qTU.updateTable();
     };
@@ -301,7 +304,7 @@ function escapeHtml(text) {
 var topClientsChart = {};
 (function(tCC) {
     tCC.update = function() {
-        $.getJSON("/api/data?summaryRaw&getQuerySources", function(data) {
+        $.getJSON("/api/data?summaryRaw&querySources", function(data) {
             var clienttable = $("#client-frequency")
                 .find("tbody:last");
             var domain,
@@ -359,7 +362,7 @@ var forwardDestinationChart = {};
         if (!ctx) {
             fDU.setup();
         }
-        $.getJSON("/api/data?getForwardDestinations", function(data) {
+        $.getJSON("/api/data?forwardDestinations", function(data) {
             var colors = [];
             // Get colors from AdminLTE
             $.each($.AdminLTE.options.colors, function(key, value) {
@@ -368,7 +371,7 @@ var forwardDestinationChart = {};
             var v = [],
                 c = [];
             // Collect values and colors, immediately push individual labels
-            $.each(data, function(key, value) {
+            $.each(data.forwardDestinations, function(key, value) {
                 v.push(value);
                 c.push(colors.shift());
                 if (key.indexOf("|") > -1) {
@@ -455,22 +458,22 @@ var topLists = {};
 (function(tL) {
     const topQueryTable = new DomainTable($("#domain-frequency table.table"));
     tL.update = function() {
-        $.getJSON("/api/data?summaryRaw&topItems", function(data) {
+        $.getJSON("/api/data?summary&topItems", function(data) {
             var adtable = $("#ad-frequency")
                 .find("tbody:last");
             var url,
                 domain,
                 percentage;
             // Remove table if there are no results (e.g. privacy mode enabled)
-            if (jQuery.isEmptyObject(data.topQueries)) {
+            if (jQuery.isEmptyObject(data.topItems.topQueries)) {
                 $("#domain-frequency")
                     .parent()
                     .remove();
             } else {
-                topQueryTable.setData(data.topQueries, data.dns_queries_today);
+                topQueryTable.setData(data.topItems.topQueries, data.summary.dnsQueriesToday);
             }
-            for (domain in data.topAds) {
-                if (Object.hasOwnProperty.call(data.topAds, domain)) {
+            for (domain in data.topItems.topAds) {
+                if (Object.hasOwnProperty.call(data.topItems.topAds, domain)) {
                     // Sanitize domain
                     domain = escapeHtml(domain);
                     url = "<a href=\"queries.php?domain=" + domain + "\">" + domain + "</a>";
@@ -517,7 +520,7 @@ var queryTypeChart = {};
         if (!ctx) {
             qTC.setup();
         }
-        $.getJSON("/api/data?getQueryTypes", function(data) {
+        $.getJSON("/api/data?queryTypes", function(data) {
             var colors = [];
             // Get colors from AdminLTE
             $.each($.AdminLTE.options.colors, function(key, value) {
@@ -526,7 +529,7 @@ var queryTypeChart = {};
             var v = [],
                 c = [];
             // Collect values and colors, immediately push individual labels
-            $.each(data, function(key, value) {
+            $.each(data.queryTypes, function(key, value) {
                 v.push(value);
                 c.push(colors.shift());
                 qTC.chart.data.labels.push(key.substr(6, key.length - 7));

@@ -29,7 +29,7 @@ function setTableLoading(loading) {
 }
 
 function refreshData() {
-    tableApi.ajax.url("/api/data?getAllQueries")
+    tableApi.ajax.url("/api/data?allQueries")
         .load();
     //    updateSessionTimer();
 }
@@ -118,7 +118,7 @@ $(document)
             .forEach(function(item) {
                 GETDict[item.split("=")[0]] = item.split("=")[1];
             });
-        var APIstring = "/api/data?getAllQueries";
+        var APIstring = "/api/data?allQueries";
         if ("from" in GETDict) {
             APIstring += "&from=" + GETDict["from"];
         }
@@ -148,7 +148,10 @@ $(document)
                     "<'row'<'col-sm-4'l><'col-sm-8'p>>" +
                     "<'row'<'col-sm-12'tr>>" +
                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",
-                "ajax": APIstring,
+                "ajax": {
+                    "url": APIstring,
+                    "dataSrc": "allQueries"
+                },
                 "autoWidth": false,
                 "order": [
                     [0, "desc"]

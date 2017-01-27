@@ -766,7 +766,9 @@ describe("Testing api endpoints", function() {
                     "response": {
                         "status": 200,
                         "body": {
-                            "success": true
+                            "summary": {
+                                "success": true
+                            }
                         }
                     }
                 }, {
@@ -776,8 +778,10 @@ describe("Testing api endpoints", function() {
                     "response": {
                         "status": 200,
                         "body": {
-                            "success": true,
-                            "frameSize": 10
+                            "overTimeData": {
+                                "success": true,
+                                "frameSize": 10
+                            }
                         }
                     }
                 }, {
@@ -788,8 +792,10 @@ describe("Testing api endpoints", function() {
                     "response": {
                         "status": 200,
                         "body": {
-                            "success": true,
-                            "frameSize": 10
+                            "overTimeData": {
+                                "success": true,
+                                "frameSize": 10
+                            }
                         }
                     }
                 }, {
@@ -800,8 +806,10 @@ describe("Testing api endpoints", function() {
                     "response": {
                         "status": 200,
                         "body": {
-                            "success": true,
-                            "frameSize": 60
+                            "overTimeData": {
+                                "success": true,
+                                "frameSize": 60
+                            }
                         }
                     }
                 }, {
@@ -812,8 +820,10 @@ describe("Testing api endpoints", function() {
                     "response": {
                         "status": 200,
                         "body": {
-                            "success": true,
-                            "frameSize": 10
+                            "overTimeData": {
+                                "success": true,
+                                "frameSize": 10
+                            }
                         }
                     }
                 }, {
@@ -952,10 +962,13 @@ describe("Testing api endpoints", function() {
                                         .to.be.null;
                                     expect(res.status)
                                         .to.equal(200);
+                                    var resp = {};
+                                    resp[arg] = {
+                                        "success": true
+                                    };
+                                    console.log(resp);
                                     expect(res.body)
-                                        .to.deep.equal({
-                                            "success": true
-                                        });
+                                        .to.deep.equal(resp);
                                     expect(res)
                                         .to.be.json;
                                     done();

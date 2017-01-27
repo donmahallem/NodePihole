@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
     // Project configuration.
     grunt.initConfig({
-        pkg: grunt.file.readJSON('package.json'),
+        pkg: grunt.file.readJSON("package.json"),
         apidoc: {
             serverapi: {
                 src: "./server/",
@@ -26,12 +26,38 @@ module.exports = function(grunt) {
                     endWithNewline: true
                 }
             }
+        },
+        uglify: {
+            adminpanel: {
+                options: {
+                    banner: "/*! <%= pkg.name %> - v<%= pkg.version %>\nGenerated: <%= grunt.template.today(' yyyy - mm - dd ') %> */\n",
+                    mangle: true,
+                    beautify: {
+                        max_line_len: 32000,
+                        quote_keys: false,
+                        screw_ie8: true,
+                        bracketize: false,
+                        comments: false,
+                        semicolons: true
+                    }
+                },
+                files: [{
+                    expand: true,
+                    cwd: "server/static/scripts/pi-hole",
+                    src: ["**/*.js",
+                        "!**/*.min.js"
+                    ],
+                    dest: "server/static/scripts/pi-hole",
+                    ext: ".min.js"
+                }]
+            }
         }
     });
 
-    grunt.loadNpmTasks('grunt-apidoc');
+    grunt.loadNpmTasks("grunt-apidoc");
     grunt.loadNpmTasks("grunt-jsbeautifier");
+    grunt.loadNpmTasks("grunt-contrib-uglify");
 
-    grunt.registerTask('default', ['apidoc', "jsbeautifier"]);
+    grunt.registerTask("default", ["apidoc", "jsbeautifier", "uglify"]);
 
 };

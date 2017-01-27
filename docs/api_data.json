@@ -273,7 +273,7 @@
             "group": "Success 200",
             "type": "Object[]",
             "optional": false,
-            "field": "overTimeData10mins",
+            "field": "overTimeData",
             "description": "<p>Array with query data</p>"
           },
           {
@@ -281,21 +281,21 @@
             "type": "Number",
             "size": "0-..",
             "optional": false,
-            "field": "overTimeData10mins.ads",
+            "field": "overTimeData.ads",
             "description": "<p>number of ads in that timeframe</p>"
           },
           {
             "group": "Success 200",
             "type": "Number",
             "optional": false,
-            "field": "overTimeData10mins.queries",
+            "field": "overTimeData.queries",
             "description": "<p>number of queries in that timeframe</p>"
           },
           {
             "group": "Success 200",
             "type": "Number",
             "optional": false,
-            "field": "overTimeData10mins.frame",
+            "field": "overTimeData.frame",
             "description": "<p>the frame number</p>"
           }
         ]
@@ -303,7 +303,7 @@
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "HTTP/1.1 200 OK\n{\n  \"overTimeData10mins\":[\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":0\n    },\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":1\n    },\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":2\n    }\n  ]\n}",
+          "content": "HTTP/1.1 200 OK\n{\n  \"overTimeData\":[\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":0\n    },\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":1\n    },\n    {\n      \"ads\":20,\n      \"queries\":200,\n      \"frame\":2\n    }\n  ]\n}",
           "type": "json"
         }
       ]
@@ -616,6 +616,103 @@
         {
           "title": "Success-Response:",
           "content": "HTTP/1.1 200 OK\n{\n  \"summary\":{\n    \"adsBlockedToday\": 10,\n    \"dnsQueriesToday\": 100,\n    \"adsPercentageToday\": 10.0,\n    \"domainsBeingBlocked\": 1337\n  }\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "server/routes/api.js",
+    "groupTitle": "Data",
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "InvalidRequest",
+            "description": "<p>The request is malformed</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "NotAuthorized",
+            "description": "<p>The requester is not authorized to access this endpoint</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "InvalidRequest Response:",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
+          "type": "json"
+        },
+        {
+          "title": "NotAuthorized Response:",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
+    "type": "get",
+    "url": "/api/data",
+    "title": "Get topItems",
+    "name": "GetDataTopItems",
+    "group": "Data",
+    "version": "1.0.0",
+    "permission": [
+      {
+        "name": "admin",
+        "title": "AdminUser",
+        "description": "<p>A logged in user</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Query Parameter": [
+          {
+            "group": "Query Parameter",
+            "type": "Boolean",
+            "allowedValues": [
+              "true"
+            ],
+            "optional": false,
+            "field": "topItems",
+            "description": "<p>Gets the queries over time in 10 minute frames</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "topItems",
+            "description": "<p>Array with query data</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "overTimeData.topQueries",
+            "description": "<p>number of ads in that timeframe</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "overTimeData.topAds",
+            "description": "<p>number of queries in that timeframe</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "HTTP/1.1 200 OK\n{\n  \"topItems\":{\n    \"topQueries\":{\n      \"good.domain1\":29,\n      \"good.domain2\":39,\n    },\n    \"topAds\":{\n      \"baddomain1\":29,\n      \"baddomain2\":39,\n    }\n  }\n}",
           "type": "json"
         }
       ]
@@ -984,6 +1081,87 @@
           }
         ]
       }
+    },
+    "filename": "server/routes/api.js",
+    "groupTitle": "Status",
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "InvalidRequest",
+            "description": "<p>The request is malformed</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "NotAuthorized",
+            "description": "<p>The requester is not authorized to access this endpoint</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "InvalidRequest Response:",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
+          "type": "json"
+        },
+        {
+          "title": "NotAuthorized Response:",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
+    "type": "post",
+    "url": "/api/status/",
+    "title": "Gets the status of the pihole",
+    "name": "Get_Pihole_Status",
+    "group": "Status",
+    "version": "1.0.0",
+    "permission": [
+      {
+        "name": "admin",
+        "title": "AdminUser",
+        "description": "<p>A logged in user</p>"
+      }
+    ],
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "temperature",
+            "description": "<p>Temperature of the pi or false if couldn't be retrieved</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Status of the pi or false if couldn't be retrieved</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Number",
+            "optional": false,
+            "field": "memory",
+            "description": "<p>Memory usage in percent of the pi or false if couldn't be retrieved</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "HTTP/1.1 200 OK\n{\n  \"temperature\": \"21.32\",\n  \"memory\": 0.242,\n  \"status\":\"active\"\n}",
+          "type": "json"
+        }
+      ]
     },
     "filename": "server/routes/api.js",
     "groupTitle": "Status",

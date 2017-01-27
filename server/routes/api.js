@@ -110,7 +110,7 @@ const apiMiddleware = {
         }
     }
 };
-// Potential buildfail fix for node 5 and below
+// Potential buildfail fix for below node 5 
 // polyfill source: https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
 if (typeof Object.assign != "function") {
     Object.assign = function(target) {
@@ -132,48 +132,7 @@ if (typeof Object.assign != "function") {
         return target;
     };
 }
-///// for node 5 and below
-// Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
-if (!Array.prototype.includes) {
-    Object.defineProperty(Array.prototype, "includes", {
-        value: function(searchElement, fromIndex) {
-            // 1. Let O be ? ToObject(this value).
-            if (this == null) {
-                throw new TypeError("\"this\" is null or not defined");
-            }
-            var o = Object(this);
-            // 2. Let len be ? ToLength(? Get(O, "length")).
-            var len = o.length >>> 0;
-            // 3. If len is 0, return false.
-            if (len === 0) {
-                return false;
-            }
-            // 4. Let n be ? ToInteger(fromIndex).
-            //    (If fromIndex is undefined, this step produces the value 0.)
-            var n = fromIndex | 0;
-            // 5. If n ≥ 0, then
-            //  a. Let k be n.
-            // 6. Else n < 0,
-            //  a. Let k be len + n.
-            //  b. If k < 0, let k be 0.
-            var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
-            // 7. Repeat, while k < len
-            while (k < len) {
-                // a. Let elementK be the result of ? Get(O, ! ToString(k)).
-                // b. If SameValueZero(searchElement, elementK) is true, return true.
-                // c. Increase k by 1.
-                // NOTE: === provides the correct "SameValueZero" comparison needed here.
-                if (o[k] === searchElement) {
-                    return true;
-                }
-                k++;
-            }
-            // 8. Return false
-            return false;
-        }
-    });
-}
-/////////////////////////////////////////////
+/////////////////
 /**
  * @api {get} /api/data Query data from the log
  * @apiDescription You can choose any combination of the following query parameters to combine those. Some need authentication(Please refer to the detailed listing of the parameters for response types and parameters)
@@ -320,14 +279,14 @@ if (!Array.prototype.includes) {
  * @apiParam (Query Parameter) {Boolean=true} overTimeData Gets the queries over time in 10 minute frames
  * @apiParam (Query Parameter) {Number=1,10,60} [frameSize=10] Sets the overtime timeframe size in minutes
  *
- * @apiSuccess {Object[]} overTimeData10mins Array with query data
- * @apiSuccess {Number{0-..}} overTimeData10mins.ads number of ads in that timeframe
- * @apiSuccess {Number} overTimeData10mins.queries number of queries in that timeframe
- * @apiSuccess {Number} overTimeData10mins.frame the frame number
+ * @apiSuccess {Object[]} overTimeData Array with query data
+ * @apiSuccess {Number{0-..}} overTimeData.ads number of ads in that timeframe
+ * @apiSuccess {Number} overTimeData.queries number of queries in that timeframe
+ * @apiSuccess {Number} overTimeData.frame the frame number
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
- *       "overTimeData10mins":[
+ *       "overTimeData":[
  *         {
  *           "ads":20,
  *           "queries":200,
@@ -344,6 +303,34 @@ if (!Array.prototype.includes) {
  *           "frame":2
  *         }
  *       ]
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+/**
+ * @api {get} /api/data Get topItems
+ * @apiName GetDataTopItems
+ * @apiGroup Data
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {Boolean=true} topItems Gets the queries over time in 10 minute frames
+ *
+ * @apiSuccess {Object} topItems Array with query data
+ * @apiSuccess {Object} overTimeData.topQueries number of ads in that timeframe
+ * @apiSuccess {Object} overTimeData.topAds number of queries in that timeframe
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "topItems":{
+ *         "topQueries":{
+ *           "good.domain1":29,
+ *           "good.domain2":39,
+ *         },
+ *         "topAds":{
+ *           "baddomain1":29,
+ *           "baddomain2":39,
+ *         }
+ *       }
  *     }
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
@@ -385,10 +372,12 @@ router.get("/data", function(req, res) {
     var data = {};
     var promises = [];
     if ("summary" in args) {
-        promises.push(logHelper.getSummary());
-    }
-    if ("summaryRaw" in args) {
-        promises.push(logHelper.getSummary());
+        promises.push(logHelper.getSummary()
+            .then(function(data) {
+                return {
+                    "summary": data
+                }
+            }));
     }
     if ("overTimeData" in args) {
         var frameSize = 10;
@@ -396,22 +385,52 @@ router.get("/data", function(req, res) {
         if ("frameSize" in args && [1, 10, 60].indexOf(args.frameSize) !== -1) {
             frameSize = args.frameSize;
         }
-        promises.push(logHelper.getOverTimeData(frameSize));
+        promises.push(logHelper.getOverTimeData(frameSize)
+            .then(function(data) {
+                return {
+                    "overTimeData": data
+                }
+            }));
     }
     if ("topItems" in args) {
-        promises.push(logHelper.getTopItems());
+        promises.push(logHelper.getTopItems()
+            .then(function(data) {
+                return {
+                    "topItems": data
+                }
+            }));
     }
     if ("queryTypes" in args) {
-        promises.push(logHelper.getQueryTypes());
+        promises.push(logHelper.getQueryTypes()
+            .then(function(data) {
+                return {
+                    "queryTypes": data
+                }
+            }));
     }
     if ("forwardDestinations" in args) {
-        promises.push(logHelper.getForwardDestinations());
+        promises.push(logHelper.getForwardDestinations()
+            .then(function(data) {
+                return {
+                    "forwardDestinations": data
+                }
+            }));
     }
     if ("allQueries" in args) {
-        promises.push(logHelper.getAllQueries());
+        promises.push(logHelper.getAllQueries()
+            .then(function(data) {
+                return {
+                    "allQueries": data
+                }
+            }));
     }
     if ("querySources" in args) {
-        promises.push(logHelper.getQuerySources());
+        promises.push(logHelper.getQuerySources()
+            .then(function(data) {
+                return {
+                    "querySources": data
+                }
+            }));
     }
     Promise.all(promises)
         .then(function(values) {
@@ -648,4 +667,42 @@ router.post("/disable",
         }
     }
 );
+
+/**
+ * @api {post} /api/status/ Gets the status of the pihole
+ * @apiName Get Pihole Status
+ * @apiGroup Status
+ * @apiVersion 1.0.0
+ * @apiPermission admin
+ * @apiSuccess {String} temperature Temperature of the pi or false if couldn't be retrieved
+ * @apiSuccess {String} status Status of the pi or false if couldn't be retrieved
+ * @apiSuccess {Number} memory Memory usage in percent of the pi or false if couldn't be retrieved
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "temperature": "21.32",
+ *       "memory": 0.242,
+ *       "status":"active"
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+router.get("/status",
+    apiMiddleware.auth,
+    function(req, res) {
+        Promise.all([helper.getTemperature(), helper.getPiholeStatus(), helper.getFreeMemory()])
+            .then(function(data) {
+                res.json({
+                    "temperature": data[0],
+                    "status": data[1],
+                    "memory": data[2]
+                });
+            })
+            .catch(function(err) {
+                console.log(err);
+                res.sendStatus(500);
+            });
+    }
+);
+
 module.exports = router;

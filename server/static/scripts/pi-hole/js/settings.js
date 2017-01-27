@@ -6,11 +6,11 @@ $(".confirm-reboot")
     .confirm({
         text: "Are you sure you want to send a reboot command to your Pi-Hole?",
         title: "Confirmation required",
-        confirm(button) {
+        confirm: function(button) {
             $("#rebootform")
                 .submit();
         },
-        cancel(button) {
+        cancel: function(button) {
             // nothing to do
         },
         confirmButton: "Yes, reboot",
@@ -24,11 +24,11 @@ $(".confirm-restartdns")
     .confirm({
         text: "Are you sure you want to send a restart command to your DNS server?",
         title: "Confirmation required",
-        confirm(button) {
+        confirm: function(button) {
             $("#restartdnsform")
                 .submit();
         },
-        cancel(button) {
+        cancel: function(button) {
             // nothing to do
         },
         confirmButton: "Yes, restart DNS",
@@ -42,11 +42,11 @@ $(".confirm-flushlogs")
     .confirm({
         text: "By default, the log is flushed at the end of the day via cron, but a very large log file can slow down the Web interface, so flushing it can be useful. Note that your statistics will be reset and you lose the statistics up to this point. Are you sure you want to flush your logs?",
         title: "Confirmation required",
-        confirm(button) {
+        confirm: function(button) {
             $("#flushlogsform")
                 .submit();
         },
-        cancel(button) {
+        cancel: function(button) {
             // nothing to do
         },
         confirmButton: "Yes, flush logs",

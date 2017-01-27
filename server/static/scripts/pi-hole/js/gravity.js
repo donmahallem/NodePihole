@@ -25,7 +25,7 @@ function eventsource() {
     }, false);
 }
 $("#gravityBtn")
-    .on("click", () => {
+    .on("click", function(e) {
         $("#gravityBtn")
             .attr("disabled", true);
         eventsource();

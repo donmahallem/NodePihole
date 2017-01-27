@@ -4,10 +4,11 @@
     "description" : "",
     "main" : "index.js",
     "scripts" : {
-        "test" : "mocha --timeout 10000 --recursive --check-leaks"
+        "test" : "mocha --timeout 10000 --recursive --check-leaks",
+        "test-ci" : "istanbul cover node_modules/mocha/bin/_mocha  --report lcovonly --  --timeout 10000 --recursive --reporter spec --check-leaks test/"
     },
     "author" : "",
-    "license" : "ISC",
+    "license" : "MIT",
     "dependencies" : {
         "body-parser" : "^1.15.2",
         "cookie" : "^0.3.1",
@@ -26,7 +27,9 @@
         "chai-http" : "^3.0.0",
         "grunt" : "^1.0.1",
         "grunt-apidoc" : "^0.11.0",
+        "grunt-contrib-uglify" : "^2.0.0",
         "grunt-jsbeautifier" : "^0.2.13",
+        "istanbul" : "^0.4.5",
         "mocha" : "^3.2.0",
         "sinon" : "^1.17.7",
         "sinon-chai" : "^2.8.0"

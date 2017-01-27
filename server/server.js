@@ -75,6 +75,10 @@ var PiServer = function() {
     this.app.get("/logout", frontEnd.logout.get);
     this.app.get("/queries", frontEnd.queries.get);
     this.app.get("/list", frontEnd.list.get);
+    this.app.use(function(err, req, res, next) {
+        console.log("Request errored", err);
+    });
+
     this.started = false;
 };
 
@@ -89,14 +93,6 @@ PiServer.prototype.start = function() {
                 console.log("Server listening on port " + appDefaults.port + "!");
             }
             .bind(this));
-        var tail = new Tail(appDefaults.logFile);
-        tail.on("line", function(data) {
-            const lineInfo = logHelper.parseLine(data);
-            if (lineInfo === false) {
-                return;
-            }
-        }.bind(this));
-        tail.on("error", function(error) {});
     }
 };
 module.exports = PiServer;

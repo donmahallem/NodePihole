@@ -69,17 +69,17 @@ function piholeChange(action, duration) {
 }
 // Handle Enable/Disable
 $("#pihole-enable")
-    .on("click", (e) => {
+    .on("click", function(e) {
         e.preventDefault();
         piholeChange("enable", "");
     });
 $("#pihole-disable-permanently")
-    .on("click", (e) => {
+    .on("click", function(e) {
         e.preventDefault();
         piholeChange("disable", "0");
     });
 $("#pihole-disable-10s")
-    .on("click", (e) => {
+    .on("click", function(e) {
         e.preventDefault();
         piholeChange("disable", "10");
         setTimeout(function() {
@@ -87,7 +87,7 @@ $("#pihole-disable-10s")
         }, 10000);
     });
 $("#pihole-disable-30s")
-    .on("click", (e) => {
+    .on("click", function(e) {
         e.preventDefault();
         piholeChange("disable", "30");
         setTimeout(function() {
@@ -95,7 +95,7 @@ $("#pihole-disable-30s")
         }, 30000);
     });
 $("#pihole-disable-5m")
-    .on("click", (e) => {
+    .on("click", function(e) {
         e.preventDefault();
         piholeChange("disable", "300");
         setTimeout(function() {

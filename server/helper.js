@@ -222,7 +222,7 @@ helper.getPiholeStatus = function() {
                     } else if (status === "-1") {
                         resolve("dnsoffline");
                     } else {
-                        reject();
+                        resolve("unknown");
                     }
                 }
             });

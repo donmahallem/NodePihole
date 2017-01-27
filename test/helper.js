@@ -6,6 +6,7 @@ const should = chai.should();
 const expect = chai.expect;
 var appDefaults = require("./../server/defaults.js");
 const helper = require("./../server/helper.js");
+const childProcess = require("child_process");
 const setupVars = require("./../server/setupVars.js");
 describe("helper tests", function() {
     var setupVarsStub, sandbox;
@@ -130,6 +131,92 @@ describe("helper tests", function() {
             });
         });
     });
+    describe("getPiholeStatus()", function() {
+        var execStub;
+        before(function() {
+            execStub = sandbox.stub(childProcess, "exec");
+        });
+        afterEach(function() {
+            sinon.assert.calledWith(execStub, "sudo pihole status web");
+            sinon.assert.calledOnce(execStub);
+            execStub.reset();
+        });
+        after(function() {
+            execStub.restore();
+        });
+        describe("errored while executing", function() {
+            before(function() {
+                execStub.callsArgWith(1, new Error(), "", "");
+            });
+            it("should return false", function() {
+                return helper.getPiholeStatus()
+                    .then(function(result) {
+                        expect(result)
+                            .to.be.false;
+                    });
+            });
+        });
+        describe("pihole returns error while executing", function() {
+            before(function() {
+                execStub.callsArgWith(1, false, "", "error occured");
+            });
+            it("should return false", function() {
+                return helper.getPiholeStatus()
+                    .then(function(result) {
+                        expect(result)
+                            .to.be.false;
+                    });
+            });
+        });
+        describe("execute succeeds", function() {
+            before(function() {
+                execStub.callsArgWith(1, false, "1", "");
+            });
+            it("should return: active", function() {
+                return helper.getPiholeStatus()
+                    .then(function(result) {
+                        expect(result)
+                            .to.equal("active");
+                    });
+            });
+        });
+        describe("execute succeeds", function() {
+            before(function() {
+                execStub.callsArgWith(1, false, "0", "");
+            });
+            it("should return: offline", function() {
+                return helper.getPiholeStatus()
+                    .then(function(result) {
+                        expect(result)
+                            .to.equal("offline");
+                    });
+            });
+        });
+        describe("execute succeeds", function() {
+            before(function() {
+                execStub.callsArgWith(1,false, "-1", "");
+            });
+            it("should return: dnsoffline", function() {
+                return helper.getPiholeStatus()
+                    .then(function(result) {
+                        expect(result)
+                            .to.equal("dnsoffline");
+                    });
+            });
+        });
+        describe("execute succeeds", function() {
+            before(function() {
+                execStub.callsArgWith(1, false, "124", "");
+            });
+            it("should return: unknown", function() {
+                return helper.getPiholeStatus()
+                    .then(function(result) {
+                        expect(result)
+                            .to.equal("unknown");
+                    });
+            });
+        });
+    });
     describe("getFreeMemory()", function() {
         describe("/proc/meminfo doesn't exist", function() {
             var fsAccessStub;
@@ -174,7 +261,7 @@ describe("helper tests", function() {
             });
             describe("/proc/meminfo contains all required lines", function() {
                 before(function() {
-                    fsReadFileStub.callsArgWith(2, false,  "MemFree: 100 kb\r\nMemTotal: 400 kb\rBuffers: 100 kb\nCached: 100 kb\r\n");
+                    fsReadFileStub.callsArgWith(2, false, "MemFree: 100 kb\r\nMemTotal: 400 kb\rBuffers: 100 kb\nCached: 100 kb\r\n");
                 });
                 it("should return memory usage", function() {
                     return helper.getFreeMemory()
@@ -187,7 +274,7 @@ describe("helper tests", function() {
             describe("/proc/meminfo does not contain all required lines", function() {
                 before(function() {
                     fsReadFileStub
-                        .callsArgWith(2, false,"MemTotal: 400 kb\rBuffers: 100 kb\nCached: 100 kb\r\n");
+                        .callsArgWith(2, false, "MemTotal: 400 kb\rBuffers: 100 kb\nCached: 100 kb\r\n");
                 });
                 it("should return false", function() {
                     return helper.getFreeMemory()

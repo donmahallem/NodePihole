@@ -250,13 +250,14 @@ helper.getFreeMemory = function() {
                             var splits = line.substring(0, line.length - 3)
                                 .split(":");
                             var value = parseInt(splits[1].trim());
+                            console.log("test", name, value);
                             summary[name] = value;
                         }
                     });
                     lineReader.on("close", function() {
                         const memoryUsed = summary["MemTotal"] - summary["MemFree"] - summary["Buffers"] - summary["Cached"];
                         const memoryTotal = summary["MemTotal"];
-						console.log(summary);
+                        console.log(summary);
                         resolve(memoryUsed / memoryTotal);
                     });
                 }

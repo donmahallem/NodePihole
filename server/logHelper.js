@@ -2,8 +2,7 @@ const appDefaults = require("./defaults.js");
 const fs = require("fs");
 const moment = require("moment");
 const os = require("os");
-const exec = require("child_process")
-    .exec;
+const childProcess = require("child_process");
 const readline = require("readline");
 const setupVars = require("./setupVars.js");
 const dns = require("dns");
@@ -149,7 +148,7 @@ logHelper.getSummary = function() {
  * @param {module:logHelper~lineNumberCallback} callback - callback for the result
  */
 logHelper.getFileLineCountWindows = function(filename, callback) {
-    exec("find /c /v \"\" \"" + filename + "\"", function(err, stdout, stderr) {
+    childProcess.exec("find /c /v \"\" \"" + filename + "\"", function(err, stdout, stderr) {
         if (err || stderr !== "") {
             callback(0);
         } else {
@@ -169,7 +168,7 @@ logHelper.getFileLineCountWindows = function(filename, callback) {
  * @param {module:logHelper~lineNumberCallback} callback - callback for the result
  */
 logHelper.getFileLineCountUnix = function(filename, callback) {
-    exec("grep -c ^ " + filename, function(err, stdout, stderr) {
+    childProcess.exec("grep -c ^ " + filename, function(err, stdout, stderr) {
         if (err || stderr !== "") {
             callback(0);
         } else {

@@ -8,6 +8,7 @@ const logHelper = require("./../server/logHelper.js");
 const appDefaults = require("./../server/defaults.js");
 const moment = require("moment");
 const readline = require("readline");
+const childProcess = require("child_process");
 var sandbox;
 const sourceTimestampFormat = "MMM DD hh:mm:ss"
 const sourceTimestamp = moment()
@@ -208,6 +209,46 @@ describe("logHelper tests", function() {
                 .catch(function(err) {
                     done(err);
                 });
+        });
+    });
+    describe("getFileLineCountWindows()", function() {
+        var execStub;
+        before(function() {
+            execStub = sinon.stub(childProcess, "exec");
+            execStub.onCall(0)
+                .callsArgWith(1, false, "", "error occured");
+            execStub.onCall(1)
+                .callsArgWith(1, true, "", "");
+            execStub.onCall(2)
+                .callsArgWith(1, false, "---------- INDEX.JS 4", "");
+        });
+        after(function() {
+            sinon.assert.alwaysCalledWith(execStub, "find /c /v \"\" \"filename\"")
+            execStub.restore();
+        });
+        it("should return 0", function(done) {
+            const callback = function(lines) {
+                expect(lines)
+                    .to.equal(0);
+                done();
+            };
+            logHelper.getFileLineCountWindows("filename", callback);
+        });
+        it("should return 0", function(done) {
+            const callback = function(lines) {
+                expect(lines)
+                    .to.equal(0);
+                done();
+            };
+            logHelper.getFileLineCountWindows("filename", callback);
+        });
+        it("should return 4", function(done) {
+            const callback = function(lines) {
+                expect(lines)
+                    .to.equal(4);
+                done();
+            };
+            logHelper.getFileLineCountWindows("filename", callback);
         });
     });
     describe("parseLine()", function() {

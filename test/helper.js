@@ -194,7 +194,7 @@ describe("helper tests", function() {
         });
         describe("execute succeeds", function() {
             before(function() {
-                execStub.callsArgWith(1,false, "-1", "");
+                execStub.callsArgWith(1, false, "-1", "");
             });
             it("should return: dnsoffline", function() {
                 return helper.getPiholeStatus()

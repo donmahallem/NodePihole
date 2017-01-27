@@ -223,6 +223,8 @@ describe("logHelper tests", function() {
                 .callsArgWith(1, true, "", "");
             execStub.onCall(2)
                 .callsArgWith(1, false, "---------- INDEX.JS 4", "");
+            execStub.onCall(3)
+                .callsArgWith(1, false, "---------- foooo", "");
         });
         after(function() {
             sinon.assert.alwaysCalledWith(execStub, "find /c /v \"\" \"filename\"")
@@ -248,6 +250,14 @@ describe("logHelper tests", function() {
             const callback = function(lines) {
                 expect(lines)
                     .to.equal(4);
+                done();
+            };
+            logHelper.getFileLineCountWindows("filename", callback);
+        });
+        it("should return 4", function(done) {
+            const callback = function(lines) {
+                expect(lines)
+                    .to.equal(0);
                 done();
             };
             logHelper.getFileLineCountWindows("filename", callback);

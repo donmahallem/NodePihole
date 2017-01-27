@@ -213,19 +213,15 @@ helper.getPiholeStatus = function() {
                 if (error || stderr.trim() !== "") {
                     reject();
                 } else {
-                    switch (stdout) {
-                        case "1":
-                            resolve("active");
-                            break;
-                        case "0":
-                            resolve("offline");
-                            break;
-                        case "-1":
-                            resolve("dnsoffline");
-                            break;
-                        default:
-                            reject();
-                            break;
+                    console.log("pi status", stdout, typeof stdout);
+                    if (stdout === "1") {
+                        resolve("active");
+                    } else if (stdout === "0") {
+                        resolve("offline");
+                    } else if (stdout === "-1") {
+                        resolve("dnsoffline");
+                    } else {
+                        reject();
                     }
                 }
             });

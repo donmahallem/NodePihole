@@ -8,7 +8,7 @@
         "test-ci" : "istanbul cover node_modules/mocha/bin/_mocha  --report lcovonly --  --timeout 10000 --recursive --reporter spec --check-leaks test/"
     },
     "author" : "",
-    "license" : "ISC",
+    "license" : "MIT",
     "dependencies" : {
         "body-parser" : "^1.15.2",
         "cookie" : "^0.3.1",

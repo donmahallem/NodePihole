@@ -134,9 +134,9 @@ describe("helper tests", function() {
         describe("/proc/meminfo doesn't exist", function() {
             var fsAccessStub;
             before(function() {
-                fsAccessStub = sandbox.stub(fs, "access",function(path,flags,cb){
-					cb(new Error());
-				});
+                fsAccessStub = sandbox.stub(fs, "access", function(path, flags, cb) {
+                    cb(new Error());
+                });
             });
             after(function() {
                 fsAccessStub.restore();
@@ -144,12 +144,61 @@ describe("helper tests", function() {
             it("should return false", function() {
                 return helper.getFreeMemory()
                     .then(function(result) {
-						sinon.assert.calledWith(fsAccessStub, "/proc/meminfo");
-						sinon.assert.calledOnce(fsAccessStub);
+                        sinon.assert.calledWith(fsAccessStub, "/proc/meminfo");
+                        sinon.assert.calledOnce(fsAccessStub);
                         expect(result)
                             .to.be.false;
                     });
             });
+        });
+        describe("/proc/meminfo does exist", function() {
+            var fsAccessStub;
+            var fsReadFileStub;
+            before(function() {
+                fsAccessStub = sandbox.stub(fs, "access", function(path, flags, cb) {
+                    cb(false);
+                });
+                fsReadFileStub = sandbox.stub(fs, "readFile");
+            });
+            afterEach(function() {
+                sinon.assert.calledWith(fsAccessStub, "/proc/meminfo");
+                sinon.assert.calledOnce(fsAccessStub);
+                fsAccessStub.reset();
+                sinon.assert.calledWith(fsReadFileStub, "/proc/meminfo", "utf8");
+                sinon.assert.calledOnce(fsReadFileStub);
+                fsReadFileStub.reset();
+            });
+            after(function() {
+                fsAccessStub.restore();
+                fsReadFileStub.restore();
+            });
+            describe("/proc/meminfo contains all required lines", function() {
+                before(function() {
+                    fsReadFileStub.callsArgWith(2, false,  "MemFree: 100 kb\r\nMemTotal: 400 kb\rBuffers: 100 kb\nCached: 100 kb\r\n");
+                });
+                it("should return memory usage", function() {
+                    return helper.getFreeMemory()
+                        .then(function(result) {
+                            expect(result)
+                                .to.be.equal(0.25);
+                        });
+                });
+            });
+            describe("/proc/meminfo does not contain all required lines", function() {
+                before(function() {
+                    fsReadFileStub
+                        .callsArgWith(2, false,"MemTotal: 400 kb\rBuffers: 100 kb\nCached: 100 kb\r\n");
+                });
+                it("should return false", function() {
+                    return helper.getFreeMemory()
+                        .then(function(result) {
+							console.log("res",result);
+                            expect(result)
+                                .to.be.false;
+                        });
+                });
+            });
+
         });
     });
 });

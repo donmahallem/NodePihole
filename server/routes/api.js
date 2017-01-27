@@ -729,11 +729,12 @@ router.post("/disable",
 router.get("/status",
     apiMiddleware.auth,
     function(req, res) {
-        Promise.all([helper.getTemperature(), helper.getPiholeStatus()])
+        Promise.all([helper.getTemperature(), helper.getPiholeStatus(), helper.getFreeMemory()])
             .then(function(data) {
                 res.json({
                     "temperature": data[0],
-                    "status": data[1]
+                    "status": data[1],
+                    "memory": data[2]
                 });
             })
             .catch(function(err) {

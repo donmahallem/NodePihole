@@ -230,4 +230,38 @@ helper.getPiholeStatus = function() {
             return false;
         });
 };
+helper.getFreeMemory = function() {
+    return new Promise(function(resolve, reject) {
+            const meminfoPath = "/proc/meminfo";
+            fs.access(meminfoPath, fs.F_OK | fs.R_OK, function(err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    var lineReader = readline
+                        .createInterface({
+                            input: require("fs")
+                                .createReadStream(appDefaults.logFile)
+                        });
+                    var summary = {};
+                    lineReader.on("line", function(line) {
+                        if (line.match(/^(MemTotal|MemFree|Buffers|Cached)/)) {
+                            var name = line.substring(0, line.indexOf(":"));
+                            var splits = line.substring(0, line.length - 3)
+                                .split(":");
+                            var value = parseInt(splits[1].trim());
+                            summary[name] = value;
+                        }
+                    });
+                    lineReader.on("close", function() {
+                        const memoryUsed = summary["MemTotal"] - summary["MemFree"] - summary["Buffers"] - summary["Cached"];
+                        const memoryTotal = summary["MemTotal"];
+                        resolve(memoryUsed / memoryTotal);
+                    });
+                }
+            });
+        })
+        .catch(function(err) {
+            return false;
+        });
+};
 module.exports = helper;

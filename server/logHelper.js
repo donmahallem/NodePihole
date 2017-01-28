@@ -435,25 +435,18 @@ logHelper.getForwardDestinations = function() {
                 reject(err);
             } else {
                 var destinations = {};
-                var lineReader = readline
-                    .createInterface({
-                        input: require("fs")
-                            .createReadStream(appDefaults.logFile)
-                    });
-                lineReader.on("line", function(line) {
-                    if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": forwarded") === -1) {
+                var parser = logHelper.createLogParser(appDefaults.logFile);
+                parser.on("line", function(lineData) {
+                    if (lineData === false || lineData.type !== "forward") {
                         return;
                     }
-                    var info = line.trim()
-                        .split(" ");
-                    var destination = info[info.length - 1];
-                    if (destination in destinations) {
-                        destinations[destination]++;
+                    if (destinations.hasOwnProperty(lineData.destination)) {
+                        destinations[lineData.destination]++;
                     } else {
-                        destinations[destination] = 1;
+                        destinations[lineData.destination] = 1;
                     }
                 });
-                lineReader.on("close", function() {
+                parser.on("close", function() {
                     resolve(destinations);
                 });
             }

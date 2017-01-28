@@ -15,6 +15,7 @@ var sandbox;
 const sourceTimestampFormat = "MMM DD hh:mm:ss"
 const sourceTimestamp = moment()
     .format(sourceTimestampFormat);
+const fs = require("fs");
 const usedTimestamp = {
     "iso": moment(sourceTimestamp, sourceTimestampFormat)
         .toISOString(),
@@ -224,7 +225,6 @@ describe("logHelper tests", function() {
             readlineStub = sandbox.stub(readline,
                 "createInterface",
                 function(filename) {
-                    console.log("Called", filename);
                     const self = this;
                     self.emitter = new EventEmitter();
                     process.nextTick(function() {
@@ -334,6 +334,45 @@ describe("logHelper tests", function() {
                 .then(function(data) {
                     expect(data)
                         .to.have.lengthOf(8);
+                });
+        });
+    });
+    describe("getForwardDestinations()", function() {
+        var createLogParserStub, fsAccessStub;
+        before(function() {
+            createLogParserStub = sinon.stub(logHelper,
+                "createLogParser",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", {
+                                "type": "forward",
+                                "domain": "test.com",
+                                "destination": "127.0.0.1"
+                            });
+                        };
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                });
+            fsAccessStub = sinon.stub(fs, "access", function(a, b, callback) {
+                process.nextTick(callback);
+            });
+        });
+        after(function() {
+            sinon.assert.calledOnce(createLogParserStub);
+            createLogParserStub.restore();
+            fsAccessStub.restore();
+        });
+        it("should succeed", function() {
+            return logHelper.getForwardDestinations()
+                .then(function(data) {
+                    expect(data)
+                        .to.deep.equal({
+                            "127.0.0.1": 4
+                        });
                 });
         });
     });

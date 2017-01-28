@@ -468,6 +468,41 @@ describe("logHelper tests", function() {
                     .to.deep.equal(test.result);
             });
         });
+        it("should parse return false", function() {
+            const result = logHelper.parseLine("");
+            expect(result)
+                .to.not.be.null;
+            expect(result)
+                .to.be.false;
+        });
+        it("should parse return false", function() {
+            const result = logHelper.parseLine(undefined);
+            expect(result)
+                .to.not.be.null;
+            expect(result)
+                .to.be.false;
+        });
+        it("should parse return false", function() {
+            const result = logHelper.parseLine("foo bar");
+            expect(result)
+                .to.not.be.null;
+            expect(result)
+                .to.be.false;
+        });
+        it("should parse return false", function() {
+            const result = logHelper.parseLine("foobar foo bar foo bar bar foo: bar bar foo");
+            expect(result)
+                .to.not.be.null;
+            expect(result)
+                .to.be.false;
+        });
+        it("should parse return false", function() {
+            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: reply domain.name is <CNAME>");
+            expect(result)
+                .to.not.be.null;
+            expect(result)
+                .to.be.false;
+        });
         it("should return false for invalid line", function() {
             const result = logHelper.parseLine("bhn123 3124u 213h4021 34921u3 410ß4 109234 145rj1 0ß235125 1 ß15 u120ß95 1ß125 120i 4021ß5 u");
             expect(result)

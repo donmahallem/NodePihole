@@ -6,7 +6,7 @@ const childProcess = require("child_process");
 const readline = require("readline");
 const setupVars = require("./setupVars.js");
 const dns = require("dns");
-const EventEmitter = require('events')
+const EventEmitter = require("events")
     .EventEmitter;
 
 const isWin = /^win/.test(os.platform());

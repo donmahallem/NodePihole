@@ -301,6 +301,48 @@ describe("logHelper tests", function() {
             logHelper.getFileLineCountWindows("filename", callback);
         });
     });
+    describe("getQueryTypes()", function() {
+        var createLogParserStub;
+        before(function() {
+            createLogParserStub = sinon.stub(logHelper,
+                "createLogParser",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "queryType": "AA"
+                            });
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "queryType": "AAAA"
+                            });
+                            self.emitter.emit("line", {
+                                "type": "block"
+                            });
+                        };
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                });
+        });
+        after(function() {
+            sinon.assert.calledOnce(createLogParserStub);
+            createLogParserStub.restore();
+        });
+        it("should succeed", function() {
+            return logHelper.getQueryTypes()
+                .then(function(data) {
+                    expect(data)
+                        .to.deep.equal({
+                            "AA": 4,
+                            "AAAA": 4
+                        });
+                });
+        });
+    });
     describe("getAllQueries()", function() {
         var createLogParserStub;
         before(function() {

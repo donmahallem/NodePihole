@@ -185,7 +185,8 @@ helper.getTemperature = function() {
             if (isNaN(celsius)) {
                 return celsius;
             }
-            if (celsius > 1000) {
+            celsius = parseFloat(celsius);
+            if (celsius >= 1000) {
                 return celsius * 1e-3;
             } else {
                 return celsius;

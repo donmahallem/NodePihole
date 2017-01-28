@@ -85,6 +85,7 @@ logHelper.parseLine = function(line) {
         };
     } else if (info.startsWith("forwarded ")) {
         return {
+            "timestamp": time,
             "domain": split[1],
             "target": split[3],
             "type": "forward"

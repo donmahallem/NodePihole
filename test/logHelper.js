@@ -438,6 +438,24 @@ describe("logHelper tests", function() {
                             type: "block"
                         }
                     });
+                    tests.push({
+                        "arg": usedTimestamp.source + " dnsmasq[503]: val1 val2 " + filepath + " " + domain + " is " + client,
+                        "result": {
+                            domain: domain,
+                            timestamp: usedTimestamp.iso,
+                            list: filepath,
+                            type: "block"
+                        }
+                    });
+                });
+                tests.push({
+                    "arg": usedTimestamp.source + " dnsmasq[503]: forwarded " + domain + " to " + client,
+                    "result": {
+                        domain: domain,
+                        timestamp: usedTimestamp.iso,
+                        target: client,
+                        type: "forward"
+                    }
                 });
             });
         });

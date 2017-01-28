@@ -2,20 +2,19 @@ const appDefaults = require("./defaults.js");
 const fs = require("fs");
 const moment = require("moment");
 const os = require("os");
-const exec = require("child_process")
-    .exec;
+const childProcess = require("child_process");
 const readline = require("readline");
 const setupVars = require("./setupVars.js");
 const dns = require("dns");
+const EventEmitter = require("events")
+    .EventEmitter;
 
 const isWin = /^win/.test(os.platform());
 
 /**
  * @exports logHelper
  */
-var logHelper = {
-
-};
+var logHelper = {};
 
 /**
  * Object containing information about the summary
@@ -84,6 +83,13 @@ logHelper.parseLine = function(line) {
             "timestamp": time,
             "list": split[2]
         };
+    } else if (info.startsWith("forwarded ")) {
+        return {
+            "timestamp": time,
+            "domain": split[1],
+            "destination": split[3],
+            "type": "forward"
+        };
     } else {
         return false;
     }
@@ -149,7 +155,7 @@ logHelper.getSummary = function() {
  * @param {module:logHelper~lineNumberCallback} callback - callback for the result
  */
 logHelper.getFileLineCountWindows = function(filename, callback) {
-    exec("find /c /v \"\" \"" + filename + "\"", function(err, stdout, stderr) {
+    childProcess.exec("find /c /v \"\" \"" + filename + "\"", function(err, stdout, stderr) {
         if (err || stderr !== "") {
             callback(0);
         } else {
@@ -169,7 +175,7 @@ logHelper.getFileLineCountWindows = function(filename, callback) {
  * @param {module:logHelper~lineNumberCallback} callback - callback for the result
  */
 logHelper.getFileLineCountUnix = function(filename, callback) {
-    exec("grep -c ^ " + filename, function(err, stdout, stderr) {
+    childProcess.exec("grep -c ^ " + filename, function(err, stdout, stderr) {
         if (err || stderr !== "") {
             callback(0);
         } else {
@@ -283,37 +289,13 @@ logHelper.getGravity = function() {
  */
 logHelper.getAllQueries = function() {
     return new Promise(function(resolve, reject) {
-        var lineReader = require("readline")
-            .createInterface({
-                input: require("fs")
-                    .createReadStream(appDefaults.logFile)
-            });
-        var lines = [];
-        lineReader.on("line", function(line) {
-            if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
-                return;
-            } else {
-                var _time = line.substring(0, 16);
-                var expl = line.trim()
-                    .split(" ");
-                var _domain = expl[expl.length - 3];
-                var tmp = expl[expl.length - 4];
-                var _status = Math.random() < 0.5 ? "Pi-holed" : "OK";
-                var _type = tmp.substring(6, tmp.length - 1);
-                var _client = expl[expl.length - 1];
-                var data = {
-                    time: moment(_time, "MMM DD hh:mm:ss")
-                        .toISOString(),
-                    domain: _domain,
-                    status: _status,
-                    type: _type,
-                    client: _client
-                };
-                lines.push(data);
-            }
+        var parser = logHelper.createLogParser(appDefaults.logFile);
+        var data = [];
+        parser.on("line", function(line) {
+            data.push(line);
         });
-        lineReader.on("close", function() {
-            resolve(lines);
+        parser.on("close", function() {
+            resolve(data);
         });
     });
 };
@@ -324,32 +306,20 @@ logHelper.getAllQueries = function() {
  */
 logHelper.getQueryTypes = function() {
     return new Promise(function(resolve, reject) {
-        fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
-            if (err) {
-                reject(err);
-            } else {
-                var queryTypes = {};
-                var lineReader = readline
-                    .createInterface({
-                        input: require("fs")
-                            .createReadStream(appDefaults.logFile)
-                    });
-                lineReader.on("line", function(line) {
-                    if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
-                        return;
-                    }
-                    var info = line.split(": ")[1].trim();
-                    var queryType = info.split(" ")[0];
-                    if (queryType in queryTypes) {
-                        queryTypes[queryType]++;
-                    } else {
-                        queryTypes[queryType] = 1;
-                    }
-                });
-                lineReader.on("close", function() {
-                    resolve(queryTypes);
-                });
+        var parser = logHelper.createLogParser(appDefaults.logFile);
+        var queryTypes = {};
+        parser.on("line", function(lineData) {
+            if (lineData === false || lineData.type !== "query") {
+                return;
             }
+            if (queryTypes.hasOwnProperty(lineData.queryType)) {
+                queryTypes[lineData.queryType]++;
+            } else {
+                queryTypes[lineData.queryType] = 1;
+            }
+        });
+        parser.on("close", function() {
+            resolve(queryTypes);
         });
     });
 };
@@ -414,14 +384,9 @@ const resolveIPs = function(ips) {
  */
 logHelper.getQuerySources = function() {
     return new Promise(function(resolve, reject) {
-            var lineReader = readline
-                .createInterface({
-                    input: require("fs")
-                        .createReadStream(appDefaults.logFile)
-                });
+            var parser = logHelper.createLogParser(appDefaults.logFile);
             var clients = {};
-            lineReader.on("line", function(line) {
-                var lineData = logHelper.parseLine(line);
+            parser.on("line", function(lineData) {
                 if (lineData === false || lineData.type !== "query") {
                     return;
                 }
@@ -431,7 +396,7 @@ logHelper.getQuerySources = function() {
                     clients[lineData.client] = 1;
                 }
             });
-            lineReader.on("close", function() {
+            parser.on("close", function() {
                 resolve(clients);
             });
         })
@@ -444,11 +409,6 @@ logHelper.getQuerySources = function() {
             } else {
                 return clients;
             }
-        })
-        .then(function(clients) {
-            return {
-                "topSources": clients
-            };
         });
 };
 
@@ -463,30 +423,43 @@ logHelper.getForwardDestinations = function() {
                 reject(err);
             } else {
                 var destinations = {};
-                var lineReader = readline
-                    .createInterface({
-                        input: require("fs")
-                            .createReadStream(appDefaults.logFile)
-                    });
-                lineReader.on("line", function(line) {
-                    if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": forwarded") === -1) {
+                var parser = logHelper.createLogParser(appDefaults.logFile);
+                parser.on("line", function(lineData) {
+                    if (lineData === false || lineData.type !== "forward") {
                         return;
                     }
-                    var info = line.trim()
-                        .split(" ");
-                    var destination = info[info.length - 1];
-                    if (destination in destinations) {
-                        destinations[destination]++;
+                    if (destinations.hasOwnProperty(lineData.destination)) {
+                        destinations[lineData.destination]++;
                     } else {
-                        destinations[destination] = 1;
+                        destinations[lineData.destination] = 1;
                     }
                 });
-                lineReader.on("close", function() {
+                parser.on("close", function() {
                     resolve(destinations);
                 });
             }
         });
     });
+};
+
+logHelper.createLogParser = function(filename) {
+    var self = this;
+    self.emitter = new EventEmitter();
+    var lineReader = readline
+        .createInterface({
+            input: fs
+                .createReadStream(filename)
+        });
+    lineReader.on("line", function(line) {
+        var info = logHelper.parseLine(line);
+        if (info !== false) {
+            self.emitter.emit("line", info);
+        }
+    });
+    lineReader.on("close", function() {
+        self.emitter.emit("close");
+    });
+    return self.emitter;
 };
 
 /**
@@ -498,37 +471,31 @@ logHelper.getOverTimeData = function(frameSize) {
     // Check if frameSize is set. defaults to 10
     frameSize = (typeof frameSize !== 'undefined') ? frameSize : 10;
     return new Promise(function(resolve, reject) {
-        var lineReader = readline
-            .createInterface({
-                input: require("fs")
-                    .createReadStream(appDefaults.logFile)
-            });
+        var parser = logHelper.createLogParser(appDefaults.logFile);
         var data = {
-            "domains": {},
+            "queries": {},
             "ads": {}
         };
-        lineReader.on("line", function(line) {
-            if (typeof line === "undefined" || line.trim() === "" || line.indexOf(": query[A") === -1) {
-                return;
-            }
-            var time = moment(line.substring(0, 16), "MMM DD hh:mm:ss");
-            var hour = time.hour();
-            var minute = time.minute();
-            time = (minute - minute % 10) / 10 + 6 * hour;
-            if (Math.random() < 0.5) {
+        parser.on("line", function(line) {
+            var timestamp = moment(line.timestamp);
+            var minute = timestamp.minute();
+            var hour = timestamp.hour();
+            var time = (minute - minute % 10) / 10 + 6 * hour;
+            if (line.type === "block") {
                 if (time in data.ads) {
                     data.ads[time]++;
                 } else {
                     data.ads[time] = 1;
                 }
-            }
-            if (time in data.domains) {
-                data.domains[time]++;
-            } else {
-                data.domains[time] = 1;
+            } else if (line.type === "query") {
+                if (time in data.queries) {
+                    data.queries[time]++;
+                } else {
+                    data.queries[time] = 1;
+                }
             }
         });
-        lineReader.on("close", function() {
+        parser.on("close", function() {
             resolve(data);
         });
     });
@@ -538,42 +505,31 @@ logHelper.getTopItems = function(argument) {
     return logHelper.getGravity()
         .then(function(gravityList) {
             return new Promise(function(resolve, reject) {
-                fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        var topDomains = {},
-                            topAds = {};
-                        var lineReader = readline
-                            .createInterface({
-                                input: require("fs")
-                                    .createReadStream(appDefaults.logFile)
-                            });
-                        lineReader.on("line", function(line) {
-                            var info = logHelper.parseLine(line);
-                            if (info !== false && info.type === "query") {
-                                if (info.domain in gravityList) {
-                                    if (topAds.hasOwnProperty(info.domain)) {
-                                        topAds[info.domain]++;
-                                    } else {
-                                        topAds[info.domain] = 1;
-                                    }
-                                } else {
-                                    if (topDomains.hasOwnProperty(info.domain)) {
-                                        topDomains[info.domain]++;
-                                    } else {
-                                        topDomains[info.domain] = 1;
-                                    }
-                                }
+                var parser = logHelper.createLogParser(appDefaults.logFile);
+                var topDomains = {},
+                    topAds = {};
+                parser.on("line", function(info) {
+                    if (info !== false && info.type === "query") {
+                        if (gravityList.hasOwnProperty(info.domain)) {
+                            if (topAds.hasOwnProperty(info.domain)) {
+                                topAds[info.domain]++;
+                            } else {
+                                topAds[info.domain] = 1;
                             }
-                        });
-                        lineReader.on("close", function() {
-                            resolve({
-                                "topQueries": topDomains,
-                                "topAds": topAds
-                            });
-                        });
+                        } else {
+                            if (topDomains.hasOwnProperty(info.domain)) {
+                                topDomains[info.domain]++;
+                            } else {
+                                topDomains[info.domain] = 1;
+                            }
+                        }
                     }
+                });
+                parser.on("close", function() {
+                    resolve({
+                        "topQueries": topDomains,
+                        "topAds": topAds
+                    });
                 });
             });
         });

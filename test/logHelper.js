@@ -8,10 +8,14 @@ const logHelper = require("./../server/logHelper.js");
 const appDefaults = require("./../server/defaults.js");
 const moment = require("moment");
 const readline = require("readline");
+const childProcess = require("child_process");
+const EventEmitter = require('events')
+    .EventEmitter;
 var sandbox;
 const sourceTimestampFormat = "MMM DD hh:mm:ss"
 const sourceTimestamp = moment()
     .format(sourceTimestampFormat);
+const fs = require("fs");
 const usedTimestamp = {
     "iso": moment(sourceTimestamp, sourceTimestampFormat)
         .toISOString(),
@@ -210,6 +214,337 @@ describe("logHelper tests", function() {
                 });
         });
     });
+    describe("createLogParser()", function() {
+        var readlineStub;
+        var lineSpy;
+        var parseLineStub;
+        before(function() {
+            lineSpy = sinon.spy();
+            parseLineStub = sinon.stub(logHelper, "parseLine");
+            parseLineStub.returns(true);
+            readlineStub = sandbox.stub(readline,
+                "createInterface",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", "foo bar");
+                        }
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                }
+            );
+        });
+        after(function() {
+            sinon.assert.callCount(lineSpy, 4);
+            readlineStub.restore();
+            parseLineStub.restore();
+        });
+        it("should return 0", function(done) {
+            const logParser = logHelper.createLogParser("filename");
+            logParser.on("line", lineSpy);
+            logParser.on("close", function() {
+                done();
+            });
+
+        });
+    });
+    describe("getFileLineCountWindows()", function() {
+        var execStub;
+        before(function() {
+            execStub = sinon.stub(childProcess, "exec");
+            execStub.onCall(0)
+                .callsArgWith(1, false, "", "error occured");
+            execStub.onCall(1)
+                .callsArgWith(1, true, "", "");
+            execStub.onCall(2)
+                .callsArgWith(1, false, "---------- INDEX.JS 4", "");
+            execStub.onCall(3)
+                .callsArgWith(1, false, "---------- foooo", "");
+        });
+        after(function() {
+            sinon.assert.alwaysCalledWith(execStub, "find /c /v \"\" \"filename\"")
+            execStub.restore();
+        });
+        it("should return 0", function(done) {
+            const callback = function(lines) {
+                expect(lines)
+                    .to.equal(0);
+                done();
+            };
+            logHelper.getFileLineCountWindows("filename", callback);
+        });
+        it("should return 0", function(done) {
+            const callback = function(lines) {
+                expect(lines)
+                    .to.equal(0);
+                done();
+            };
+            logHelper.getFileLineCountWindows("filename", callback);
+        });
+        it("should return 4", function(done) {
+            const callback = function(lines) {
+                expect(lines)
+                    .to.equal(4);
+                done();
+            };
+            logHelper.getFileLineCountWindows("filename", callback);
+        });
+        it("should return 4", function(done) {
+            const callback = function(lines) {
+                expect(lines)
+                    .to.equal(0);
+                done();
+            };
+            logHelper.getFileLineCountWindows("filename", callback);
+        });
+    });
+    describe("getQueryTypes()", function() {
+        var createLogParserStub;
+        before(function() {
+            createLogParserStub = sinon.stub(logHelper,
+                "createLogParser",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "queryType": "AA"
+                            });
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "queryType": "AAAA"
+                            });
+                            self.emitter.emit("line", {
+                                "type": "block"
+                            });
+                        };
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                });
+        });
+        after(function() {
+            sinon.assert.calledOnce(createLogParserStub);
+            createLogParserStub.restore();
+        });
+        it("should succeed", function() {
+            return logHelper.getQueryTypes()
+                .then(function(data) {
+                    expect(data)
+                        .to.deep.equal({
+                            "AA": 4,
+                            "AAAA": 4
+                        });
+                });
+        });
+    });
+    describe("getTopItems()", function() {
+        var createLogParserStub;
+        var getGravityStub;
+        before(function() {
+            getGravityStub = sinon.stub(logHelper, "getGravity", function() {
+                return new Promise(function(resolve, reject) {
+                    resolve({
+                        "test1.com": true
+                    });
+                });
+            });
+            createLogParserStub = sinon.stub(logHelper,
+                "createLogParser",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "domain": "test1.com"
+                            });
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "domain": "test2.com"
+                            });
+                        };
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                });
+        });
+        after(function() {
+            sinon.assert.calledOnce(createLogParserStub);
+            createLogParserStub.restore();
+            getGravityStub.restore();
+        });
+        it("should succeed", function() {
+            return logHelper.getTopItems()
+                .then(function(data) {
+                    expect(data)
+                        .to.deep.equal({
+                            "topQueries": {
+                                "test2.com": 4
+                            },
+                            "topAds": {
+                                "test1.com": 4
+                            }
+                        });
+                });
+        });
+    });
+    describe("getAllQueries()", function() {
+        var createLogParserStub;
+        before(function() {
+            createLogParserStub = sinon.stub(logHelper,
+                "createLogParser",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "timestamp": usedTimestamp.iso
+                            });
+                            self.emitter.emit("line", {
+                                "type": "block",
+                                "timestamp": usedTimestamp.iso
+                            });
+                        };
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                });
+        });
+        after(function() {
+            sinon.assert.calledOnce(createLogParserStub);
+            createLogParserStub.restore();
+        });
+        it("should succeed", function() {
+            return logHelper.getAllQueries()
+                .then(function(data) {
+                    expect(data)
+                        .to.have.lengthOf(8);
+                });
+        });
+    });
+    describe("getForwardDestinations()", function() {
+        var createLogParserStub, fsAccessStub;
+        before(function() {
+            createLogParserStub = sinon.stub(logHelper,
+                "createLogParser",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", {
+                                "type": "forward",
+                                "domain": "test.com",
+                                "destination": "127.0.0.1"
+                            });
+                        };
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                });
+            fsAccessStub = sinon.stub(fs, "access", function(a, b, callback) {
+                process.nextTick(callback);
+            });
+        });
+        after(function() {
+            sinon.assert.calledOnce(createLogParserStub);
+            createLogParserStub.restore();
+            fsAccessStub.restore();
+        });
+        it("should succeed", function() {
+            return logHelper.getForwardDestinations()
+                .then(function(data) {
+                    expect(data)
+                        .to.deep.equal({
+                            "127.0.0.1": 4
+                        });
+                });
+        });
+    });
+    describe("getQuerySources()", function() {
+        var createLogParserStub;
+        before(function() {
+            createLogParserStub = sinon.stub(logHelper,
+                "createLogParser",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "timestamp": usedTimestamp.iso,
+                                "client": "127.0.0.1"
+                            });
+                            self.emitter.emit("line", {
+                                "type": "block",
+                                "timestamp": usedTimestamp.iso
+                            });
+                        };
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                });
+        });
+        after(function() {
+            sinon.assert.calledOnce(createLogParserStub);
+            createLogParserStub.restore();
+        });
+        it("should succeed", function() {
+            return logHelper.getQuerySources()
+                .then(function(data) {
+                    expect(data)
+                        .to.deep.equal({
+                            "127.0.0.1": 4
+                        });
+                });
+        });
+    });
+    describe("getOverTimeData()", function() {
+        var createLogParserStub;
+        before(function() {
+            createLogParserStub = sinon.stub(logHelper,
+                "createLogParser",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "timestamp": usedTimestamp.iso
+                            });
+                            self.emitter.emit("line", {
+                                "type": "block",
+                                "timestamp": usedTimestamp.iso
+                            });
+                        };
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                });
+        });
+        after(function() {
+            sinon.assert.calledOnce(createLogParserStub);
+            createLogParserStub.restore();
+        });
+        it("should return 4", function() {
+            return logHelper.getOverTimeData()
+                .then(function(data) {
+                    expect(data)
+                        .to.have.all.keys('ads', 'queries')
+                });
+        });
+    });
     describe("parseLine()", function() {
         const tests = [];
         ["1.1.1.1", "1111:1111:1111:1111:1111:1111:1111:1111"].forEach(function(client) {
@@ -236,6 +571,24 @@ describe("logHelper tests", function() {
                             type: "block"
                         }
                     });
+                    tests.push({
+                        "arg": usedTimestamp.source + " dnsmasq[503]: val1 val2 " + filepath + " " + domain + " is " + client,
+                        "result": {
+                            domain: domain,
+                            timestamp: usedTimestamp.iso,
+                            list: filepath,
+                            type: "block"
+                        }
+                    });
+                });
+                tests.push({
+                    "arg": usedTimestamp.source + " dnsmasq[503]: forwarded " + domain + " to " + client,
+                    "result": {
+                        domain: domain,
+                        timestamp: usedTimestamp.iso,
+                        destination: client,
+                        type: "forward"
+                    }
                 });
             });
         });
@@ -247,6 +600,41 @@ describe("logHelper tests", function() {
                 expect(result)
                     .to.deep.equal(test.result);
             });
+        });
+        it("should parse return false", function() {
+            const result = logHelper.parseLine("");
+            expect(result)
+                .to.not.be.null;
+            expect(result)
+                .to.be.false;
+        });
+        it("should parse return false", function() {
+            const result = logHelper.parseLine(undefined);
+            expect(result)
+                .to.not.be.null;
+            expect(result)
+                .to.be.false;
+        });
+        it("should parse return false", function() {
+            const result = logHelper.parseLine("foo bar");
+            expect(result)
+                .to.not.be.null;
+            expect(result)
+                .to.be.false;
+        });
+        it("should parse return false", function() {
+            const result = logHelper.parseLine("foobar foo bar foo bar bar foo: bar bar foo");
+            expect(result)
+                .to.not.be.null;
+            expect(result)
+                .to.be.false;
+        });
+        it("should parse return false", function() {
+            const result = logHelper.parseLine(usedTimestamp.source + " dnsmasq[503]: reply domain.name is <CNAME>");
+            expect(result)
+                .to.not.be.null;
+            expect(result)
+                .to.be.false;
         });
         it("should return false for invalid line", function() {
             const result = logHelper.parseLine("bhn123 3124u 213h4021 34921u3 410ß4 109234 145rj1 0ß235125 1 ß15 u120ß95 1ß125 120i 4021ß5 u");

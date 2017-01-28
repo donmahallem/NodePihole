@@ -343,6 +343,58 @@ describe("logHelper tests", function() {
                 });
         });
     });
+    describe("getTopItems()", function() {
+        var createLogParserStub;
+        var getGravityStub;
+        before(function() {
+            getGravityStub = sinon.stub(logHelper, "getGravity", function() {
+                return new Promise(function(resolve, reject) {
+                    resolve({
+                        "test1.com": true
+                    });
+                });
+            });
+            createLogParserStub = sinon.stub(logHelper,
+                "createLogParser",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "domain": "test1.com"
+                            });
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "domain": "test2.com"
+                            });
+                        };
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                });
+        });
+        after(function() {
+            sinon.assert.calledOnce(createLogParserStub);
+            createLogParserStub.restore();
+            getGravityStub.restore();
+        });
+        it("should succeed", function() {
+            return logHelper.getTopItems()
+                .then(function(data) {
+                    expect(data)
+                        .to.deep.equal({
+                            "topQueries": {
+                                "test2.com": 4
+                            },
+                            "topAds": {
+                                "test1.com": 4
+                            }
+                        });
+                });
+        });
+    });
     describe("getAllQueries()", function() {
         var createLogParserStub;
         before(function() {

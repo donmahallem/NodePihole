@@ -505,42 +505,31 @@ logHelper.getTopItems = function(argument) {
     return logHelper.getGravity()
         .then(function(gravityList) {
             return new Promise(function(resolve, reject) {
-                fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        var topDomains = {},
-                            topAds = {};
-                        var lineReader = readline
-                            .createInterface({
-                                input: require("fs")
-                                    .createReadStream(appDefaults.logFile)
-                            });
-                        lineReader.on("line", function(line) {
-                            var info = logHelper.parseLine(line);
-                            if (info !== false && info.type === "query") {
-                                if (info.domain in gravityList) {
-                                    if (topAds.hasOwnProperty(info.domain)) {
-                                        topAds[info.domain]++;
-                                    } else {
-                                        topAds[info.domain] = 1;
-                                    }
-                                } else {
-                                    if (topDomains.hasOwnProperty(info.domain)) {
-                                        topDomains[info.domain]++;
-                                    } else {
-                                        topDomains[info.domain] = 1;
-                                    }
-                                }
+                var parser = logHelper.createLogParser(appDefaults.logFile);
+                var topDomains = {},
+                    topAds = {};
+                parser.on("line", function(info) {
+                    if (info !== false && info.type === "query") {
+                        if (gravityList.hasOwnProperty(info.domain)) {
+                            if (topAds.hasOwnProperty(info.domain)) {
+                                topAds[info.domain]++;
+                            } else {
+                                topAds[info.domain] = 1;
                             }
-                        });
-                        lineReader.on("close", function() {
-                            resolve({
-                                "topQueries": topDomains,
-                                "topAds": topAds
-                            });
-                        });
+                        } else {
+                            if (topDomains.hasOwnProperty(info.domain)) {
+                                topDomains[info.domain]++;
+                            } else {
+                                topDomains[info.domain] = 1;
+                            }
+                        }
                     }
+                });
+                parser.on("close", function() {
+                    resolve({
+                        "topQueries": topDomains,
+                        "topAds": topAds
+                    });
                 });
             });
         });

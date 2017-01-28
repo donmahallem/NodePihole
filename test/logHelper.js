@@ -213,6 +213,44 @@ describe("logHelper tests", function() {
                 });
         });
     });
+    describe("createLogParser()", function() {
+        var readlineStub;
+        var lineSpy;
+        var parseLineStub;
+        before(function() {
+            lineSpy = sinon.spy();
+            parseLineStub = sinon.stub(logHelper, "parseLine");
+            parseLineStub.returns(true);
+            readlineStub = sandbox.stub(readline,
+                "createInterface",
+                function(filename) {
+                    console.log("Called", filename);
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", "foo bar");
+                        }
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                }
+            );
+        });
+        after(function() {
+            sinon.assert.callCount(lineSpy, 4);
+            readlineStub.restore();
+            parseLineStub.restore();
+        });
+        it("should return 0", function(done) {
+            const logParser = logHelper.createLogParser("filename");
+            logParser.on("line", lineSpy);
+            logParser.on("close", function() {
+                done();
+            });
+
+        });
+    });
     describe("getFileLineCountWindows()", function() {
         var execStub;
         before(function() {

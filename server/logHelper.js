@@ -6,6 +6,8 @@ const childProcess = require("child_process");
 const readline = require("readline");
 const setupVars = require("./setupVars.js");
 const dns = require("dns");
+const EventEmitter = require('events')
+    .EventEmitter;
 
 const isWin = /^win/.test(os.platform());
 
@@ -495,7 +497,7 @@ logHelper.createLogParser = function(filename) {
                 .createReadStream(filename)
         });
     lineReader.on("line", function(line) {
-        var info = helper.parseLine(line);
+        var info = logHelper.parseLine(line);
         if (info !== false) {
             self.emitter.emit("line", info);
         }
@@ -503,7 +505,7 @@ logHelper.createLogParser = function(filename) {
     lineReader.on("close", function() {
         self.emitter.emit("close");
     });
-    return emitter;
+    return self.emitter;
 };
 
 /**

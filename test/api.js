@@ -966,7 +966,6 @@ describe("Testing api endpoints", function() {
                                     resp[arg] = {
                                         "success": true
                                     };
-                                    console.log(resp);
                                     expect(res.body)
                                         .to.deep.equal(resp);
                                     expect(res)

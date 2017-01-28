@@ -441,7 +441,6 @@ router.get("/data", function(req, res) {
             res.json(data);
         })
         .catch(function(err) {
-            console.error("Request failed", err);
             res.sendStatus(400);
         });
 });
@@ -463,7 +462,6 @@ router.get("/taillog",
             if (connectionOpen) {
                 connectionOpen = false;
                 clearInterval(updateInterval);
-                console.log("Taillog connection closed");
             }
         });
 
@@ -471,7 +469,6 @@ router.get("/taillog",
             if (connectionOpen) {
                 connectionOpen = false;
                 clearInterval(updateInterval);
-                console.log("Taillog connection ended");
             }
         });
         res.set({
@@ -699,7 +696,6 @@ router.get("/status",
                 });
             })
             .catch(function(err) {
-                console.log(err);
                 res.sendStatus(500);
             });
     }

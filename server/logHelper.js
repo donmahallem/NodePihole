@@ -8,6 +8,8 @@ const setupVars = require("./setupVars.js");
 const dns = require("dns");
 const EventEmitter = require("events")
     .EventEmitter;
+const split2 = require("split2");
+const through2 = require("through2");
 
 const isWin = /^win/.test(os.platform());
 
@@ -308,7 +310,7 @@ logHelper.getQueryTypes = function() {
     return new Promise(function(resolve, reject) {
         var parser = logHelper.createLogParser(appDefaults.logFile);
         var queryTypes = {};
-        parser.on("line", function(lineData) {
+        parser.on("data", function(lineData) {
             if (lineData === false || lineData.type !== "query") {
                 return;
             }
@@ -318,7 +320,7 @@ logHelper.getQueryTypes = function() {
                 queryTypes[lineData.queryType] = 1;
             }
         });
-        parser.on("close", function() {
+        parser.on("end", function() {
             resolve(queryTypes);
         });
     });
@@ -386,7 +388,7 @@ logHelper.getQuerySources = function() {
     return new Promise(function(resolve, reject) {
             var parser = logHelper.createLogParser(appDefaults.logFile);
             var clients = {};
-            parser.on("line", function(lineData) {
+            parser.on("data", function(lineData) {
                 if (lineData === false || lineData.type !== "query") {
                     return;
                 }
@@ -396,7 +398,7 @@ logHelper.getQuerySources = function() {
                     clients[lineData.client] = 1;
                 }
             });
-            parser.on("close", function() {
+            parser.on("end", function() {
                 resolve(clients);
             });
         })
@@ -424,7 +426,7 @@ logHelper.getForwardDestinations = function() {
             } else {
                 var destinations = {};
                 var parser = logHelper.createLogParser(appDefaults.logFile);
-                parser.on("line", function(lineData) {
+                parser.on("data", function(lineData) {
                     if (lineData === false || lineData.type !== "forward") {
                         return;
                     }
@@ -434,7 +436,7 @@ logHelper.getForwardDestinations = function() {
                         destinations[lineData.destination] = 1;
                     }
                 });
-                parser.on("close", function() {
+                parser.on("end", function() {
                     resolve(destinations);
                 });
             }
@@ -443,23 +445,13 @@ logHelper.getForwardDestinations = function() {
 };
 
 logHelper.createLogParser = function(filename) {
-    var self = this;
-    self.emitter = new EventEmitter();
-    var lineReader = readline
-        .createInterface({
-            input: fs
-                .createReadStream(filename)
-        });
-    lineReader.on("line", function(line) {
-        var info = logHelper.parseLine(line);
-        if (info !== false) {
-            self.emitter.emit("line", info);
-        }
-    });
-    lineReader.on("close", function() {
-        self.emitter.emit("close");
-    });
-    return self.emitter;
+    return fs
+        .createReadStream(filename)
+        .pipe(split2())
+        .pipe(through2.obj(function(chunk, enc, callback) {
+            this.push(logHelper.parseLine(chunk));
+            callback();
+        }));
 };
 
 /**
@@ -476,26 +468,28 @@ logHelper.getOverTimeData = function(frameSize) {
             "queries": {},
             "ads": {}
         };
-        parser.on("line", function(line) {
-            var timestamp = moment(line.timestamp);
-            var minute = timestamp.minute();
-            var hour = timestamp.hour();
-            var time = (minute - minute % 10) / 10 + 6 * hour;
-            if (line.type === "block") {
-                if (time in data.ads) {
-                    data.ads[time]++;
-                } else {
-                    data.ads[time] = 1;
-                }
-            } else if (line.type === "query") {
-                if (time in data.queries) {
-                    data.queries[time]++;
-                } else {
-                    data.queries[time] = 1;
+        parser.on("data", function(line) {
+            if (line !== false) {
+                var timestamp = moment(line.timestamp);
+                var minute = timestamp.minute();
+                var hour = timestamp.hour();
+                var time = (minute - minute % 10) / 10 + 6 * hour;
+                if (line.type === "block") {
+                    if (time in data.ads) {
+                        data.ads[time]++;
+                    } else {
+                        data.ads[time] = 1;
+                    }
+                } else if (line.type === "query") {
+                    if (time in data.queries) {
+                        data.queries[time]++;
+                    } else {
+                        data.queries[time] = 1;
+                    }
                 }
             }
         });
-        parser.on("close", function() {
+        parser.on("end", function() {
             resolve(data);
         });
     });
@@ -508,7 +502,7 @@ logHelper.getTopItems = function(argument) {
                 var parser = logHelper.createLogParser(appDefaults.logFile);
                 var topDomains = {},
                     topAds = {};
-                parser.on("line", function(info) {
+                parser.on("data", function(info) {
                     if (info !== false && info.type === "query") {
                         if (gravityList.hasOwnProperty(info.domain)) {
                             if (topAds.hasOwnProperty(info.domain)) {
@@ -525,7 +519,7 @@ logHelper.getTopItems = function(argument) {
                         }
                     }
                 });
-                parser.on("close", function() {
+                parser.on("end", function() {
                     resolve({
                         "topQueries": topDomains,
                         "topAds": topAds

@@ -389,14 +389,9 @@ const resolveIPs = function(ips) {
  */
 logHelper.getQuerySources = function() {
     return new Promise(function(resolve, reject) {
-            var lineReader = readline
-                .createInterface({
-                    input: require("fs")
-                        .createReadStream(appDefaults.logFile)
-                });
+            var parser = logHelper.createLogParser(appDefaults.logFile);
             var clients = {};
-            lineReader.on("line", function(line) {
-                var lineData = logHelper.parseLine(line);
+            parser.on("line", function(lineData) {
                 if (lineData === false || lineData.type !== "query") {
                     return;
                 }
@@ -406,7 +401,7 @@ logHelper.getQuerySources = function() {
                     clients[lineData.client] = 1;
                 }
             });
-            lineReader.on("close", function() {
+            parser.on("close", function() {
                 resolve(clients);
             });
         })
@@ -419,11 +414,6 @@ logHelper.getQuerySources = function() {
             } else {
                 return clients;
             }
-        })
-        .then(function(clients) {
-            return {
-                "topSources": clients
-            };
         });
 };
 

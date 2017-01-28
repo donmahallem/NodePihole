@@ -337,6 +337,45 @@ describe("logHelper tests", function() {
                 });
         });
     });
+    describe("getQuerySources()", function() {
+        var createLogParserStub;
+        before(function() {
+            createLogParserStub = sinon.stub(logHelper,
+                "createLogParser",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "timestamp": usedTimestamp.iso,
+                                "client": "127.0.0.1"
+                            });
+                            self.emitter.emit("line", {
+                                "type": "block",
+                                "timestamp": usedTimestamp.iso
+                            });
+                        };
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                });
+        });
+        after(function() {
+            sinon.assert.calledOnce(createLogParserStub);
+            createLogParserStub.restore();
+        });
+        it("should succeed", function() {
+            return logHelper.getQuerySources()
+                .then(function(data) {
+                    expect(data)
+                        .to.deep.equal({
+                            "127.0.0.1": 4
+                        });
+                });
+        });
+    });
     describe("getOverTimeData()", function() {
         var createLogParserStub;
         before(function() {

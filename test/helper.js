@@ -217,6 +217,84 @@ describe("helper tests", function() {
             });
         });
     });
+    describe("getTemperature()", function() {
+        describe("2-3 diget temps", function() {
+            const tempPath1 = "/sys/class/thermal/thermal_zone0/temp";
+            const tempPath2 = "/sys/class/hwmon/hwmon0/temp1_input";
+            describe("both paths succeed", function() {
+                var execStub;
+                before(function() {
+                    execStub = sandbox.stub(fs, "readFile");
+                    execStub.withArgs(tempPath1)
+                        .callsArgWith(2, false, "12345");
+                    execStub.withArgs(tempPath2)
+                        .callsArgWith(2, false, "123");
+                });
+                afterEach(function() {
+                    sinon.assert.calledOnce(execStub);
+                    execStub.reset();
+                });
+                after(function() {
+                    execStub.restore();
+                });
+                it("should return 12.345", function() {
+                    return helper.getTemperature()
+                        .then(function(result) {
+                            expect(result)
+                                .to.equal(12.345);
+                        });
+                });
+            });
+            describe("first path fails", function() {
+                var execStub;
+                before(function() {
+                    execStub = sandbox.stub(fs, "readFile");
+                    execStub.withArgs(tempPath1)
+                        .callsArgWith(2, new Error(), "12345");
+                    execStub.withArgs(tempPath2)
+                        .callsArgWith(2, false, "123");
+                });
+                afterEach(function() {
+                    sinon.assert.calledTwice(execStub);
+                    execStub.reset();
+                });
+                after(function() {
+                    execStub.restore();
+                });
+                it("should return 123", function() {
+                    return helper.getTemperature()
+                        .then(function(result) {
+                            expect(result)
+                                .to.equal(123);
+                        });
+                });
+            });
+            describe("both paths fail", function() {
+                var execStub;
+                before(function() {
+                    execStub = sandbox.stub(fs, "readFile");
+                    execStub.withArgs(tempPath1)
+                        .callsArgWith(2, new Error(), "12345");
+                    execStub.withArgs(tempPath2)
+                        .callsArgWith(2, new Error(), "123");
+                });
+                afterEach(function() {
+                    sinon.assert.calledTwice(execStub);
+                    execStub.reset();
+                });
+                after(function() {
+                    execStub.restore();
+                });
+                it("should return false", function() {
+                    return helper.getTemperature()
+                        .then(function(result) {
+                            expect(result)
+                                .to.be.false;
+                        });
+                });
+            });
+        });
+    });
     describe("getFreeMemory()", function() {
         describe("/proc/meminfo doesn't exist", function() {
             var fsAccessStub;

@@ -87,7 +87,7 @@ logHelper.parseLine = function(line) {
         return {
             "timestamp": time,
             "domain": split[1],
-            "target": split[3],
+            "destination": split[3],
             "type": "forward"
         };
     } else {

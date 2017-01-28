@@ -453,7 +453,7 @@ describe("logHelper tests", function() {
                     "result": {
                         domain: domain,
                         timestamp: usedTimestamp.iso,
-                        target: client,
+                        destination: client,
                         type: "forward"
                     }
                 });

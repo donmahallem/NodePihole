@@ -159,36 +159,24 @@ helper.jwtVerify = function(token, callback) {
 };
 
 helper.getTemperature = function() {
+    const tempPath1 = "/sys/class/thermal/thermal_zone0/temp";
+    const tempPath2 = "/sys/class/hwmon/hwmon0/temp1_input";
     return new Promise(function(resolve, reject) {
-            const tempPath1 = "/sys/class/thermal/thermal_zone0/temp";
-            fs.access(tempPath1, fs.F_OK | fs.R_OK, function(err) {
+            fs.readFile(tempPath1, "utf8", function(err, data) {
                 if (err) {
                     reject(err);
                 } else {
-                    fs.readFile(tempPath1, "utf8", function(err, data) {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(data.trim());
-                        }
-                    });
+                    resolve(data.trim());
                 }
             });
         })
         .catch(function(err) {
             return new Promise(function(resolve, reject) {
-                const tempPath1 = "/sys/class/hwmon/hwmon0/temp1_input";
-                fs.access(tempPath1, fs.F_OK | fs.R_OK, function(err) {
+                fs.readFile(tempPath2, "utf8", function(err, data) {
                     if (err) {
                         reject(err);
                     } else {
-                        fs.readFile(tempPath1, "utf8", function(err, data) {
-                            if (err) {
-                                reject(err);
-                            } else {
-                                resolve(data.trim());
-                            }
-                        });
+                        resolve(data.trim());
                     }
                 });
             });

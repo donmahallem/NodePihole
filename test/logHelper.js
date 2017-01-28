@@ -301,6 +301,42 @@ describe("logHelper tests", function() {
             logHelper.getFileLineCountWindows("filename", callback);
         });
     });
+    describe("getAllQueries()", function() {
+        var createLogParserStub;
+        before(function() {
+            createLogParserStub = sinon.stub(logHelper,
+                "createLogParser",
+                function(filename) {
+                    const self = this;
+                    self.emitter = new EventEmitter();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            self.emitter.emit("line", {
+                                "type": "query",
+                                "timestamp": usedTimestamp.iso
+                            });
+                            self.emitter.emit("line", {
+                                "type": "block",
+                                "timestamp": usedTimestamp.iso
+                            });
+                        };
+                        self.emitter.emit("close");
+                    });
+                    return self.emitter;
+                });
+        });
+        after(function() {
+            sinon.assert.calledOnce(createLogParserStub);
+            createLogParserStub.restore();
+        });
+        it("should succeed", function() {
+            return logHelper.getAllQueries()
+                .then(function(data) {
+                    expect(data)
+                        .to.have.lengthOf(8);
+                });
+        });
+    });
     describe("getOverTimeData()", function() {
         var createLogParserStub;
         before(function() {

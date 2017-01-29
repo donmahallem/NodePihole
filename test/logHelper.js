@@ -304,25 +304,24 @@ describe("logHelper tests", function() {
             createLogParserStub = sinon.stub(logHelper,
                 "createLogParser",
                 function(filename) {
-                    const self = this;
-                    self.emitter = new EventEmitter();
+                    var s = through2.obj();
                     process.nextTick(function() {
                         for (var i = 0; i < 4; i++) {
-                            self.emitter.emit("line", {
+                            s.push({
                                 "type": "query",
                                 "queryType": "AA"
                             });
-                            self.emitter.emit("line", {
+                            s.push({
                                 "type": "query",
                                 "queryType": "AAAA"
                             });
-                            self.emitter.emit("line", {
+                            s.push({
                                 "type": "block"
                             });
                         };
-                        self.emitter.emit("close");
+                        s.push(null);
                     });
-                    return self.emitter;
+                    return s;
                 });
         });
         after(function() {
@@ -341,8 +340,7 @@ describe("logHelper tests", function() {
         });
     });
     describe("getTopItems()", function() {
-        var createLogParserStub;
-        var getGravityStub;
+        var getGravityStub, createLogParserStub;
         before(function() {
             getGravityStub = sinon.stub(logHelper, "getGravity", function() {
                 return new Promise(function(resolve, reject) {
@@ -354,22 +352,21 @@ describe("logHelper tests", function() {
             createLogParserStub = sinon.stub(logHelper,
                 "createLogParser",
                 function(filename) {
-                    const self = this;
-                    self.emitter = new EventEmitter();
+                    var s = through2.obj();
                     process.nextTick(function() {
                         for (var i = 0; i < 4; i++) {
-                            self.emitter.emit("line", {
+                            s.push({
                                 "type": "query",
                                 "domain": "test1.com"
                             });
-                            self.emitter.emit("line", {
+                            s.push({
                                 "type": "query",
                                 "domain": "test2.com"
                             });
                         };
-                        self.emitter.emit("close");
+                        s.push(null);
                     });
-                    return self.emitter;
+                    return s;
                 });
         });
         after(function() {
@@ -429,31 +426,27 @@ describe("logHelper tests", function() {
         });
     });
     describe("getForwardDestinations()", function() {
-        var createLogParserStub, fsAccessStub;
+        var createLogParserStub;
         before(function() {
             createLogParserStub = sinon.stub(logHelper,
                 "createLogParser",
                 function(filename) {
-                    var s = through2.obj(function(chunk, enc, cb) {
-                        process.nextTick(function() {
-                            //s._read = function noop() {}; // redundant? see update below
-                            s.push("Jan 10 00:00:26 dnsmasq[503]: query[AAAA] test.com from 127.0.0.1");
-                            s.push("Jan 10 00:00:26 dnsmasq[503]: query[AAAA] test.com from 127.0.0.1");
-                            s.push("Jan 10 00:00:26 dnsmasq[503]: query[AAAA] test.com from 127.0.0.1");
-                            s.push("Jan 10 00:00:26 dnsmasq[503]: query[AAAA] test.com from 127.0.0.1");
-                            s.push(null);
-                        });
+                    var s = through2.obj();
+                    process.nextTick(function() {
+                        for (var i = 0; i < 4; i++) {
+                            s.push({
+                                "type": "forward",
+                                "destination": "127.0.0.1"
+                            });
+                        }
+                        s.push(null);
                     });
                     return s;
                 });
-            fsAccessStub = sinon.stub(fs, "access", function(a, b, callback) {
-                process.nextTick(callback);
-            });
         });
         after(function() {
             sinon.assert.calledOnce(createLogParserStub);
             createLogParserStub.restore();
-            fsAccessStub.restore();
         });
         it("should succeed", function() {
             return logHelper.getForwardDestinations()
@@ -471,23 +464,22 @@ describe("logHelper tests", function() {
             createLogParserStub = sinon.stub(logHelper,
                 "createLogParser",
                 function(filename) {
-                    const self = this;
-                    self.emitter = new EventEmitter();
+                    var s = through2.obj();
                     process.nextTick(function() {
                         for (var i = 0; i < 4; i++) {
-                            self.emitter.emit("line", {
+                            s.push({
                                 "type": "query",
                                 "timestamp": usedTimestamp.iso,
                                 "client": "127.0.0.1"
                             });
-                            self.emitter.emit("line", {
+                            s.push({
                                 "type": "block",
                                 "timestamp": usedTimestamp.iso
                             });
                         };
-                        self.emitter.emit("close");
+                        s.push(null);
                     });
-                    return self.emitter;
+                    return s;
                 });
         });
         after(function() {
@@ -510,22 +502,21 @@ describe("logHelper tests", function() {
             createLogParserStub = sinon.stub(logHelper,
                 "createLogParser",
                 function(filename) {
-                    const self = this;
-                    self.emitter = new EventEmitter();
+                    var s = through2.obj();
                     process.nextTick(function() {
                         for (var i = 0; i < 4; i++) {
-                            self.emitter.emit("line", {
+                            s.push({
                                 "type": "query",
                                 "timestamp": usedTimestamp.iso
                             });
-                            self.emitter.emit("line", {
+                            s.push({
                                 "type": "block",
                                 "timestamp": usedTimestamp.iso
                             });
                         };
-                        self.emitter.emit("close");
+                        s.push(null);
                     });
-                    return self.emitter;
+                    return s;
                 });
         });
         after(function() {

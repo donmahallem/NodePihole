@@ -310,9 +310,9 @@ var topClientsChart = {};
             var domain,
                 percentage,
                 domainname;
-            for (domain in data.topSources) {
+            for (domain in data.querySources) {
                 if ({}
-                    .hasOwnProperty.call(data.topSources, domain)) {
+                    .hasOwnProperty.call(data.querySources, domain)) {
                     // Sanitize domain
                     domain = escapeHtml(domain);
                     if (domain.indexOf("|") > -1) {
@@ -321,9 +321,9 @@ var topClientsChart = {};
                         domainname = domain;
                     }
                     var url = "<a href=\"queries.php?client=" + domain + "\">" + domainname + "</a>";
-                    percentage = data.topSources[domain] / data.dns_queries_today * 100;
+                    percentage = data.querySources[domain] / data.dns_queries_today * 100;
                     clienttable.append("<tr> <td>" + url +
-                        "</td> <td>" + data.topSources[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-blue\" style=\"width: " +
+                        "</td> <td>" + data.querySources[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-blue\" style=\"width: " +
                         percentage + "%\"></div> </div> </td> </tr> ");
                 }
             }

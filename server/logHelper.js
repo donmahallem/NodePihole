@@ -420,26 +420,20 @@ logHelper.getQuerySources = function() {
  */
 logHelper.getForwardDestinations = function() {
     return new Promise(function(resolve, reject) {
-        fs.access(appDefaults.logFile, fs.F_OK | fs.R_OK, function(err) {
-            if (err) {
-                reject(err);
-            } else {
-                var destinations = {};
-                var parser = logHelper.createLogParser(appDefaults.logFile);
-                parser.on("data", function(lineData) {
-                    if (lineData === false || lineData.type !== "forward") {
-                        return;
-                    }
-                    if (destinations.hasOwnProperty(lineData.destination)) {
-                        destinations[lineData.destination]++;
-                    } else {
-                        destinations[lineData.destination] = 1;
-                    }
-                });
-                parser.on("end", function() {
-                    resolve(destinations);
-                });
+        var destinations = {};
+        var parser = logHelper.createLogParser(appDefaults.logFile);
+        parser.on("data", function(lineData) {
+            if (lineData === false || lineData.type !== "forward") {
+                return;
             }
+            if (destinations.hasOwnProperty(lineData.destination)) {
+                destinations[lineData.destination]++;
+            } else {
+                destinations[lineData.destination] = 1;
+            }
+        });
+        parser.on("end", function() {
+            resolve(destinations);
         });
     });
 };

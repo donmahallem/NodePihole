@@ -16,6 +16,8 @@ const sourceTimestampFormat = "MMM DD hh:mm:ss"
 const sourceTimestamp = moment()
     .format(sourceTimestampFormat);
 const fs = require("fs");
+const stream = require('stream')
+const through2 = require("through2");
 const usedTimestamp = {
     "iso": moment(sourceTimestamp, sourceTimestampFormat)
         .toISOString(),
@@ -215,37 +217,32 @@ describe("logHelper tests", function() {
         });
     });
     describe("createLogParser()", function() {
-        var readlineStub;
+        var createReadStreamStub;
         var lineSpy;
-        var parseLineStub;
         before(function() {
             lineSpy = sinon.spy();
-            parseLineStub = sinon.stub(logHelper, "parseLine");
-            parseLineStub.returns(true);
-            readlineStub = sandbox.stub(readline,
-                "createInterface",
+            createReadStreamStub = sandbox.stub(fs,
+                "createReadStream",
                 function(filename) {
-                    const self = this;
-                    self.emitter = new EventEmitter();
+                    var s = new stream.Readable();
                     process.nextTick(function() {
                         for (var i = 0; i < 4; i++) {
-                            self.emitter.emit("line", "foo bar");
+                            s.push("Jan 10 00:00:26 dnsmasq[503]: query[AAAA] test.com from 127.0.0.1\n");
                         }
-                        self.emitter.emit("close");
+                        s.push(null);
                     });
-                    return self.emitter;
+                    return s;
                 }
             );
         });
         after(function() {
             sinon.assert.callCount(lineSpy, 4);
-            readlineStub.restore();
-            parseLineStub.restore();
+            createReadStreamStub.restore();
         });
         it("should return 0", function(done) {
             const logParser = logHelper.createLogParser("filename");
-            logParser.on("line", lineSpy);
-            logParser.on("close", function() {
+            logParser.on("data", lineSpy);
+            logParser.on("end", function() {
                 done();
             });
 
@@ -437,19 +434,17 @@ describe("logHelper tests", function() {
             createLogParserStub = sinon.stub(logHelper,
                 "createLogParser",
                 function(filename) {
-                    const self = this;
-                    self.emitter = new EventEmitter();
-                    process.nextTick(function() {
-                        for (var i = 0; i < 4; i++) {
-                            self.emitter.emit("line", {
-                                "type": "forward",
-                                "domain": "test.com",
-                                "destination": "127.0.0.1"
-                            });
-                        };
-                        self.emitter.emit("close");
+                    var s = through2.obj(function(chunk, enc, cb) {
+                        process.nextTick(function() {
+                            //s._read = function noop() {}; // redundant? see update below
+                            s.push("Jan 10 00:00:26 dnsmasq[503]: query[AAAA] test.com from 127.0.0.1");
+                            s.push("Jan 10 00:00:26 dnsmasq[503]: query[AAAA] test.com from 127.0.0.1");
+                            s.push("Jan 10 00:00:26 dnsmasq[503]: query[AAAA] test.com from 127.0.0.1");
+                            s.push("Jan 10 00:00:26 dnsmasq[503]: query[AAAA] test.com from 127.0.0.1");
+                            s.push(null);
+                        });
                     });
-                    return self.emitter;
+                    return s;
                 });
             fsAccessStub = sinon.stub(fs, "access", function(a, b, callback) {
                 process.nextTick(callback);

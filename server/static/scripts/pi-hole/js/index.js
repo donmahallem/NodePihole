@@ -477,9 +477,9 @@ var topLists = {};
                     // Sanitize domain
                     domain = escapeHtml(domain);
                     url = "<a href=\"queries.php?domain=" + domain + "\">" + domain + "</a>";
-                    percentage = data.topAds[domain] / data.ads_blocked_today * 100;
+                    percentage = data.topItems.topAds[domain] / data.summary.adsBlockedToday * 100;
                     adtable.append("<tr> <td>" + url +
-                        "</td> <td>" + data.topAds[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-yellow\" style=\"width: " +
+                        "</td> <td>" + data.topItems.topAds[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-yellow\" style=\"width: " +
                         percentage + "%\"></div> </div> </td> </tr> ");
                 }
             }

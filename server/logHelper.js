@@ -463,23 +463,16 @@ logHelper.getOverTimeData = function(frameSize) {
             "ads": {}
         };
         parser.on("data", function(line) {
-            if (line !== false) {
+            if (line !== false && (line.type === "block" || line.type === "query")) {
                 var timestamp = moment(line.timestamp);
                 var minute = timestamp.minute();
                 var hour = timestamp.hour();
                 var time = (minute - minute % 10) / 10 + 6 * hour;
-                if (line.type === "block") {
-                    if (time in data.ads) {
-                        data.ads[time]++;
-                    } else {
-                        data.ads[time] = 1;
-                    }
-                } else if (line.type === "query") {
-                    if (time in data.queries) {
-                        data.queries[time]++;
-                    } else {
-                        data.queries[time] = 1;
-                    }
+                const type = line.type === "block" ? "queries" : "ads";
+                if (data[type].hasOwnProperty(time)) {
+                    data[type][time]++;
+                } else {
+                    data[type][time] = 1;
                 }
             }
         });

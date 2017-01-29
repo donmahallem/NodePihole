@@ -321,7 +321,7 @@ var topClientsChart = {};
                         domainname = domain;
                     }
                     var url = "<a href=\"queries.php?client=" + domain + "\">" + domainname + "</a>";
-                    percentage = data.querySources[domain] / data.dns_queries_today * 100;
+                    percentage = data.querySources[domain] / data.summary.dnsQueriesToday * 100;
                     clienttable.append("<tr> <td>" + url +
                         "</td> <td>" + data.querySources[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-blue\" style=\"width: " +
                         percentage + "%\"></div> </div> </td> </tr> ");

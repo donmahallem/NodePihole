@@ -209,7 +209,7 @@ var queryTimelineUpdater = {};
             .map(Number)
             .sort(sortNumberAsc);
         // get all keys of domain datapoints
-        var domainKeys = Object.keys(tableData.domains)
+        var domainKeys = Object.keys(tableData.queries)
             .map(Number)
             .sort(sortNumberAsc);
         // get the largest datapoint key
@@ -222,7 +222,7 @@ var queryTimelineUpdater = {};
             var d = new Date()
                 .setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0);
             timeLineChart.data.labels.push(d);
-            timeLineChart.data.datasets[0].data.push((timeInterval in tableData.domains) ? tableData.domains[timeInterval] : 0);
+            timeLineChart.data.datasets[0].data.push((timeInterval in tableData.queries) ? tableData.queries[timeInterval] : 0);
             timeLineChart.data.datasets[1].data.push((timeInterval in tableData.ads) ? tableData.ads[timeInterval] : 0);
         }
         $("#queries-over-time .overlay")
@@ -242,10 +242,10 @@ var queryTimelineUpdater = {};
                 tableData.ads[timestampIdx] = 1;
             }
         }
-        if (timestampIdx in tableData.domains) {
-            tableData.domains[timestampIdx]++;
+        if (timestampIdx in tableData.queries) {
+            tableData.queries[timestampIdx]++;
         } else {
-            tableData.domains[timestampIdx] = 1;
+            tableData.queries[timestampIdx] = 1;
         }
         qTU.updateTable();
     };
@@ -304,7 +304,7 @@ function escapeHtml(text) {
 var topClientsChart = {};
 (function(tCC) {
     tCC.update = function() {
-        $.getJSON("/api/data?summaryRaw&querySources", function(data) {
+        $.getJSON("/api/data?summary&querySources", function(data) {
             var clienttable = $("#client-frequency")
                 .find("tbody:last");
             var domain,

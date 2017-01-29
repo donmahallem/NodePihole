@@ -532,7 +532,7 @@ var queryTypeChart = {};
             $.each(data.queryTypes, function(key, value) {
                 v.push(value);
                 c.push(colors.shift());
-                qTC.chart.data.labels.push(key.substr(6, key.length - 7));
+                qTC.chart.data.labels.push(key);
             });
             // Build a single dataset with the data to be pushed
             var dd = {

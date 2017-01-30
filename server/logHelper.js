@@ -120,30 +120,28 @@ logHelper.createLogParser = function(filename) {
 
 logHelper.loadDomainFile = function(filename, blacklist) {
     return new Promise(function(resolve, reject) {
-            fs.access(filename, fs.constants.F_OK | fs.constants.R_OK, function(err) {
-                if (err) {
-                    reject();
-                } else {
-                    var domainList = [];
-                    const stream = fs
-                        .createReadStream(filename)
-                        .pipe(split2());
-                    stream.on("data", function(data) {
-                        if (data.trim() !== "") {
-                            var inBlacklist = (typeof blacklist !== "undefined" && blacklist.indexOf(data) !== -1);
-                            if (domainList.indexOf(data) === -1 && !inBlacklist) {
-                                domainList.push(data);
-                            }
+            var domainList = [];
+            let errorHandler = function(err) {
+                reject(err);
+            };
+            const stream = fs
+                .createReadStream(filename)
+                // pipe doesn't pass through errors........
+                .on("error", errorHandler)
+                .pipe(split2())
+                .pipe(through2Spy.obj(function(data) {
+                    if (data.trim() !== "") {
+                        var inBlacklist = (typeof blacklist !== "undefined" && blacklist.indexOf(data) !== -1);
+                        if (domainList.indexOf(data) === -1 && !inBlacklist) {
+                            domainList.push(data);
                         }
-                    });
-                    stream.on("end", function() {
-                        resolve(domainList);
-                    });
-                    stream.on("error", function() {
-                        reject([]);
-                    });
-                }
-            });
+                    }
+                }))
+                .on("error", errorHandler)
+                .on("end", function() {
+                    resolve(domainList);
+                })
+                .resume();
         })
         .catch(function(err) {
             return [];
@@ -174,7 +172,6 @@ logHelper.getGravity = function() {
             }
         })
         .catch(function(error) {
-            console.log("e2", error);
             return [];
         });
 };

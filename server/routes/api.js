@@ -355,7 +355,7 @@ router.get("/data", function(req, res) {
                 });
                 return;
             }
-            args[query] = req.query[query];
+            args[query] = true;
             numValidArgs++;
         }
     }
@@ -369,79 +369,13 @@ router.get("/data", function(req, res) {
     if (req.query.frameSize && !isNaN(parseInt(req.query.frameSize))) {
         args.frameSize = parseInt(req.query.frameSize);
     }
-    var data = {};
-    var promises = [];
-    if ("summary" in args) {
-        promises.push(logHelper.getSummary()
-            .then(function(data) {
-                return {
-                    "summary": data
-                }
-            }));
-    }
-    if ("overTimeData" in args) {
-        var frameSize = 10;
-        // check if frameSize is specified and either 1,10 or 60
-        if ("frameSize" in args && [1, 10, 60].indexOf(args.frameSize) !== -1) {
-            frameSize = args.frameSize;
-        }
-        promises.push(logHelper.getOverTimeData(frameSize)
-            .then(function(data) {
-                return {
-                    "overTimeData": data
-                }
-            }));
-    }
-    if ("topItems" in args) {
-        promises.push(logHelper.getTopItems()
-            .then(function(data) {
-                return {
-                    "topItems": data
-                }
-            }));
-    }
-    if ("queryTypes" in args) {
-        promises.push(logHelper.getQueryTypes()
-            .then(function(data) {
-                return {
-                    "queryTypes": data
-                }
-            }));
-    }
-    if ("forwardDestinations" in args) {
-        promises.push(logHelper.getForwardDestinations()
-            .then(function(data) {
-                return {
-                    "forwardDestinations": data
-                }
-            }));
-    }
-    if ("allQueries" in args) {
-        promises.push(logHelper.getAllQueries()
-            .then(function(data) {
-                return {
-                    "allQueries": data
-                }
-            }));
-    }
-    if ("querySources" in args) {
-        promises.push(logHelper.getQuerySources()
-            .then(function(data) {
-                return {
-                    "querySources": data
-                }
-            }));
-    }
-    Promise.all(promises)
-        .then(function(values) {
-            var data = {};
-            for (var i = 0; i < values.length; i++) {
-                data = Object.assign(data, values[i]);
-            }
+    var prom = logHelper.createDataCombiner(appDefaults.logFile, args);
+    prom.then(function(data) {
             res.json(data);
         })
         .catch(function(err) {
-            res.sendStatus(400);
+            console.error(err);
+            res.sendStatus(500);
         });
 });
 

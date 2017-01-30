@@ -10,6 +10,7 @@ const EventEmitter = require("events")
     .EventEmitter;
 const split2 = require("split2");
 const through2 = require("through2");
+const through2Spy = require("through2-spy");
 
 const isWin = /^win/.test(os.platform());
 
@@ -107,337 +108,6 @@ logHelper.parseLine = function(line) {
  *  @property {number} domainsBeingBlocked - Domains being blocked in total
  */
 
-/**
- * Creates a summary of the log file
- * @returns {Promise} a Promise providing a [Summary]{@link module:logHelper~Summary} of the log file
- */
-logHelper.getSummary = function() {
-    return new Promise(function(resolve, reject) {
-            var lineReader = readline
-                .createInterface({
-                    input: require("fs")
-                        .createReadStream(appDefaults.logFile)
-                });
-            var summaryData = {
-                adsBlockedToday: 0,
-                dnsQueriesToday: 0,
-                adsPercentageToday: 0,
-                domainsBeingBlocked: 0
-            };
-            lineReader.on("line", function(line) {
-                var lineData = logHelper.parseLine(line);
-                if (lineData === false) {
-                    return;
-                }
-                if (lineData.type === "query") {
-                    summaryData.dnsQueriesToday++;
-                } else if (lineData.type === "block") {
-                    summaryData.adsBlockedToday++;
-                }
-            });
-            lineReader.on("close", function() {
-                summaryData.adsPercentageToday = (summaryData.dnsQueriesToday === 0) ? 0 : (summaryData.adsBlockedToday / summaryData.dnsQueriesToday) * 100;
-                resolve(summaryData);
-            });
-        })
-        .then(function(result) {
-            return new Promise(function(resolve, reject) {
-                logHelper.getGravityCount()
-                    .then(function(result2) {
-                        result.domainsBeingBlocked = result2;
-                        resolve(result);
-                    })
-            });
-        });
-};
-
-/**
- * Auxilary function for windows to count non empty lines in a file
- * @param {String} filename to count the lines in
- * @param {module:logHelper~lineNumberCallback} callback - callback for the result
- */
-logHelper.getFileLineCountWindows = function(filename, callback) {
-    childProcess.exec("find /c /v \"\" \"" + filename + "\"", function(err, stdout, stderr) {
-        if (err || stderr !== "") {
-            callback(0);
-        } else {
-            var res = stdout.match(/[0-9]+(?=[\s\r\n]*$)/);
-            if (res) {
-                callback(parseInt(res[0]));
-            } else {
-                callback(0);
-            }
-        }
-    });
-};
-
-/**
- * Auxilary function for *nix to count non empty lines in a file
- * @param {String} filename to count the lines in
- * @param {module:logHelper~lineNumberCallback} callback - callback for the result
- */
-logHelper.getFileLineCountUnix = function(filename, callback) {
-    childProcess.exec("grep -c ^ " + filename, function(err, stdout, stderr) {
-        if (err || stderr !== "") {
-            callback(0);
-        } else {
-            callback(parseInt(stdout));
-        }
-    });
-};
-
-/**
- * Counts non empty lines in a file
- * @param {String} filename to count the lines in
- * @returns {Promise} a Promise providing the line count
- */
-logHelper.getFileLineCount = function(filename) {
-    return new Promise(function(resolve, reject) {
-        fs.access(filename, fs.F_OK | fs.R_OK, function(err) {
-            if (err) {
-                // if the file does not exist or is not readable return 0
-                resolve(0);
-            } else {
-                if (isWin) {
-                    logHelper.getFileLineCountWindows(filename, function(result) {
-                        resolve(result);
-                    });
-                } else {
-                    logHelper.getFileLineCountUnix(filename, function(result) {
-                        resolve(result);
-                    });
-                }
-            }
-        });
-    });
-};
-
-/**
- * Counts the blocked domains
- * @returns {Promise} a Promise with the number of blocked domains
- */
-logHelper.getGravityCount = function() {
-    return Promise.all([logHelper.getFileLineCount(appDefaults.gravityListFile),
-            logHelper.getFileLineCount(appDefaults.blackListFile)
-        ])
-        .then(function(results) {
-            return results.reduce(function(a, b) {
-                return a + b;
-            }, 0);
-        });
-};
-
-/**
- * Gets all domains listed in the specified file
- * @param {String} file to read
- * @returns {Promise} a Promise providing the line domains
- */
-logHelper.getDomains = function(file) {
-    return new Promise(function(resolve, reject) {
-        fs.access(file, fs.F_OK | fs.R_OK, function(err) {
-            if (err) {
-                resolve([]);
-            } else {
-                var lineReader = require("readline")
-                    .createInterface({
-                        input: require("fs")
-                            .createReadStream(file)
-                    });
-                var lines = [];
-                lineReader.on("line", function(line) {
-                    if (typeof line === "undefined" || line.trim() === "") {
-                        return;
-                    } else {
-                        lines.push(line);
-                    }
-                });
-                lineReader.on("close", function() {
-                    resolve(lines);
-                });
-            }
-        });
-    });
-};
-
-/**
- * Merges all blacklist files and removes the whitelisted domains
- * @returns {Promise} a Promise providing blocked domains
- */
-logHelper.getGravity = function() {
-    return Promise.all([logHelper.getDomains(appDefaults.blackListFile),
-            logHelper.getDomains(appDefaults.gravityListFile),
-            logHelper.getDomains(appDefaults.whiteListFile)
-        ])
-        .then(function(values) {
-            var domains = {};
-            values[0].forEach(function(item) {
-                domains[item] = true;
-            });
-            values[1].forEach(function(item) {
-                domains[item] = true;
-            });
-            values[2].forEach(function(item) {
-                if (domains.hasOwnProperty(item)) {
-                    delete domains[item];
-                }
-            });
-            return domains;
-        });
-};
-
-/**
- * Returns all query entries from the log
- * @returns {Promise} a Promise providing all queries
- */
-logHelper.getAllQueries = function() {
-    return new Promise(function(resolve, reject) {
-        var parser = logHelper.createLogParser(appDefaults.logFile);
-        var data = [];
-        parser.on("line", function(line) {
-            data.push(line);
-        });
-        parser.on("close", function() {
-            resolve(data);
-        });
-    });
-};
-
-/**
- * Counts the Query types
- * @returns {Promise} a Promise providing the number queries for each type
- */
-logHelper.getQueryTypes = function() {
-    return new Promise(function(resolve, reject) {
-        var parser = logHelper.createLogParser(appDefaults.logFile);
-        var queryTypes = {};
-        parser.on("data", function(lineData) {
-            if (lineData === false || lineData.type !== "query") {
-                return;
-            }
-            if (queryTypes.hasOwnProperty(lineData.queryType)) {
-                queryTypes[lineData.queryType]++;
-            } else {
-                queryTypes[lineData.queryType] = 1;
-            }
-        });
-        parser.on("end", function() {
-            resolve(queryTypes);
-        });
-    });
-};
-
-const excludeFromList = function(source, excl) {
-    var idx;
-    for (var i = 0; i < excl.length; i++) {
-        idx = source.indexOf(excl[i]);
-        if (idx !== -1) {
-            source.splice(idx, 1);
-        }
-    }
-    return source;
-};
-
-/**
- * Tries to resolve the domain of the ip
- * @method resolveIP
- * @param {String} ip - ip to check
- * @memberof logHelper
- * @private
- * @returns {Promise} a Promise either returning the ip or domains|ip
- */
-const resolveIP = function(ip) {
-    return new Promise(function(resolve, reject) {
-        dns.reverse(ip, function(err, result) {
-            if (err) {
-                resolve(ip);
-            } else {
-                resolve(result.join(",") + "|" + ip);
-            }
-        });
-    });
-};
-
-/**
- * Tries to resolve the domain of the ip
- * @method resolveIPs
- * @param {String[]} ips - ips to check
- * @memberof logHelper
- * @private
- * @returns {Promise} a Promise
- */
-const resolveIPs = function(ips) {
-    var queries = [];
-    for (var ip in ips) {
-        queries.push(resolveIP(ip, ips[ip]));
-    }
-    return Promise.all(queries)
-        .then(function(results) {
-            var domains = {};
-            for (var i = 0; i < results.length; i++) {
-                domains[results[i]] = ips[i];
-            }
-            return domains;
-        });
-};
-
-/**
- * Gets the top clients of the pihole
- * @returns {Promise} a Promise returning all information
- */
-logHelper.getQuerySources = function() {
-    return new Promise(function(resolve, reject) {
-            var parser = logHelper.createLogParser(appDefaults.logFile);
-            var clients = {};
-            parser.on("data", function(lineData) {
-                if (lineData === false || lineData.type !== "query") {
-                    return;
-                }
-                if (clients.hasOwnProperty(lineData.client)) {
-                    clients[lineData.client]++;
-                } else {
-                    clients[lineData.client] = 1;
-                }
-            });
-            parser.on("end", function() {
-                resolve(clients);
-            });
-        })
-        .then(function(clients) {
-            if (setupVars["API_EXCLUDE_CLIENTS"]) {
-                clients = excludeFromList(clients, setupVars["API_EXCLUDE_CLIENTS"]);
-            }
-            if (setupVars["API_GET_CLIENT_HOSTNAME"] === true) {
-                return resolveIPs(clients);
-            } else {
-                return clients;
-            }
-        });
-};
-
-/**
- * Gets the forward destinations from the log file
- * @returns {Promise} a Promise providing the forward destinations
- */
-logHelper.getForwardDestinations = function() {
-    return new Promise(function(resolve, reject) {
-        var destinations = {};
-        var parser = logHelper.createLogParser(appDefaults.logFile);
-        parser.on("data", function(lineData) {
-            if (lineData === false || lineData.type !== "forward") {
-                return;
-            }
-            if (destinations.hasOwnProperty(lineData.destination)) {
-                destinations[lineData.destination]++;
-            } else {
-                destinations[lineData.destination] = 1;
-            }
-        });
-        parser.on("end", function() {
-            resolve(destinations);
-        });
-    });
-};
-
 logHelper.createLogParser = function(filename) {
     return fs
         .createReadStream(filename)
@@ -448,38 +118,192 @@ logHelper.createLogParser = function(filename) {
         }));
 };
 
-/**
- * Gets the number of queries divided into frameSize minute frames
- * @param {Number} frameSize - either 1, 10 or 60
- * @returns {Promise} a Promise returning a object containing information about ads and domains over time
- */
-logHelper.getOverTimeData = function(frameSize) {
-    // Check if frameSize is set. defaults to 10
-    frameSize = (typeof frameSize !== 'undefined') ? frameSize : 10;
+logHelper.loadDomainFile = function(filename, blacklist) {
     return new Promise(function(resolve, reject) {
-        var parser = logHelper.createLogParser(appDefaults.logFile);
-        var data = {
-            "queries": {},
-            "ads": {}
-        };
-        parser.on("data", function(line) {
-            if (line !== false && (line.type === "block" || line.type === "query")) {
-                var timestamp = moment(line.timestamp);
-                var minute = timestamp.minute();
-                var hour = timestamp.hour();
-                var time = (minute - minute % 10) / 10 + 6 * hour;
-                const type = line.type === "block" ? "queries" : "ads";
-                if (data[type].hasOwnProperty(time)) {
-                    data[type][time]++;
+            fs.access(filename, fs.constants.F_OK | fs.constants.R_OK, function(err) {
+                if (err) {
+                    reject();
                 } else {
-                    data[type][time] = 1;
+                    var domainList = [];
+                    const stream = fs
+                        .createReadStream(filename)
+                        .pipe(split2());
+                    stream.on("data", function(data) {
+                        var inBlacklist = (typeof blacklist !== "undefined" && blacklist.indexOf(data) !== -1);
+                        if (domainList.indexOf(data) === -1 && !inBlacklist) {
+                            domainList.push(data);
+                        }
+                    });
+                    stream.on("end", function() {
+                        resolve(domainList);
+                    });
+                    stream.on("error", function() {
+                        reject([]);
+                    });
                 }
+            });
+        })
+        .catch(function(err) {
+            return [];
+        });
+};
+
+logHelper.getGravity = function() {
+    return logHelper.loadDomainFile(appDefaults.whiteListFile)
+        .then(function(whitelist) {
+            return Promise
+                .all([logHelper.loadDomainFile(appDefaults.blackListFile, whitelist),
+                    logHelper.loadDomainFile(appDefaults.gravityListFile, whitelist)
+                ]);
+        })
+        .then(function(lists) {
+            if (lists.length === 1) {
+                return lists[0];
+            } else {
+                var l1 = lists[0];
+                for (var i = 1; i < lists.length; i++) {
+                    for (var j = 0; j < lists[i].length; j++) {
+                        if (l1.indexOf(lists[i][j]) === -1) {
+                            l1.push(lists[i][j]);
+                        }
+                    }
+                }
+                return l1;
             }
+        })
+        .catch(function(error) {
+            console.log("e2", error);
+            return [];
         });
-        parser.on("end", function() {
-            resolve(data);
+};
+
+logHelper.createDataCombiner = function(logFile, options) {
+    if (typeof options === "undefined" || Object.keys(options)
+        .length === 0) {
+        throw new Error("No options provided");
+    }
+    var prom;
+    if (options.topItems === true) {
+        prom = logHelper.getGravity();
+    } else {
+        prom = Promise.resolve([]);
+    }
+    prom = prom
+        .then(function(gravityList) {
+            return new Promise(function(resolve, reject) {
+                var result = {};
+                var logParser = logHelper.createLogParser(logFile);
+                if (options.summary === true) {
+                    result.summary = {
+                        adsBlockedToday: 0,
+                        dnsQueriesToday: 0,
+                        adsPercentageToday: 0,
+                        domainsBeingBlocked: 0
+                    };
+                    var summarySpy = through2Spy.obj(function(chunk) {
+                        if (chunk !== false && chunk.type === "query") {
+                            result.summary.dnsQueriesToday++;
+                        } else if (chunk !== false && chunk.type === "block") {
+                            result.summary.adsBlockedToday++;
+                        }
+                    });
+                    logParser = logParser.pipe(summarySpy);
+                }
+                if (options.queryTypes === true) {
+                    result.queryTypes = {};
+                    var queryTypesSpy = through2Spy.obj(function(chunk) {
+                        if (chunk === false || chunk.type !== "query") {
+                            return;
+                        } else if (result.queryTypes.hasOwnProperty(chunk.queryType)) {
+                            result.queryTypes[chunk.queryType]++;
+                        } else {
+                            result.queryTypes[chunk.queryType] = 1;
+                        }
+                    });
+                    logParser = logParser.pipe(queryTypesSpy);
+                }
+                if (options.querySources === true) {
+                    result.querySources = {};
+                    var querySourcesSpy = through2Spy.obj(function(chunk) {
+                        if (chunk === false || chunk.type !== "query") {
+                            return;
+                        } else if (result.querySources.hasOwnProperty(chunk.client)) {
+                            result.querySources[chunk.client]++;
+                        } else {
+                            result.querySources[chunk.client] = 1;
+                        }
+                    });
+                    logParser = logParser.pipe(querySourcesSpy);
+                }
+                if (options.forwardDestinations === true) {
+                    result.forwardDestinations = {};
+                    var forwardDestinationsSpy = through2Spy.obj(function(chunk) {
+                        if (chunk === false || chunk.type !== "forward") {
+                            return;
+                        } else if (result.forwardDestinations.hasOwnProperty(chunk.destination)) {
+                            result.forwardDestinations[chunk.destination]++;
+                        } else {
+                            result.forwardDestinations[chunk.destination] = 1;
+                        }
+                    });
+                    logParser = logParser.pipe(forwardDestinationsSpy);
+                }
+                if (options.overTimeData === true) {
+                    result.overTimeData = {
+                        "ads": {},
+                        "queries": {}
+                    };
+                    var overTimeDataSpy = through2Spy.obj(function(chunk) {
+                        if (chunk !== false && (chunk.type === "block" || chunk.type === "query")) {
+                            var timestamp = moment(chunk.timestamp);
+                            var minute = timestamp.minute();
+                            var hour = timestamp.hour();
+                            var time = (minute - minute % 10) / 10 + 6 * hour;
+                            const type = chunk.type === "block" ? "queries" : "ads";
+                            if (result.overTimeData[type].hasOwnProperty(time)) {
+                                result.overTimeData[type][time]++;
+                            } else {
+                                result.overTimeData[type][time] = 1;
+                            }
+                        }
+                    });
+                    logParser = logParser.pipe(overTimeDataSpy);
+                }
+                if (options.topItems === true) {
+                    result.topItems = {
+                        "topQueries": {},
+                        "topAds": {}
+                    };
+                    var topItemsSpy = through2Spy.obj(function(chunk) {
+                        if (chunk !== false && chunk.type === "query") {
+                            var key = gravityList.indexOf(chunk.domain) !== -1 ? "topAds" : "topQueries";
+                            if (result.topItems[key].hasOwnProperty(chunk.domain)) {
+                                result.topItems[key][chunk.domain]++;
+                            } else {
+                                result.topItems[key][chunk.domain] = 1;
+                            }
+                        }
+                    });
+                    logParser = logParser.pipe(topItemsSpy);
+                }
+                logParser.on("data", function(data) {
+                    //console.log("data");
+                });
+
+                logParser.on("end", function() {
+                    resolve(result);
+                });
+            });
+        })
+        .then(function(data) {
+            // AFTER DATA RETRIEVAL HOOK
+            if (options.summary === true) {
+                data.summary.adsPercentageToday = data.summary.dnsQueriesToday == 0 ? 0 : data.summary.adsBlockedToday / data.summary.dnsQueriesToday;
+            }
+
+            return data;
         });
-    });
+    return prom;
 };
 
 logHelper.getTopItems = function(argument) {

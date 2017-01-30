@@ -108,6 +108,66 @@ logHelper.parseLine = function(line) {
  *  @property {number} domainsBeingBlocked - Domains being blocked in total
  */
 
+/**
+ * Auxilary function for windows to count non empty lines in a file
+ * @param {String} filename to count the lines in
+ * @param {module:logHelper~lineNumberCallback} callback - callback for the result
+ */
+logHelper.getFileLineCountWindows = function(filename, callback) {
+    childProcess.exec("find /c /v \"\" \"" + filename + "\"", function(err, stdout, stderr) {
+        if (err || stderr !== "") {
+            callback(0);
+        } else {
+            var res = stdout.match(/[0-9]+(?=[\s\r\n]*$)/);
+            if (res) {
+                callback(parseInt(res[0]));
+            } else {
+                callback(0);
+            }
+        }
+    });
+};
+
+/**
+ * Auxilary function for *nix to count non empty lines in a file
+ * @param {String} filename to count the lines in
+ * @param {module:logHelper~lineNumberCallback} callback - callback for the result
+ */
+logHelper.getFileLineCountUnix = function(filename, callback) {
+    childProcess.exec("grep -c ^ " + filename, function(err, stdout, stderr) {
+        if (err || stderr !== "") {
+            callback(0);
+        } else {
+            callback(parseInt(stdout));
+        }
+    });
+};
+
+/**
+ * Counts non empty lines in a file
+ * @param {String} filename to count the lines in
+ * @returns {Promise} a Promise providing the line count
+ */
+logHelper.getFileLineCount = function(filename) {
+    return new Promise(function(resolve, reject) {
+        fs.access(filename, fs.F_OK | fs.R_OK, function(err) {
+            if (err) {
+                // if the file does not exist or is not readable return 0
+                resolve(0);
+            } else {
+                if (isWin) {
+                    logHelper.getFileLineCountWindows(filename, function(result) {
+                        resolve(result);
+                    });
+                } else {
+                    logHelper.getFileLineCountUnix(filename, function(result) {
+                        resolve(result);
+                    });
+                }
+            }
+        });
+    });
+};
 logHelper.createLogParser = function(filename) {
     return fs
         .createReadStream(filename)

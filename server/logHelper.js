@@ -129,9 +129,11 @@ logHelper.loadDomainFile = function(filename, blacklist) {
                         .createReadStream(filename)
                         .pipe(split2());
                     stream.on("data", function(data) {
-                        var inBlacklist = (typeof blacklist !== "undefined" && blacklist.indexOf(data) !== -1);
-                        if (domainList.indexOf(data) === -1 && !inBlacklist) {
-                            domainList.push(data);
+                        if (data.trim() !== "") {
+                            var inBlacklist = (typeof blacklist !== "undefined" && blacklist.indexOf(data) !== -1);
+                            if (domainList.indexOf(data) === -1 && !inBlacklist) {
+                                domainList.push(data);
+                            }
                         }
                     });
                     stream.on("end", function() {

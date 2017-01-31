@@ -184,7 +184,7 @@ logHelper.createLogParser = function(filename) {
 logHelper.loadDomainFile = function(filename, blacklist) {
     return new Promise(function(resolve, reject) {
             var domainList = [];
-            let errorHandler = function(err) {
+            var errorHandler = function(err) {
                 reject(err);
             };
             const stream = fs

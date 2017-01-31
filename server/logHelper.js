@@ -393,6 +393,14 @@ logHelper.createOverTimeDataSpy = function(overTimeData) {
     });
 };
 
+logHelper.createAllQueriesSpy = function(allQueries) {
+    return through2Spy.obj(function(chunk) {
+        if (chunk !== false && chunk.type === "query") {
+            allQueries.push(chunk);
+        }
+    });
+};
+
 module.exports = logHelper;
 
 /**

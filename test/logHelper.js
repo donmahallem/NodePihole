@@ -348,40 +348,44 @@ describe("logHelper tests", function() {
             endStream.resume();
         });
     });
-    describe("getAllQueries()", function() {
-        var createLogParserStub;
-        before(function() {
-            createLogParserStub = sinon.stub(logHelper,
-                "createLogParser",
-                function(filename) {
-                    const self = this;
-                    self.emitter = new EventEmitter();
-                    process.nextTick(function() {
-                        for (var i = 0; i < 4; i++) {
-                            self.emitter.emit("line", {
-                                "type": "query",
-                                "timestamp": usedTimestamp.iso
-                            });
-                            self.emitter.emit("line", {
-                                "type": "block",
-                                "timestamp": usedTimestamp.iso
-                            });
-                        };
-                        self.emitter.emit("close");
-                    });
-                    return self.emitter;
+    describe("createAllQueriesSpy()", function() {
+        it("should return 4", function(done) {
+            var result = [];
+            var inputStream = through2.obj();
+            var endStream = inputStream
+                .pipe(logHelper.createAllQueriesSpy(result))
+                .on("error", function(err) {
+                    done(err);
+                })
+                .on("end", function() {
+                    expect(result)
+                        .to.deep.equal([{
+                            "type": "query",
+                            "domain": "test1.com"
+                        }, {
+                            "type": "query",
+                            "domain": "test1.com"
+                        }, {
+                            "type": "query",
+                            "domain": "test1.com"
+                        }, {
+                            "type": "query",
+                            "domain": "test1.com"
+                        }]);
+                    done();
                 });
-        });
-        after(function() {
-            sinon.assert.calledOnce(createLogParserStub);
-            createLogParserStub.restore();
-        });
-        it("should succeed", function() {
-            return logHelper.getAllQueries()
-                .then(function(data) {
-                    expect(data)
-                        .to.have.lengthOf(8);
+            for (var i = 0; i < 4; i++) {
+                inputStream.push({
+                    "type": "query",
+                    "domain": "test1.com"
                 });
+                inputStream.push({
+                    "type": "block",
+                    "domain": "test2.com"
+                });
+            };
+            inputStream.push(null);
+            endStream.resume();
         });
     });
     describe("createForwardDestinationsSpy()", function() {

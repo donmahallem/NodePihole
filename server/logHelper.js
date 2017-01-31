@@ -150,23 +150,25 @@ logHelper.getFileLineCountUnix = function(filename, callback) {
  */
 logHelper.getFileLineCount = function(filename) {
     return new Promise(function(resolve, reject) {
-        fs.access(filename, fs.F_OK | fs.R_OK, function(err) {
-            if (err) {
-                // if the file does not exist or is not readable return 0
-                resolve(0);
-            } else {
-                if (isWin) {
-                    logHelper.getFileLineCountWindows(filename, function(result) {
-                        resolve(result);
-                    });
-                } else {
-                    logHelper.getFileLineCountUnix(filename, function(result) {
-                        resolve(result);
-                    });
-                }
-            }
-        });
+        if (isWin) {
+            logHelper.getFileLineCountWindows(filename, function(result) {
+                resolve(result);
+            });
+        } else {
+            logHelper.getFileLineCountUnix(filename, function(result) {
+                resolve(result);
+            });
+        }
     });
+};
+
+logHelper.getGravityCount = function() {
+    return Promise.all([logHelper.getFileLineCount(appDefaults.gravityListFile), logHelper.getFileLineCount(appDefaults.blackListFile)])
+        .then(function(results) {
+            return results.reduce(function(a, b) {
+                return a + b
+            }, 0);
+        });
 };
 
 logHelper.createLogParser = function(filename) {

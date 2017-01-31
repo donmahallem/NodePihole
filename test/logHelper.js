@@ -310,45 +310,20 @@ describe("logHelper tests", function() {
             endStream.resume();
         });
     });
-    describe("getTopItems()", function() {
-        var getGravityStub, createLogParserStub;
-        before(function() {
-            getGravityStub = sinon.stub(logHelper, "getGravity", function() {
-                return new Promise(function(resolve, reject) {
-                    resolve({
-                        "test1.com": true
-                    });
-                });
-            });
-            createLogParserStub = sinon.stub(logHelper,
-                "createLogParser",
-                function(filename) {
-                    var s = through2.obj();
-                    process.nextTick(function() {
-                        for (var i = 0; i < 4; i++) {
-                            s.push({
-                                "type": "query",
-                                "domain": "test1.com"
-                            });
-                            s.push({
-                                "type": "query",
-                                "domain": "test2.com"
-                            });
-                        };
-                        s.push(null);
-                    });
-                    return s;
-                });
-        });
-        after(function() {
-            sinon.assert.calledOnce(createLogParserStub);
-            createLogParserStub.restore();
-            getGravityStub.restore();
-        });
-        it("should succeed", function() {
-            return logHelper.getTopItems()
-                .then(function(data) {
-                    expect(data)
+    describe("createTopItemsSpy()", function() {
+        it("should return 4", function(done) {
+            var result = {
+                "topAds": {},
+                "topQueries": {}
+            };
+            var inputStream = through2.obj();
+            var endStream = inputStream
+                .pipe(logHelper.createTopItemsSpy(result, ["test1.com"]))
+                .on("error", function(err) {
+                    done(err);
+                })
+                .on("end", function() {
+                    expect(result)
                         .to.deep.equal({
                             "topQueries": {
                                 "test2.com": 4
@@ -357,7 +332,20 @@ describe("logHelper tests", function() {
                                 "test1.com": 4
                             }
                         });
+                    done();
                 });
+            for (var i = 0; i < 4; i++) {
+                inputStream.push({
+                    "type": "query",
+                    "domain": "test1.com"
+                });
+                inputStream.push({
+                    "type": "query",
+                    "domain": "test2.com"
+                });
+            };
+            inputStream.push(null);
+            endStream.resume();
         });
     });
     describe("getAllQueries()", function() {

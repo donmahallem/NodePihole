@@ -59,37 +59,44 @@ describe("logHelper tests", function() {
     });
     describe("getSummary()", function() {
         it("should give a working summary", function(done) {
-            var result = {};
+            var result = {
+                adsBlockedToday: 0,
+                dnsQueriesToday: 0,
+                adsPercentageToday: 0,
+                domainsBeingBlocked: 0
+            };
             var stream = through2.obj();
-            stream.pipe(logHelper.createSummarySpy(result))
+            var endStream = stream.pipe(logHelper.createSummarySpy(result))
                 .on("end", function() {
                     expect(result)
                         .to.deep.equal({
                             adsBlockedToday: 5,
                             dnsQueriesToday: 5,
-                            adsPercentageToday: 100,
-                            domainsBeingBlocked: 30
+                            adsPercentageToday: 0,
+                            domainsBeingBlocked: 0
                         });
                     done();
                 })
                 .on("error", function(err) {
                     done(err);
-                })
-                .resume();
-            stream.push({
-                domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
-                timestamp: "timestamp",
-                client: "1111:1111:1111:1111:1111:1111:1111:1111",
-                type: "query",
-                queryType: "AAAA"
-            });
-            stream.push({
-                domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
-                timestamp: "timestamp",
-                list: "/etc/pihole/gravity.list",
-                type: "block",
-            });
+                });
+            for (var i = 0; i < 5; i++) {
+                stream.push({
+                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+                    timestamp: "timestamp",
+                    client: "1111:1111:1111:1111:1111:1111:1111:1111",
+                    type: "query",
+                    queryType: "AAAA"
+                });
+                stream.push({
+                    domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+                    timestamp: "timestamp",
+                    list: "/etc/pihole/gravity.list",
+                    type: "block",
+                });
+            };
             stream.push(null);
+            endStream.resume();
         });
     });
     describe("getGravity()", function() {
@@ -269,45 +276,38 @@ describe("logHelper tests", function() {
             logHelper.getFileLineCountWindows("filename", callback);
         });
     });
-    describe("getQueryTypes()", function() {
-        var createLogParserStub;
-        before(function() {
-            createLogParserStub = sinon.stub(logHelper,
-                "createLogParser",
-                function(filename) {
-                    var s = through2.obj();
-                    process.nextTick(function() {
-                        for (var i = 0; i < 4; i++) {
-                            s.push({
-                                "type": "query",
-                                "queryType": "AA"
-                            });
-                            s.push({
-                                "type": "query",
-                                "queryType": "AAAA"
-                            });
-                            s.push({
-                                "type": "block"
-                            });
-                        };
-                        s.push(null);
-                    });
-                    return s;
-                });
-        });
-        after(function() {
-            sinon.assert.calledOnce(createLogParserStub);
-            createLogParserStub.restore();
-        });
-        it("should succeed", function() {
-            return logHelper.getQueryTypes()
-                .then(function(data) {
-                    expect(data)
+    describe("createQueryTypesSpy()", function() {
+        it("should return 4", function(done) {
+            var result = {};
+            var stream = through2.obj();
+            var endStream = stream
+                .pipe(logHelper.createQueryTypesSpy(result))
+                .on("error", function(err) {
+                    done(err);
+                })
+                .on("end", function() {
+                    expect(result)
                         .to.deep.equal({
                             "AA": 4,
                             "AAAA": 4
                         });
+                    done();
                 });
+            for (var i = 0; i < 4; i++) {
+                stream.push({
+                    "type": "query",
+                    "queryType": "AA"
+                });
+                stream.push({
+                    "type": "query",
+                    "queryType": "AAAA"
+                });
+                stream.push({
+                    "type": "block"
+                });
+            };
+            stream.push(null);
+            endStream.resume();
         });
     });
     describe("getTopItems()", function() {

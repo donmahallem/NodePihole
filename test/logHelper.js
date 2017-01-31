@@ -58,55 +58,11 @@ describe("logHelper tests", function() {
         });
     });
     describe("getSummary()", function() {
-        var gravityListFileStub, blackListFileStub, parseLineStub, logFileStub;
-        const queryObj = {
-            domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
-            timestamp: "timestamp",
-            client: "1111:1111:1111:1111:1111:1111:1111:1111",
-            type: "query",
-            queryType: "AAAA"
-        };
-        const blockObj = {
-            domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
-            timestamp: "timestamp",
-            list: "/etc/pihole/gravity.list",
-            type: "block",
-        };
-        before(function() {
-            gravityListFileStub = sandbox.stub(appDefaults, "gravityListFile", __dirname + "/gravity.list");
-            blackListFileStub = sandbox.stub(appDefaults, "blackListFile", __dirname + "/gravity.list");
-            logFileStub = sandbox.stub(appDefaults, "logFile", __dirname + "/gravity.list");
-            parseLineStub = sandbox.stub(logHelper, "parseLine");
-            for (var i = 0; i < 30; i++) {
-                switch (i % 3) {
-                    case 0:
-                        parseLineStub.onCall(i)
-                            .returns(queryObj);
-                        break;
-                    case 1:
-                        parseLineStub.onCall(i)
-                            .returns(blockObj);
-                        break;
-                    default:
-                        parseLineStub.onCall(i)
-                            .returns(false);
-                        break;
-                }
-            }
-            parseLineStub.returns(false);
-        });
-        afterEach(function() {
-            parseLineStub.reset();
-        });
-        after(function() {
-            gravityListFileStub.restore();
-            blackListFileStub.restore();
-            parseLineStub.restore();
-            logFileStub.restore();
-        });
         it("should give a working summary", function(done) {
-            var gravityCount = logHelper.getSummary();
-            gravityCount.then(function(result) {
+            var result = {};
+            var stream = through2.obj();
+            stream.pipe(logHelper.createSummarySpy(result))
+                .on("end", function() {
                     expect(result)
                         .to.deep.equal({
                             adsBlockedToday: 5,
@@ -116,9 +72,24 @@ describe("logHelper tests", function() {
                         });
                     done();
                 })
-                .catch(function(err) {
+                .on("error", function(err) {
                     done(err);
-                });
+                })
+                .resume();
+            stream.push({
+                domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+                timestamp: "timestamp",
+                client: "1111:1111:1111:1111:1111:1111:1111:1111",
+                type: "query",
+                queryType: "AAAA"
+            });
+            stream.push({
+                domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
+                timestamp: "timestamp",
+                list: "/etc/pihole/gravity.list",
+                type: "block",
+            });
+            stream.push(null);
         });
     });
     describe("getGravity()", function() {
@@ -425,110 +396,92 @@ describe("logHelper tests", function() {
                 });
         });
     });
-    describe("getForwardDestinations()", function() {
-        var createLogParserStub;
-        before(function() {
-            createLogParserStub = sinon.stub(logHelper,
-                "createLogParser",
-                function(filename) {
-                    var s = through2.obj();
-                    process.nextTick(function() {
-                        for (var i = 0; i < 4; i++) {
-                            s.push({
-                                "type": "forward",
-                                "destination": "127.0.0.1"
-                            });
-                        }
-                        s.push(null);
-                    });
-                    return s;
-                });
-        });
-        after(function() {
-            sinon.assert.calledOnce(createLogParserStub);
-            createLogParserStub.restore();
-        });
-        it("should succeed", function() {
-            return logHelper.getForwardDestinations()
-                .then(function(data) {
-                    expect(data)
+    describe("createForwardDestinationsSpy()", function() {
+        it("should return 4", function(done) {
+            var result = {};
+            var stream = through2.obj();
+            var endStream = stream
+                .pipe(logHelper.createForwardDestinationsSpy(result))
+                .on("error", function(err) {
+                    done(err);
+                })
+                .on("end", function() {
+                    expect(result)
                         .to.deep.equal({
-                            "127.0.0.1": 4
+                            "127.0.0.1": 10
                         });
+                    done();
                 });
+            for (var i = 0; i < 10; i++) {
+                stream.push({
+                    "type": "forward",
+                    "destination": "127.0.0.1"
+                });
+            }
+            stream.push(null);
+            endStream.resume();
         });
     });
-    describe("getQuerySources()", function() {
-        var createLogParserStub;
-        before(function() {
-            createLogParserStub = sinon.stub(logHelper,
-                "createLogParser",
-                function(filename) {
-                    var s = through2.obj();
-                    process.nextTick(function() {
-                        for (var i = 0; i < 4; i++) {
-                            s.push({
-                                "type": "query",
-                                "timestamp": usedTimestamp.iso,
-                                "client": "127.0.0.1"
-                            });
-                            s.push({
-                                "type": "block",
-                                "timestamp": usedTimestamp.iso
-                            });
-                        };
-                        s.push(null);
-                    });
-                    return s;
-                });
-        });
-        after(function() {
-            sinon.assert.calledOnce(createLogParserStub);
-            createLogParserStub.restore();
-        });
-        it("should succeed", function() {
-            return logHelper.getQuerySources()
-                .then(function(data) {
-                    expect(data)
+    describe("createQuerySourcesSpy()", function() {
+        it("should return 4", function(done) {
+            var result = {};
+            var stream = through2.obj();
+            var endStream = stream
+                .pipe(logHelper.createQuerySourcesSpy(result))
+                .on("error", function(err) {
+                    done(err);
+                })
+                .on("end", function() {
+                    expect(result)
                         .to.deep.equal({
-                            "127.0.0.1": 4
+                            "127.0.0.1": 10
                         });
+                    done();
                 });
+            for (var i = 0; i < 10; i++) {
+                stream.push({
+                    "type": "query",
+                    "timestamp": usedTimestamp.iso,
+                    "client": "127.0.0.1"
+                });
+                stream.push({
+                    "type": "block",
+                    "timestamp": usedTimestamp.iso
+                });
+            }
+            stream.push(null);
+            endStream.resume();
         });
     });
-    describe("getOverTimeData()", function() {
-        var createLogParserStub;
-        before(function() {
-            createLogParserStub = sinon.stub(logHelper,
-                "createLogParser",
-                function(filename) {
-                    var s = through2.obj();
-                    process.nextTick(function() {
-                        for (var i = 0; i < 4; i++) {
-                            s.push({
-                                "type": "query",
-                                "timestamp": usedTimestamp.iso
-                            });
-                            s.push({
-                                "type": "block",
-                                "timestamp": usedTimestamp.iso
-                            });
-                        };
-                        s.push(null);
-                    });
-                    return s;
+    describe("createOverTimeDataSpy()", function() {
+        it("should return 4", function(done) {
+            var result = {
+                "ads": {},
+                "queries": {}
+            };
+            var stream = through2.obj();
+            var endStream = stream
+                .pipe(logHelper.createOverTimeDataSpy(result))
+                .on("error", function(err) {
+                    done(err);
+                })
+                .on("end", function() {
+                    expect(result)
+                        .to.have.all.keys('ads', 'queries');
+                    done();
                 });
-        });
-        after(function() {
-            sinon.assert.calledOnce(createLogParserStub);
-            createLogParserStub.restore();
-        });
-        it("should return 4", function() {
-            return logHelper.getOverTimeData()
-                .then(function(data) {
-                    expect(data)
-                        .to.have.all.keys('ads', 'queries')
+            for (var i = 0; i < 10; i++) {
+                stream.push({
+                    "timestamp": usedTimestamp.iso,
+                    "type": "query"
                 });
+                stream.push({
+                    "timestamp": usedTimestamp.iso,
+                    "type": "block"
+                });
+            }
+            stream.push(null);
+            endStream.resume();
         });
     });
     describe("parseLine()", function() {

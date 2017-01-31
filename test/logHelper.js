@@ -16,7 +16,7 @@ const sourceTimestampFormat = "MMM DD hh:mm:ss"
 const sourceTimestamp = moment()
     .format(sourceTimestampFormat);
 const fs = require("fs");
-const stream = require('stream')
+const stream = require('stream');
 const through2 = require("through2");
 const usedTimestamp = {
     "iso": moment(sourceTimestamp, sourceTimestampFormat)
@@ -65,8 +65,8 @@ describe("logHelper tests", function() {
                 adsPercentageToday: 0,
                 domainsBeingBlocked: 0
             };
-            var stream = through2.obj();
-            var endStream = stream.pipe(logHelper.createSummarySpy(result))
+            var inputStream = through2.obj();
+            var endStream = inputStream.pipe(logHelper.createSummarySpy(result))
                 .on("end", function() {
                     expect(result)
                         .to.deep.equal({
@@ -81,95 +81,95 @@ describe("logHelper tests", function() {
                     done(err);
                 });
             for (var i = 0; i < 5; i++) {
-                stream.push({
+                inputStream.push({
                     domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
                     timestamp: "timestamp",
                     client: "1111:1111:1111:1111:1111:1111:1111:1111",
                     type: "query",
                     queryType: "AAAA"
                 });
-                stream.push({
+                inputStream.push({
                     domain: "aaaaaaaaaa.bbbbbb.ccccccccccc.net",
                     timestamp: "timestamp",
                     list: "/etc/pihole/gravity.list",
                     type: "block",
                 });
             };
-            stream.push(null);
+            inputStream.push(null);
             endStream.resume();
+        });
+    });
+    describe("loadDomainFile()", function() {
+        var createReadStreamStub;
+        before(function() {
+            createReadStreamStub = sandbox.stub(fs, "createReadStream", function(filename) {
+                var runs = 0;
+                var read = function(n) {
+                    if (runs < 4) {
+                        this.push("domain" + runs + ".com\n")
+                        runs++;
+                    } else {
+                        this.push(null);
+                    }
+                };
+                return new stream.Readable({
+                    "read": read
+                });
+            });
+        });
+        after(function() {
+            sinon.assert.callCount(createReadStreamStub, 2);
+            createReadStreamStub.restore();
+        });
+        describe("without Blacklist", function() {
+            it("should return 2 domains", function() {
+                return logHelper.loadDomainFile("test")
+                    .then(function(domains) {
+                        expect(domains)
+                            .to.deep.equal(["domain0.com", "domain1.com", "domain2.com", "domain3.com"]);
+                    });
+            });
+        });
+        describe("with Blacklist", function() {
+            it("should return 2 domains", function() {
+                return logHelper.loadDomainFile("test", ["domain0.com", "domain2.com"])
+                    .then(function(domains) {
+                        expect(domains)
+                            .to.deep.equal(["domain1.com", "domain3.com"]);
+                    });
+            });
         });
     });
     describe("getGravity()", function() {
         var getDomainsStub;
         before(function() {
-            getDomainsStub = sandbox.stub(logHelper, "getDomains");
+            getDomainsStub = sandbox.stub(logHelper, "loadDomainFile");
             getDomainsStub.onCall(0)
                 .returns(new Promise(function(resolve, reject) {
-                    setTimeout(function() {
-                        resolve(["domain1.com", "domain2.com"]);
-                    }, 100);
+                    resolve(["domain2.com", "domain4.com"]);
                 }));
             getDomainsStub.onCall(1)
                 .returns(new Promise(function(resolve, reject) {
-                    setTimeout(function() {
-                        resolve(["domain3.com", "domain4.com"]);
-                    }, 100);
+                    resolve(["domain2.com"]);
                 }));
             getDomainsStub.onCall(2)
                 .returns(new Promise(function(resolve, reject) {
-                    setTimeout(function() {
-                        resolve(["domain1.com", "domain3.com"]);
-                    }, 100);
+                    resolve(["domain4.com"]);
                 }));
         });
         after(function() {
             getDomainsStub.restore();
         });
-        it("should return 2 domains", function(done) {
+        it("should return 2 domains", function() {
             var gravity = logHelper.getGravity();
-            gravity.then(function(result) {
-                    expect(result)
-                        .to.deep.equal({
-                            "domain2.com": true,
-                            "domain4.com": true
-                        });
-                    done();
-                })
-                .catch(function(err) {
-                    done(err);
-                });
-        });
-    });
-    describe("getDomains()", function() {
-        it("should return 6 domains", function(done) {
-            var gravity = logHelper
-                .getDomains(__dirname + "/whitelist.txt")
-                .then(function(result) {
-                    expect(result)
-                        .to.deep.equal(["raw.githubusercontent.com",
-                            "mirror1.malwaredomains.com",
-                            "sysctl.org",
-                            "zeustracker.abuse.ch",
-                            "s3.amazonaws.com",
-                            "hosts-file.net"
-                        ]);
-                    done();
-                })
-                .catch(function(err) {
-                    done(err);
-                });
-        });
-        it("should return 1 domain", function(done) {
-            var gravity = logHelper
-                .getDomains(__dirname + "/blacklist.txt")
-                .then(function(result) {
-                    expect(result)
-                        .to.deep.equal(["blocked.blocked.blocked"]);
-                    done();
-                })
-                .catch(function(err) {
-                    done(err);
-                });
+            return gravity.then(function(result) {
+                expect(result)
+                    .to.deep.equal([
+                        "domain2.com",
+                        "domain4.com"
+                    ]);
+                sinon.assert.calledWith(getDomainsStub, sinon.match.typeOf("string"), sinon.match.typeOf("array"));
+            });
         });
     });
     describe("getGravityCount()", function() {
@@ -279,8 +279,8 @@ describe("logHelper tests", function() {
     describe("createQueryTypesSpy()", function() {
         it("should return 4", function(done) {
             var result = {};
-            var stream = through2.obj();
-            var endStream = stream
+            var inputStream = through2.obj();
+            var endStream = inputStream
                 .pipe(logHelper.createQueryTypesSpy(result))
                 .on("error", function(err) {
                     done(err);
@@ -294,19 +294,19 @@ describe("logHelper tests", function() {
                     done();
                 });
             for (var i = 0; i < 4; i++) {
-                stream.push({
+                inputStream.push({
                     "type": "query",
                     "queryType": "AA"
                 });
-                stream.push({
+                inputStream.push({
                     "type": "query",
                     "queryType": "AAAA"
                 });
-                stream.push({
+                inputStream.push({
                     "type": "block"
                 });
             };
-            stream.push(null);
+            inputStream.push(null);
             endStream.resume();
         });
     });
@@ -399,8 +399,8 @@ describe("logHelper tests", function() {
     describe("createForwardDestinationsSpy()", function() {
         it("should return 4", function(done) {
             var result = {};
-            var stream = through2.obj();
-            var endStream = stream
+            var inputStream = through2.obj();
+            var endStream = inputStream
                 .pipe(logHelper.createForwardDestinationsSpy(result))
                 .on("error", function(err) {
                     done(err);
@@ -413,20 +413,20 @@ describe("logHelper tests", function() {
                     done();
                 });
             for (var i = 0; i < 10; i++) {
-                stream.push({
+                inputStream.push({
                     "type": "forward",
                     "destination": "127.0.0.1"
                 });
             }
-            stream.push(null);
+            inputStream.push(null);
             endStream.resume();
         });
     });
     describe("createQuerySourcesSpy()", function() {
         it("should return 4", function(done) {
             var result = {};
-            var stream = through2.obj();
-            var endStream = stream
+            var inputStream = through2.obj();
+            var endStream = inputStream
                 .pipe(logHelper.createQuerySourcesSpy(result))
                 .on("error", function(err) {
                     done(err);
@@ -439,17 +439,17 @@ describe("logHelper tests", function() {
                     done();
                 });
             for (var i = 0; i < 10; i++) {
-                stream.push({
+                inputStream.push({
                     "type": "query",
                     "timestamp": usedTimestamp.iso,
                     "client": "127.0.0.1"
                 });
-                stream.push({
+                inputStream.push({
                     "type": "block",
                     "timestamp": usedTimestamp.iso
                 });
             }
-            stream.push(null);
+            inputStream.push(null);
             endStream.resume();
         });
     });
@@ -459,8 +459,8 @@ describe("logHelper tests", function() {
                 "ads": {},
                 "queries": {}
             };
-            var stream = through2.obj();
-            var endStream = stream
+            var inputStream = through2.obj();
+            var endStream = inputStream
                 .pipe(logHelper.createOverTimeDataSpy(result))
                 .on("error", function(err) {
                     done(err);
@@ -471,16 +471,16 @@ describe("logHelper tests", function() {
                     done();
                 });
             for (var i = 0; i < 10; i++) {
-                stream.push({
+                inputStream.push({
                     "timestamp": usedTimestamp.iso,
                     "type": "query"
                 });
-                stream.push({
+                inputStream.push({
                     "timestamp": usedTimestamp.iso,
                     "type": "block"
                 });
             }
-            stream.push(null);
+            inputStream.push(null);
             endStream.resume();
         });
     });

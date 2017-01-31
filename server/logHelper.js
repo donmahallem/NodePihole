@@ -168,6 +168,7 @@ logHelper.getFileLineCount = function(filename) {
         });
     });
 };
+
 logHelper.createLogParser = function(filename) {
     return fs
         .createReadStream(filename)
@@ -187,6 +188,7 @@ logHelper.loadDomainFile = function(filename, blacklist) {
             const stream = fs
                 .createReadStream(filename)
                 // pipe doesn't pass through errors........
+                // Ref: http://stackoverflow.com/a/22389498/1188256
                 .on("error", errorHandler)
                 .pipe(split2())
                 .pipe(through2Spy.obj(function(data) {
@@ -208,6 +210,10 @@ logHelper.loadDomainFile = function(filename, blacklist) {
         });
 };
 
+/**
+ * Creates a list of all blacklisted domains 
+ * @returns {Promise} a Promise that returns an array
+ */
 logHelper.getGravity = function() {
     return logHelper.loadDomainFile(appDefaults.whiteListFile)
         .then(function(whitelist) {
@@ -248,7 +254,7 @@ logHelper.createDataCombiner = function(logFile, options) {
         prom = Promise.resolve([]);
     }
     prom = prom
-        .then(function(gravityList) {
+        .then(function(blacklist) {
             return new Promise(function(resolve, reject) {
                 var result = {};
                 var logParser = logHelper.createLogParser(logFile);
@@ -259,99 +265,38 @@ logHelper.createDataCombiner = function(logFile, options) {
                         adsPercentageToday: 0,
                         domainsBeingBlocked: 0
                     };
-                    var summarySpy = through2Spy.obj(function(chunk) {
-                        if (chunk !== false && chunk.type === "query") {
-                            result.summary.dnsQueriesToday++;
-                        } else if (chunk !== false && chunk.type === "block") {
-                            result.summary.adsBlockedToday++;
-                        }
-                    });
-                    logParser = logParser.pipe(summarySpy);
+                    logParser = logParser.pipe(logHelper.createSummarySpy(result.summary));
                 }
                 if (options.queryTypes === true) {
                     result.queryTypes = {};
-                    var queryTypesSpy = through2Spy.obj(function(chunk) {
-                        if (chunk === false || chunk.type !== "query") {
-                            return;
-                        } else if (result.queryTypes.hasOwnProperty(chunk.queryType)) {
-                            result.queryTypes[chunk.queryType]++;
-                        } else {
-                            result.queryTypes[chunk.queryType] = 1;
-                        }
-                    });
-                    logParser = logParser.pipe(queryTypesSpy);
+                    logParser = logParser.pipe(logHelper.createQueryTypesSpy(result.queryTypes));
                 }
                 if (options.querySources === true) {
                     result.querySources = {};
-                    var querySourcesSpy = through2Spy.obj(function(chunk) {
-                        if (chunk === false || chunk.type !== "query") {
-                            return;
-                        } else if (result.querySources.hasOwnProperty(chunk.client)) {
-                            result.querySources[chunk.client]++;
-                        } else {
-                            result.querySources[chunk.client] = 1;
-                        }
-                    });
-                    logParser = logParser.pipe(querySourcesSpy);
+                    logParser = logParser.pipe(logHelper.createQuerySourcesSpy(result.querySources));
                 }
                 if (options.forwardDestinations === true) {
                     result.forwardDestinations = {};
-                    var forwardDestinationsSpy = through2Spy.obj(function(chunk) {
-                        if (chunk === false || chunk.type !== "forward") {
-                            return;
-                        } else if (result.forwardDestinations.hasOwnProperty(chunk.destination)) {
-                            result.forwardDestinations[chunk.destination]++;
-                        } else {
-                            result.forwardDestinations[chunk.destination] = 1;
-                        }
-                    });
-                    logParser = logParser.pipe(forwardDestinationsSpy);
+                    logParser = logParser.pipe(logHelper.createForwardDestinationsSpy(result.forwardDestinations));
                 }
                 if (options.overTimeData === true) {
                     result.overTimeData = {
                         "ads": {},
                         "queries": {}
                     };
-                    var overTimeDataSpy = through2Spy.obj(function(chunk) {
-                        if (chunk !== false && (chunk.type === "block" || chunk.type === "query")) {
-                            var timestamp = moment(chunk.timestamp);
-                            var minute = timestamp.minute();
-                            var hour = timestamp.hour();
-                            var time = (minute - minute % 10) / 10 + 6 * hour;
-                            const type = chunk.type === "block" ? "queries" : "ads";
-                            if (result.overTimeData[type].hasOwnProperty(time)) {
-                                result.overTimeData[type][time]++;
-                            } else {
-                                result.overTimeData[type][time] = 1;
-                            }
-                        }
-                    });
-                    logParser = logParser.pipe(overTimeDataSpy);
+                    logParser = logParser.pipe(logHelper.createOverTimeDataSpy(result.overTimeData));
                 }
                 if (options.topItems === true) {
                     result.topItems = {
                         "topQueries": {},
                         "topAds": {}
                     };
-                    var topItemsSpy = through2Spy.obj(function(chunk) {
-                        if (chunk !== false && chunk.type === "query") {
-                            var key = gravityList.indexOf(chunk.domain) !== -1 ? "topAds" : "topQueries";
-                            if (result.topItems[key].hasOwnProperty(chunk.domain)) {
-                                result.topItems[key][chunk.domain]++;
-                            } else {
-                                result.topItems[key][chunk.domain] = 1;
-                            }
-                        }
-                    });
-                    logParser = logParser.pipe(topItemsSpy);
+                    logParser = logParser.pipe(logHelper.createTopItemsSpy(result.topItems, blacklist));
                 }
-                logParser.on("data", function(data) {
-                    //console.log("data");
-                });
-
                 logParser.on("end", function() {
                     resolve(result);
                 });
+                logParser.resume();
             });
         })
         .then(function(data) {
@@ -365,38 +310,85 @@ logHelper.createDataCombiner = function(logFile, options) {
     return prom;
 };
 
-logHelper.getTopItems = function(argument) {
-    return logHelper.getGravity()
-        .then(function(gravityList) {
-            return new Promise(function(resolve, reject) {
-                var parser = logHelper.createLogParser(appDefaults.logFile);
-                var topDomains = {},
-                    topAds = {};
-                parser.on("data", function(info) {
-                    if (info !== false && info.type === "query") {
-                        if (gravityList.hasOwnProperty(info.domain)) {
-                            if (topAds.hasOwnProperty(info.domain)) {
-                                topAds[info.domain]++;
-                            } else {
-                                topAds[info.domain] = 1;
-                            }
-                        } else {
-                            if (topDomains.hasOwnProperty(info.domain)) {
-                                topDomains[info.domain]++;
-                            } else {
-                                topDomains[info.domain] = 1;
-                            }
-                        }
-                    }
-                });
-                parser.on("end", function() {
-                    resolve({
-                        "topQueries": topDomains,
-                        "topAds": topAds
-                    });
-                });
-            });
-        });
+logHelper.createSummarySpy = function(summary) {
+    return through2Spy.obj(function(chunk) {
+        if (chunk !== false && chunk.type === "query") {
+            summary.dnsQueriesToday++;
+        } else if (chunk !== false && chunk.type === "block") {
+            summary.adsBlockedToday++;
+        }
+    });
+};
+
+logHelper.createQueryTypesSpy = function(queryTypes) {
+    return through2Spy.obj(function(chunk) {
+        if (chunk === false || chunk.type !== "query") {
+            return;
+        } else if (queryTypes.hasOwnProperty(chunk.queryType)) {
+            queryTypes[chunk.queryType]++;
+        } else {
+            queryTypes[chunk.queryType] = 1;
+        }
+    });
+};
+
+logHelper.createQuerySourcesSpy = function(querySources) {
+    return through2Spy.obj(function(chunk) {
+        if (chunk === false || chunk.type !== "query") {
+            return;
+        } else if (querySources.hasOwnProperty(chunk.client)) {
+            querySources[chunk.client]++;
+        } else {
+            querySources[chunk.client] = 1;
+        }
+    });
+};
+
+logHelper.createForwardDestinationsSpy = function(forwardDestinations) {
+    return through2Spy.obj(function(chunk) {
+        if (chunk === false || chunk.type !== "forward") {
+            return;
+        } else if (forwardDestinations.hasOwnProperty(chunk.destination)) {
+            forwardDestinations[chunk.destination]++;
+        } else {
+            forwardDestinations[chunk.destination] = 1;
+        }
+    });
+};
+
+/**
+ * @param {Object} object to store the info info
+ * @param {String[]} Blacklist
+ * @returns {Stream} return 
+ */
+logHelper.createTopItemsSpy = function(topItems, blacklist) {
+    return through2Spy.obj(function(chunk) {
+        if (chunk !== false && chunk.type === "query") {
+            var key = blacklist.indexOf(chunk.domain) !== -1 ? "topAds" : "topQueries";
+            if (topItems[key].hasOwnProperty(chunk.domain)) {
+                topItems[key][chunk.domain]++;
+            } else {
+                topItems[key][chunk.domain] = 1;
+            }
+        }
+    });
+};
+
+logHelper.createOverTimeDataSpy = function(overTimeData) {
+    return through2Spy.obj(function(chunk) {
+        if (chunk !== false && (chunk.type === "block" || chunk.type === "query")) {
+            var timestamp = moment(chunk.timestamp);
+            var minute = timestamp.minute();
+            var hour = timestamp.hour();
+            var time = (minute - minute % 10) / 10 + 6 * hour;
+            const type = chunk.type === "block" ? "queries" : "ads";
+            if (overTimeData[type].hasOwnProperty(time)) {
+                overTimeData[type][time]++;
+            } else {
+                overTimeData[type][time] = 1;
+            }
+        }
+    });
 };
 
 module.exports = logHelper;

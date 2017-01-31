@@ -381,7 +381,7 @@ logHelper.createOverTimeDataSpy = function(overTimeData) {
             var minute = timestamp.minute();
             var hour = timestamp.hour();
             var time = (minute - minute % 10) / 10 + 6 * hour;
-            const type = chunk.type === "block" ? "queries" : "ads";
+            const type = chunk.type === "block" ? "ads" : "queries";
             if (overTimeData[type].hasOwnProperty(time)) {
                 overTimeData[type][time]++;
             } else {

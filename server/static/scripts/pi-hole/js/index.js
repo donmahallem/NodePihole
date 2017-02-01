@@ -181,7 +181,7 @@ var queryTimelineUpdater = {};
         pihole.api.data.getOvertimeData()
             .done(function(data) {
                 // Remove possibly already existing data
-                tableData = data.overTimeData;
+                tableData = data.data;
                 qTU.updateTable();
             })
             .fail(function() {

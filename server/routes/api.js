@@ -260,7 +260,9 @@ router.get("/data/overtimeData", function(req, res, next) {
     var stream = logHelper.createLogParser()
         .pipe(logHelper.createOverTimeDataSpy(resp))
         .on("end", function() {
-            res.json(resp);
+            res.json({
+                "data": resp
+            });
         })
         .on("error", function(error) {
             next(new Error("Error while parsing the log"));

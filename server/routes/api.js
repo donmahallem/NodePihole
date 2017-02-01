@@ -356,7 +356,6 @@ router.get("/data/topItems", function(req, res) {
  *       "data":{
  *         "adsBlockedToday": 10,
  *         "dnsQueriesToday": 100,
- *         "adsPercentageToday": 10.0,
  *         "domainsBeingBlocked": 1337
  *       }
  *     }

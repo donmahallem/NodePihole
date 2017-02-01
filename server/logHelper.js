@@ -314,6 +314,12 @@ logHelper.createDataCombiner = function(logFile, options) {
 };
 
 logHelper.createSummarySpy = function(summary) {
+    if (!summary.hasOwnProperty("adsBlockedToday")) {
+        summary.adsBlockedToday = 0;
+    }
+    if (!summary.hasOwnProperty("dnsQueriesToday")) {
+        summary.dnsQueriesToday = 0;
+    }
     return through2Spy.obj(function(chunk) {
         if (chunk !== false && chunk.type === "query") {
             summary.dnsQueriesToday++;

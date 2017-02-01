@@ -27,20 +27,88 @@ var pihole = (function(pihole, $, undefined) {
      */
     api.data = {
         /**
-         * @param {Object} args - args to query
          * @memberof module:pihole/api/data
-         * @since 1.0.0
+         * @since 1.0.1
          */
-        get: function(args) {
+        getSummary: function() {
             return $.ajax({
-                "url": "/api/data",
+                "url": "/api/data/summary",
+                "headers": {
+                    "Accept": "application/json; charset=utf-8",
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                "method": "get",
+                "dataType": "json"
+            });
+        },
+        /**
+         * @memberof module:pihole/api/data/
+         * @since 1.0.1
+         */
+        getForwardDestinations: function() {
+            return $.ajax({
+                "url": "/api/data/forwardDestinations",
+                "headers": {
+                    "Accept": "application/json; charset=utf-8",
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                "method": "get",
+                "dataType": "json"
+            });
+        },
+        /**
+         * @memberof module:pihole/api/data/
+         * @since 1.0.1
+         */
+        getQuerySources: function() {
+            return $.ajax({
+                "url": "/api/data/querySources",
+                "headers": {
+                    "Accept": "application/json; charset=utf-8",
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                "method": "get",
+                "dataType": "json"
+            });
+        },
+        /**
+         * @memberof module:pihole/api/data/
+         * @since 1.0.1
+         */
+        getOvertimeData: function() {
+            return $.ajax({
+                "url": "/api/data/overtimeData",
+                "headers": {
+                    "Accept": "application/json; charset=utf-8",
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                "method": "get",
+                "dataType": "json"
+            });
+        }
+    };
+    /**
+     * Api for data endpoint
+     * @module pihole/api/log
+     * @since 1.0.1
+     */
+    api.log = {
+        /**
+         * @memberof module:pihole/api/log
+         * @since 1.0.1
+         */
+        get: function(type) {
+            return $.ajax({
+                "url": "/api/log",
                 "headers": {
                     "Accept": "application/json; charset=utf-8",
                     "Content-Type": "application/json; charset=utf-8"
                 },
                 "method": "get",
                 "dataType": "json",
-                "data": args
+                "data": {
+                    "type": type
+                }
             });
         }
     };

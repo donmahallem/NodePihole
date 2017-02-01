@@ -363,11 +363,16 @@ router.get("/data/topItems", function(req, res) {
  * @apiUse NotAuthorized
  */
 router.get("/data/summary", function(req, res, next) {
-    var resp = {};
+    var resp = {
+        "adsBlockedToday": 0,
+        "dnsQueriesToday": 0
+    };
     var stream = logHelper.createLogParser()
         .pipe(logHelper.createSummarySpy(resp))
         .on("end", function() {
-            res.json(resp);
+            res.json({
+                "data": resp
+            });
         })
         .on("error", function(error) {
             next(new Error("Error while parsing the log"));

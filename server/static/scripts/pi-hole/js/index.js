@@ -59,10 +59,10 @@ var summaryUpdater = {};
             });
     };
     sU.pollData = function() {
-        $.getJSON("/api/data?summary", function LoadSummaryData(data) {
-                summaryData = data.summary;
-            })
-            .done(function() {
+        pihole.api.data.getSummary()
+            .done(function(data) {
+                summaryData = data.data;
+                summaryData.adsPercentageToday = (summaryData.dnsQueriesToday === 0) ? 0 : summaryData.adsBlockedToday / summaryData.dnsQueriesToday;
                 sU.updateView();
             })
             .fail(function() {
@@ -178,9 +178,7 @@ var queryTimelineUpdater = {};
         return a - b;
     };
     qTU.pollData = function() {
-        pihole.api.data.get({
-                "overTimeData": true
-            })
+        pihole.api.data.getOvertimeData()
             .done(function(data) {
                 // Remove possibly already existing data
                 tableData = data.overTimeData;

@@ -302,32 +302,42 @@ function escapeHtml(text) {
 var topClientsChart = {};
 (function(tCC) {
     tCC.update = function() {
-        $.getJSON("/api/data?summary&querySources", function(data) {
-            var clienttable = $("#client-frequency")
-                .find("tbody:last");
-            var domain,
-                percentage,
-                domainname;
-            for (domain in data.querySources) {
-                if ({}
-                    .hasOwnProperty.call(data.querySources, domain)) {
-                    // Sanitize domain
-                    domain = escapeHtml(domain);
-                    if (domain.indexOf("|") > -1) {
-                        domainname = domain.substr(0, domain.indexOf("|"));
-                    } else {
-                        domainname = domain;
+        var reqQuerySources = pihole
+            .api
+            .data
+            .getQuerySources();
+        var reqSummary = pihole
+            .api
+            .data
+            .getSummary();
+        $.when(reqSummary, reqQuerySources)
+            .done(function(res1, res2) {
+                const summary = res1[0].data;
+                const querySources = res2[0].data;
+                var clienttable = $("#client-frequency")
+                    .find("tbody:last");
+                var domain,
+                    percentage,
+                    domainname;
+                for (domain in querySources) {
+                    if (querySources.hasOwnProperty(domain)) {
+                        // Sanitize domain
+                        domain = escapeHtml(domain);
+                        if (domain.indexOf("|") > -1) {
+                            domainname = domain.substr(0, domain.indexOf("|"));
+                        } else {
+                            domainname = domain;
+                        }
+                        var url = "<a href=\"queries.php?client=" + domain + "\">" + domainname + "</a>";
+                        percentage = querySources[domain] / summary.dnsQueriesToday * 100;
+                        clienttable.append("<tr> <td>" + url +
+                            "</td> <td>" + querySources[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-blue\" style=\"width: " +
+                            percentage + "%\"></div> </div> </td> </tr> ");
                     }
-                    var url = "<a href=\"queries.php?client=" + domain + "\">" + domainname + "</a>";
-                    percentage = data.querySources[domain] / data.summary.dnsQueriesToday * 100;
-                    clienttable.append("<tr> <td>" + url +
-                        "</td> <td>" + data.querySources[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-blue\" style=\"width: " +
-                        percentage + "%\"></div> </div> </td> </tr> ");
                 }
-            }
-            $("#client-frequency .overlay")
-                .remove();
-        });
+                $("#client-frequency .overlay")
+                    .remove();
+            });
     };
 }(topClientsChart));
 

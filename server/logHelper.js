@@ -172,6 +172,7 @@ logHelper.getGravityCount = function() {
 };
 
 logHelper.createLogParser = function(filename) {
+    filename = filename || appDefaults.logFile;
     return fs
         .createReadStream(filename)
         .pipe(split2())
@@ -377,6 +378,12 @@ logHelper.createTopItemsSpy = function(topItems, blacklist) {
 };
 
 logHelper.createOverTimeDataSpy = function(overTimeData) {
+    if (!overTimeData.hasOwnProperty("ads")) {
+        overTimeData.ads = {};
+    }
+    if (!overTimeData.hasOwnProperty("queries")) {
+        overTimeData.queries = {};
+    }
     return through2Spy.obj(function(chunk) {
         if (chunk !== false && (chunk.type === "block" || chunk.type === "query")) {
             var timestamp = moment(chunk.timestamp);

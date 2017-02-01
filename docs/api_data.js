@@ -1,138 +1,11 @@
 define({ "api": [
   {
     "type": "get",
-    "url": "/api/data",
-    "title": "Query data from the log",
-    "description": "<p>You can choose any combination of the following query parameters to combine those. Some need authentication(Please refer to the detailed listing of the parameters for response types and parameters)</p>",
-    "name": "Data",
-    "group": "Data",
-    "version": "1.0.0",
-    "parameter": {
-      "fields": {
-        "Query Parameter": [
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "optional": true,
-            "field": "summary",
-            "defaultValue": "false",
-            "description": "<p>Please refer to <a href=\"#api-Data-GetDataSummary\">summary</a></p>"
-          },
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "optional": true,
-            "field": "overTimeData",
-            "defaultValue": "false",
-            "description": "<p>Please refer to <a href=\"#api-Data-GetDataOverTimeData\">overTimeData</a></p>"
-          },
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "optional": true,
-            "field": "topItems",
-            "defaultValue": "false",
-            "description": "<p>Please refer to <a href=\"#api-Data-GetDataTopItems\">topItems</a></p>"
-          },
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "optional": true,
-            "field": "recentItems",
-            "defaultValue": "false",
-            "description": "<p>Please refer to <a href=\"#api-Data-GetDataRecentItems\">recentItems</a></p>"
-          },
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "optional": true,
-            "field": "queryTypes",
-            "defaultValue": "false",
-            "description": "<p>Please refer to <a href=\"#api-Data-GetDataQueryTypes\">queryTypes</a></p>"
-          },
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "optional": true,
-            "field": "forwardDestinations",
-            "defaultValue": "false",
-            "description": "<p>Please refer to <a href=\"#api-Data-GetDataForwardDestinations\">forwardDestinations</a></p>"
-          },
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "optional": true,
-            "field": "allQueries",
-            "defaultValue": "false",
-            "description": "<p>Please refer to <a href=\"#api-Data-GetDataAllQueries\">allQueries</a></p>"
-          },
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "optional": true,
-            "field": "querySources",
-            "defaultValue": "false",
-            "description": "<p>Please refer to <a href=\"#api-Data-GetDataQuerySources\">querySources</a></p>"
-          }
-        ]
-      },
-      "examples": [
-        {
-          "title": "Request-Example:",
-          "content": "?summary&topItems",
-          "type": "query"
-        }
-      ]
-    },
-    "success": {
-      "examples": [
-        {
-          "title": "Success-Response:",
-          "content": "HTTP/1.1 200 OK\n{\n  \"summary\": {...}\n  \"topItems\": {...}\n}",
-          "type": "json"
-        }
-      ]
-    },
-    "filename": "server/routes/api.js",
-    "groupTitle": "Data",
-    "error": {
-      "fields": {
-        "Error 4xx": [
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "InvalidRequest",
-            "description": "<p>The request is malformed</p>"
-          },
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "NotAuthorized",
-            "description": "<p>The requester is not authorized to access this endpoint</p>"
-          }
-        ]
-      },
-      "examples": [
-        {
-          "title": "InvalidRequest Response:",
-          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
-          "type": "json"
-        },
-        {
-          "title": "NotAuthorized Response:",
-          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
-          "type": "json"
-        }
-      ]
-    }
-  },
-  {
-    "type": "get",
-    "url": "/api/data",
+    "url": "/api/data/forwardDestinations",
     "title": "Get forward Destinations",
     "name": "GetDataForwardDestinations",
     "group": "Data",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "permission": [
       {
         "name": "admin",
@@ -140,22 +13,6 @@ define({ "api": [
         "description": "<p>A logged in user</p>"
       }
     ],
-    "parameter": {
-      "fields": {
-        "Query Parameter": [
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "allowedValues": [
-              "true"
-            ],
-            "optional": false,
-            "field": "forwardDestinations",
-            "description": "<p>forward destinations</p>"
-          }
-        ]
-      }
-    },
     "success": {
       "fields": {
         "Success 200": [
@@ -225,11 +82,11 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/api/data",
+    "url": "/api/data/overtimeData",
     "title": "Get OverTimeData",
     "name": "GetDataOverTimeData",
     "group": "Data",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "permission": [
       {
         "name": "admin",
@@ -240,16 +97,6 @@ define({ "api": [
     "parameter": {
       "fields": {
         "Query Parameter": [
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "allowedValues": [
-              "true"
-            ],
-            "optional": false,
-            "field": "overTimeData",
-            "description": "<p>Gets the queries over time in 10 minute frames</p>"
-          },
           {
             "group": "Query Parameter",
             "type": "Number",
@@ -343,11 +190,11 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/api/data",
+    "url": "/api/data/querySources",
     "title": "Get query sources",
     "name": "GetDataQuerySources",
     "group": "Data",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "permission": [
       {
         "name": "admin",
@@ -355,22 +202,6 @@ define({ "api": [
         "description": "<p>A logged in user</p>"
       }
     ],
-    "parameter": {
-      "fields": {
-        "Query Parameter": [
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "allowedValues": [
-              "true"
-            ],
-            "optional": false,
-            "field": "querySources",
-            "description": "<p>Gets the query sources</p>"
-          }
-        ]
-      }
-    },
     "success": {
       "fields": {
         "Success 200": [
@@ -447,11 +278,11 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/api/data",
+    "url": "/api/data/queryTypes",
     "title": "Get Querytypes",
     "name": "GetDataQueryTypes",
     "group": "Data",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "permission": [
       {
         "name": "admin",
@@ -459,22 +290,6 @@ define({ "api": [
         "description": "<p>A logged in user</p>"
       }
     ],
-    "parameter": {
-      "fields": {
-        "Query Parameter": [
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "allowedValues": [
-              "true"
-            ],
-            "optional": false,
-            "field": "queryTypes",
-            "description": "<p>Gets the query types</p>"
-          }
-        ]
-      }
-    },
     "success": {
       "fields": {
         "Success 200": [
@@ -544,11 +359,11 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/api/data",
+    "url": "/api/data/summary",
     "title": "Get Summary",
     "name": "GetDataSummary",
     "group": "Data",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "permission": [
       {
         "name": "none",
@@ -556,22 +371,6 @@ define({ "api": [
         "description": "<p>This api endpoint is public</p>"
       }
     ],
-    "parameter": {
-      "fields": {
-        "Query Parameter": [
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "allowedValues": [
-              "true"
-            ],
-            "optional": false,
-            "field": "summary",
-            "description": "<p>Gets the summary</p>"
-          }
-        ]
-      }
-    },
     "success": {
       "fields": {
         "Success 200": [
@@ -615,7 +414,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "HTTP/1.1 200 OK\n{\n  \"summary\":{\n    \"adsBlockedToday\": 10,\n    \"dnsQueriesToday\": 100,\n    \"adsPercentageToday\": 10.0,\n    \"domainsBeingBlocked\": 1337\n  }\n}",
+          "content": "HTTP/1.1 200 OK\n{\n  \"data\":{\n    \"adsBlockedToday\": 10,\n    \"dnsQueriesToday\": 100,\n    \"adsPercentageToday\": 10.0,\n    \"domainsBeingBlocked\": 1337\n  }\n}",
           "type": "json"
         }
       ]
@@ -655,11 +454,11 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/api/data",
+    "url": "/api/data/topItems",
     "title": "Get topItems",
     "name": "GetDataTopItems",
     "group": "Data",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "permission": [
       {
         "name": "admin",
@@ -667,22 +466,6 @@ define({ "api": [
         "description": "<p>A logged in user</p>"
       }
     ],
-    "parameter": {
-      "fields": {
-        "Query Parameter": [
-          {
-            "group": "Query Parameter",
-            "type": "Boolean",
-            "allowedValues": [
-              "true"
-            ],
-            "optional": false,
-            "field": "topItems",
-            "description": "<p>Gets the queries over time in 10 minute frames</p>"
-          }
-        ]
-      }
-    },
     "success": {
       "fields": {
         "Success 200": [
@@ -976,6 +759,129 @@ define({ "api": [
     "groupTitle": "Lists"
   },
   {
+    "type": "get",
+    "url": "/log?type=...",
+    "title": "Get Log",
+    "name": "GetLog",
+    "group": "Log",
+    "version": "1.0.1",
+    "permission": [
+      {
+        "name": "admin",
+        "title": "AdminUser",
+        "description": "<p>A logged in user</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Query Parameter": [
+          {
+            "group": "Query Parameter",
+            "type": "String",
+            "allowedValues": [
+              "all",
+              "query",
+              "forward",
+              "block"
+            ],
+            "optional": false,
+            "field": "type",
+            "defaultValue": "all",
+            "description": "<p>gets all queries with the specified type</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "data",
+            "description": "<p>Array with query data</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "HTTP/1.1 200 OK\n{\n  \"data\":[{\n      \"domain\":\"domain1.com\",\n      \"timestamp\":\"2017-01-09T23:00:26.000Z\",\n      \"client\":\"127.0.0.1\",\n      \"type\":\"query\",\n      \"queryType\":\"A\"\n    }\n  ]\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "server/routes/api.js",
+    "groupTitle": "Log",
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "InvalidRequest",
+            "description": "<p>The request is malformed</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "NotAuthorized",
+            "description": "<p>The requester is not authorized to access this endpoint</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "InvalidRequest Response:",
+          "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
+          "type": "json"
+        },
+        {
+          "title": "NotAuthorized Response:",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
+    "type": "get",
+    "url": "/log/live",
+    "title": "Opens an eventsource stream that tails the log file",
+    "name": "GetLogLive",
+    "group": "Log",
+    "version": "1.0.1",
+    "permission": [
+      {
+        "name": "admin",
+        "title": "AdminUser",
+        "description": "<p>A logged in user</p>"
+      }
+    ],
+    "filename": "server/routes/api.js",
+    "groupTitle": "Log",
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "NotAuthorized",
+            "description": "<p>The requester is not authorized to access this endpoint</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotAuthorized Response:",
+          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
     "type": "post",
     "url": "/api/disable/",
     "title": "Disable Pihole",
@@ -1188,42 +1094,6 @@ define({ "api": [
           "content": "HTTP/1.1 400 Invalid Request\n{\n  \"error\":{\n    \"code\":400,\n    \"message\":\"Bad Request\"\n  }\n}",
           "type": "json"
         },
-        {
-          "title": "NotAuthorized Response:",
-          "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",
-          "type": "json"
-        }
-      ]
-    }
-  },
-  {
-    "type": "get",
-    "url": "/api/taillog/",
-    "title": "Opens an eventsource stream that tails the log file",
-    "name": "GetTaillog",
-    "group": "Taillog",
-    "version": "1.0.0",
-    "permission": [
-      {
-        "name": "admin",
-        "title": "AdminUser",
-        "description": "<p>A logged in user</p>"
-      }
-    ],
-    "filename": "server/routes/api.js",
-    "groupTitle": "Taillog",
-    "error": {
-      "fields": {
-        "Error 4xx": [
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "NotAuthorized",
-            "description": "<p>The requester is not authorized to access this endpoint</p>"
-          }
-        ]
-      },
-      "examples": [
         {
           "title": "NotAuthorized Response:",
           "content": "HTTP/1.1 401 Not Authorized\n{\n  \"error\":{\n    \"code\":401,\n    \"message\":\"Not authorized\"\n  }\n}",

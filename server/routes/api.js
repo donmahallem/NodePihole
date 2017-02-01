@@ -8,6 +8,7 @@ const logHelper = require("./../logHelper.js");
 const appDefaults = require("./../defaults.js");
 const helper = require("./../helper.js");
 const childProcess = require("child_process");
+const through2 = require("through2");
 
 /**
  * @apiDefine NotAuthorized
@@ -132,65 +133,18 @@ if (typeof Object.assign != "function") {
         return target;
     };
 }
-/////////////////
+
+router.use(function(req, res, next) {
+    res.setHeader("Content-Type", "application/json");
+    next();
+});
+
 /**
- * @api {get} /api/data Query data from the log
- * @apiDescription You can choose any combination of the following query parameters to combine those. Some need authentication(Please refer to the detailed listing of the parameters for response types and parameters)
- * @apiName Data
- * @apiGroup Data
- * @apiVersion 1.0.0
- * @apiParam (Query Parameter) {Boolean} [summary=false] Please refer to [summary](#api-Data-GetDataSummary)
- * @apiParam (Query Parameter) {Boolean} [overTimeData=false] Please refer to [overTimeData](#api-Data-GetDataOverTimeData)
- * @apiParam (Query Parameter) {Boolean} [topItems=false] Please refer to [topItems](#api-Data-GetDataTopItems)
- * @apiParam (Query Parameter) {Boolean} [recentItems=false] Please refer to [recentItems](#api-Data-GetDataRecentItems)
- * @apiParam (Query Parameter) {Boolean} [queryTypes=false] Please refer to [queryTypes](#api-Data-GetDataQueryTypes)
- * @apiParam (Query Parameter) {Boolean} [forwardDestinations=false] Please refer to [forwardDestinations](#api-Data-GetDataForwardDestinations)
- * @apiParam (Query Parameter) {Boolean} [allQueries=false] Please refer to [allQueries](#api-Data-GetDataAllQueries)
- * @apiParam (Query Parameter) {Boolean} [querySources=false] Please refer to [querySources](#api-Data-GetDataQuerySources)
- * @apiParamExample {query} Request-Example:
- *     ?summary&topItems
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "summary": {...}
- *       "topItems": {...}
- *     }
- * @apiUse InvalidRequest
- * @apiUse NotAuthorized
- */
-/**
- * @api {get} /api/data Get Summary
- * @apiName GetDataSummary
- * @apiGroup Data
- * @apiVersion 1.0.0
- * @apiPermission none
- * @apiParam (Query Parameter) {Boolean=true} summary Gets the summary
- *
- * @apiSuccess {Object} summary The object summary
- * @apiSuccess {Number} summary.adsBlockedToday Total blocked queries
- * @apiSuccess {Number} summary.dnsQueriesToday Total dns queries
- * @apiSuccess {Number} summary.adsPercentageToday Percentage of blocked requests
- * @apiSuccess {Number} summary.domainsBeingBlocked Domains being blocked in total
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "summary":{
- *         "adsBlockedToday": 10,
- *         "dnsQueriesToday": 100,
- *         "adsPercentageToday": 10.0,
- *         "domainsBeingBlocked": 1337
- *       }
- *     }
- * @apiUse InvalidRequest
- * @apiUse NotAuthorized
- */
-/**
- * @api {get} /api/data Get Querytypes
+ * @api {get} /api/data/queryTypes Get Querytypes
  * @apiName GetDataQueryTypes
  * @apiGroup Data
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiPermission admin
- * @apiParam (Query Parameter) {Boolean=true} queryTypes Gets the query types
  *
  * @apiSuccess {Object[]} queryTypes Array with query types
  * @apiSuccess {String} queryTypes.type query type
@@ -212,13 +166,24 @@ if (typeof Object.assign != "function") {
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
  */
+router.get("/data/queryTypes", function(req, res, next) {
+    var resp = {};
+    var stream = logHelper.createLogParser()
+        .pipe(logHelper.createQueryTypesSpy(resp))
+        .on("end", function() {
+            res.json(resp);
+        })
+        .on("error", function(error) {
+            next(new Error("Error while parsing the log"));
+        })
+        .resume();
+});
 /**
- * @api {get} /api/data Get query sources
+ * @api {get} /api/data/querySources Get query sources
  * @apiName GetDataQuerySources
  * @apiGroup Data
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiPermission admin
- * @apiParam (Query Parameter) {Boolean=true} querySources Gets the query sources
  *
  * @apiSuccess {Object[]} querySources Array with query sources
  * @apiSuccess {String} querySource.ip source ip
@@ -242,41 +207,24 @@ if (typeof Object.assign != "function") {
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
  */
+router.get("/data/querySources", function(req, res, next) {
+    var resp = {};
+    var stream = logHelper.createLogParser()
+        .pipe(logHelper.createQuerySourcesSpy(resp))
+        .on("end", function() {
+            res.json(resp);
+        })
+        .on("error", function(error) {
+            next(new Error("Error while parsing the log"));
+        })
+        .resume();
+});
 /**
- * @api {get} /api/data Get forward Destinations
- * @apiName GetDataForwardDestinations
- * @apiGroup Data
- * @apiVersion 1.0.0
- * @apiPermission admin
- * @apiParam (Query Parameter) {Boolean=true} forwardDestinations forward destinations
- *
- * @apiSuccess {Object[]} forwardDestinations Array with query sources
- * @apiSuccess {String} forwardDestinations.destination name of destination
- * @apiSuccess {Number} forwardDestinations.count number of queries to this destination
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "forwardDestinations":[
- *         {
- *           "destination": "8.8.8.8",
- *           "count":20
- *         },
- *         {
- *           "destination": "8.8.4.4",
- *           "count":29
- *         }
- *       ]
- *     }
- * @apiUse InvalidRequest
- * @apiUse NotAuthorized
- */
-/**
- * @api {get} /api/data Get OverTimeData
+ * @api {get} /api/data/overtimeData Get OverTimeData
  * @apiName GetDataOverTimeData
  * @apiGroup Data
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiPermission admin
- * @apiParam (Query Parameter) {Boolean=true} overTimeData Gets the queries over time in 10 minute frames
  * @apiParam (Query Parameter) {Number=1,10,60} [frameSize=10] Sets the overtime timeframe size in minutes
  *
  * @apiSuccess {Object[]} overTimeData Array with query data
@@ -307,13 +255,24 @@ if (typeof Object.assign != "function") {
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
  */
+router.get("/data/overtimeData", function(req, res, next) {
+    var resp = {};
+    var stream = logHelper.createLogParser()
+        .pipe(logHelper.createOverTimeDataSpy(resp))
+        .on("end", function() {
+            res.json(resp);
+        })
+        .on("error", function(error) {
+            next(new Error("Error while parsing the log"));
+        })
+        .resume();
+});
 /**
- * @api {get} /api/data Get topItems
+ * @api {get} /api/data/topItems Get topItems
  * @apiName GetDataTopItems
  * @apiGroup Data
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiPermission admin
- * @apiParam (Query Parameter) {Boolean=true} topItems Gets the queries over time in 10 minute frames
  *
  * @apiSuccess {Object} topItems Array with query data
  * @apiSuccess {Object} overTimeData.topQueries number of ads in that timeframe
@@ -335,7 +294,7 @@ if (typeof Object.assign != "function") {
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
  */
-router.get("/data", function(req, res) {
+router.get("/data/topItems", function(req, res) {
     // Filter query types so only valid ones pass
     var args = {};
     // to cancel request early if no valid args were provided
@@ -380,14 +339,153 @@ router.get("/data", function(req, res) {
 });
 
 /**
- * @api {get} /api/taillog/ Opens an eventsource stream that tails the log file
- * @apiName GetTaillog
- * @apiGroup Taillog
- * @apiVersion 1.0.0
+ * @api {get} /api/data/summary Get Summary
+ * @apiName GetDataSummary
+ * @apiGroup Data
+ * @apiVersion 1.0.1
+ * @apiPermission none
+ *
+ * @apiSuccess {Object} summary The object summary
+ * @apiSuccess {Number} summary.adsBlockedToday Total blocked queries
+ * @apiSuccess {Number} summary.dnsQueriesToday Total dns queries
+ * @apiSuccess {Number} summary.adsPercentageToday Percentage of blocked requests
+ * @apiSuccess {Number} summary.domainsBeingBlocked Domains being blocked in total
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data":{
+ *         "adsBlockedToday": 10,
+ *         "dnsQueriesToday": 100,
+ *         "adsPercentageToday": 10.0,
+ *         "domainsBeingBlocked": 1337
+ *       }
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+router.get("/data/summary", function(req, res, next) {
+    var resp = {};
+    var stream = logHelper.createLogParser()
+        .pipe(logHelper.createSummarySpy(resp))
+        .on("end", function() {
+            res.json(resp);
+        })
+        .on("error", function(error) {
+            next(new Error("Error while parsing the log"));
+        })
+        .resume();
+});
+/**
+ * @api {get} /api/data/forwardDestinations Get forward Destinations
+ * @apiName GetDataForwardDestinations
+ * @apiGroup Data
+ * @apiVersion 1.0.1
+ * @apiPermission admin
+ *
+ * @apiSuccess {Object[]} forwardDestinations Array with query sources
+ * @apiSuccess {String} forwardDestinations.destination name of destination
+ * @apiSuccess {Number} forwardDestinations.count number of queries to this destination
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "forwardDestinations":[
+ *         {
+ *           "destination": "8.8.8.8",
+ *           "count":20
+ *         },
+ *         {
+ *           "destination": "8.8.4.4",
+ *           "count":29
+ *         }
+ *       ]
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+router.get("/data/forwardDestinations", function(req, res, next) {
+    const type = req.params.type;
+    if (type && (type === "query" || type === "forward" || type === "block")) {
+        var first = true;
+        var stream = logHelper.createLogParser()
+            .pipe(through2.obj(function(chunk, enc, callback) {
+                if (chunk !== false && chunk.type == type) {
+                    if (first) {
+                        this.push("{\"data\":[");
+                        first = false;
+                    } else if (!first && chunk !== null) {
+                        this.push(",");
+                    }
+                    this.push(JSON.stringify(chunk));
+                }
+                callback();
+            }, function(callback) {
+                this.push("]}");
+                callback();
+            }))
+            .pipe(res);
+    } else {
+        next(new Error("Unsupported '" + req.params.type + "' type"));
+    }
+});
+/**
+ * @api {get} /log?type=... Get Log
+ * @apiName GetLog
+ * @apiGroup Log
+ * @apiVersion 1.0.1
+ * @apiPermission admin
+ * @apiParam (Query Parameter) {String=all,query,forward,block} type=all gets all queries with the specified type
+ *
+ * @apiSuccess {Object} data Array with query data
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data":[{
+ *           "domain":"domain1.com",
+ *           "timestamp":"2017-01-09T23:00:26.000Z",
+ *           "client":"127.0.0.1",
+ *           "type":"query",
+ *           "queryType":"A"
+ *         }
+ *       ]
+ *     }
+ * @apiUse InvalidRequest
+ * @apiUse NotAuthorized
+ */
+router.get("/log", function(req, res, next) {
+    const type = req.query.type || "all";
+    if (type && (type === "query" || type === "forward" || type === "block")) {
+        var first = true;
+        var stream = logHelper.createLogParser()
+            .pipe(through2.obj(function(chunk, enc, callback) {
+                if (chunk !== false && chunk.type == type) {
+                    if (first) {
+                        this.push("{\"data\":[");
+                        first = false;
+                    } else if (!first && chunk !== null) {
+                        this.push(",");
+                    }
+                    this.push(JSON.stringify(chunk));
+                }
+                callback();
+            }, function(callback) {
+                this.push("]}");
+                callback();
+            }))
+            .pipe(res);
+    } else {
+        next(new Error("Unsupported '" + req.params.type + "' type"));
+    }
+});
+
+/**
+ * @api {get} /log/live Opens an eventsource stream that tails the log file
+ * @apiName GetLogLive
+ * @apiGroup Log
+ * @apiVersion 1.0.1
  * @apiPermission admin
  * @apiUse NotAuthorized
  */
-router.get("/taillog",
+router.get("/log/live",
     apiMiddleware.auth,
     function(req, res) {
         var connectionOpen = true;

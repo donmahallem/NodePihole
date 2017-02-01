@@ -703,9 +703,11 @@ router.get("/status",
         Promise.all([helper.getTemperature(), helper.getPiholeStatus(), helper.getFreeMemory()])
             .then(function(data) {
                 res.json({
-                    "temperature": data[0],
-                    "status": data[1],
-                    "memory": data[2]
+                    "data": {
+                        "temperature": data[0],
+                        "status": data[1],
+                        "memory": data[2]
+                    }
                 });
             })
             .catch(function(err) {

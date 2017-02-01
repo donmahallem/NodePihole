@@ -214,3 +214,25 @@ $(document)
                 .submit();
         }
     });
+var statusUpdater = (function(statusUpdater, pihole) {
+    'use strict';
+    var statusUpdater = statusUpdater = statusUpdater || {};
+    var onUpdate = function(data) {
+        $("#infoPanel #temperature span.display")
+            .html(data.temperature === false ? "---" : data.temperature);
+        $("#infoPanel #memory span.display")
+            .html(data.memory === false ? "---" : data.memory);
+    };
+    var pollUpdate = function() {
+        pihole.api.status.getStatus()
+            .done(function(data) {
+                onUpdate(data.data);
+            })
+            .error(function(err) {
+
+            });
+    }
+    pollUpdate();
+    //poll update every 10 seconds
+    setInterval(pollUpdate, 10000);
+}(statusUpdater, pihole));

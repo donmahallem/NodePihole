@@ -143,6 +143,28 @@ var pihole = (function(pihole, $, undefined) {
         }
     };
     /**
+     * Api for status endpoint
+     * @module pihole/api/log
+     * @since 1.0.1
+     */
+    api.status = {
+        /**
+         * @memberof module:pihole/api/log
+         * @since 1.0.1
+         */
+        getStatus: function(type) {
+            return $.ajax({
+                "url": "/api/status",
+                "headers": {
+                    "Accept": "application/json; charset=utf-8",
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                "method": "get",
+                "dataType": "json"
+            });
+        }
+    };
+    /**
      * Api for list endpoint
      * @module pihole/api/list
      * @since 1.0.0

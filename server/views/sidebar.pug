@@ -11,22 +11,24 @@ aside.main-sidebar
 		.user-panel
 			.pull-left.image
 				img.img-responsive(src='static/img/logo.svg', alt='Pi-hole logo', style='display: table; table-layout: fixed; height: 67px;')
-			.pull-left.info
+			.pull-left.info#infoPanel
 				p Status
 				a#status(href='#')
 					i.fa.fa-circle(style='color:#7FFF00')
 					|  Active
 				a#temperature(href='#')
 					i.fa.fa-fire(style='color:#FF0000')
-					|  Temp: 60.1°C
+					|  Temp:&nbsp;
+					span.display 60.1°C
 				br
 				a(href='#')
 					i.fa.fa-circle(style='color:#7FFF00')
 					|  Load:  1.18  1.07  1.02
 				br
-				a(href='#')
+				a#memory(href='#')
 					i.fa.fa-circle(style='color:#7FFF00')
-					|  Memory usage:  17.2%
+					|  Memory usage:&nbsp;
+					span.display 17.2%
 		// sidebar menu: : style can be found in sidebar.less
 		ul.sidebar-menu
 			li.header MAIN NAVIGATION

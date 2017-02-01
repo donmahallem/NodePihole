@@ -301,47 +301,18 @@ router.get("/data/overtimeData", function(req, res, next) {
  * @apiUse NotAuthorized
  */
 router.get("/data/topItems", function(req, res) {
-    // Filter query types so only valid ones pass
-    var args = {};
-    // to cancel request early if no valid args were provided
-    var numValidArgs = 0;
-    for (var query in req.query) {
-        // type check so someone can't query for example .toString()
-        if (query in supportedDataQueries && (typeof supportedDataQueries[query].authRequired === "boolean")) {
-            if (supportedDataQueries[query].authRequired && !req.user.authenticated) {
-                // User needs to be authenticated for this query
-                console.log("User is not authenticated for: " + req.method + "(" + req.originalUrl + ")");
-                res.status(401);
-                res.json({
-                    "error": {
-                        "code": 401,
-                        "message": "Not authenticated"
-                    }
-                });
-                return;
-            }
-            args[query] = true;
-            numValidArgs++;
-        }
-    }
-    // cancel request because no valid args were provided
-    if (numValidArgs === 0) {
-        console.log("No valid argument specified");
-        res.sendStatus(400);
-        return;
-    }
-    // Sanitize eventual frameSize query parameter
-    if (req.query.frameSize && !isNaN(parseInt(req.query.frameSize))) {
-        args.frameSize = parseInt(req.query.frameSize);
-    }
-    var prom = logHelper.createDataCombiner(appDefaults.logFile, args);
-    prom.then(function(data) {
-            res.json(data);
+    var resp = {};
+    var stream = logHelper.createLogParser()
+        .pipe(logHelper.createTopItemsSpy(resp, []))
+        .on("end", function() {
+            res.json({
+                "data": resp
+            });
         })
-        .catch(function(err) {
-            console.error(err);
-            res.sendStatus(500);
-        });
+        .on("error", function(error) {
+            next(new Error("Error while parsing the log"));
+        })
+        .resume();
 });
 
 /**

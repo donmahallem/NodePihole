@@ -466,36 +466,47 @@ var topLists = {};
 (function(tL) {
     const topQueryTable = new DomainTable($("#domain-frequency table.table"));
     tL.update = function() {
-        $.getJSON("/api/data?summary&topItems", function(data) {
-            var adtable = $("#ad-frequency")
-                .find("tbody:last");
-            var url,
-                domain,
-                percentage;
-            // Remove table if there are no results (e.g. privacy mode enabled)
-            if (jQuery.isEmptyObject(data.topItems.topQueries)) {
-                $("#domain-frequency")
-                    .parent()
-                    .remove();
-            } else {
-                topQueryTable.setData(data.topItems.topQueries, data.summary.dnsQueriesToday);
-            }
-            for (domain in data.topItems.topAds) {
-                if (Object.hasOwnProperty.call(data.topItems.topAds, domain)) {
-                    // Sanitize domain
-                    domain = escapeHtml(domain);
-                    url = "<a href=\"queries.php?domain=" + domain + "\">" + domain + "</a>";
-                    percentage = data.topItems.topAds[domain] / data.summary.adsBlockedToday * 100;
-                    adtable.append("<tr> <td>" + url +
-                        "</td> <td>" + data.topItems.topAds[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-yellow\" style=\"width: " +
-                        percentage + "%\"></div> </div> </td> </tr> ");
+        var reqSummary = pihole
+            .api
+            .data
+            .getSummary();
+        var reqTopItems = pihole
+            .api
+            .data
+            .getTopItems();
+        $.when(reqSummary, reqTopItems)
+            .done(function(res1, res2) {
+                const summary = res1[0].data;
+                const topItems = res2[0].data;
+                var adtable = $("#ad-frequency")
+                    .find("tbody:last");
+                var url,
+                    domain,
+                    percentage;
+                // Remove table if there are no results (e.g. privacy mode enabled)
+                if (jQuery.isEmptyObject(topItems.topQueries)) {
+                    $("#domain-frequency")
+                        .parent()
+                        .remove();
+                } else {
+                    topQueryTable.setData(topItems.topQueries, summary.dnsQueriesToday);
                 }
-            }
-            $("#domain-frequency .overlay")
-                .remove();
-            $("#ad-frequency .overlay")
-                .remove();
-        });
+                for (domain in topItems.topAds) {
+                    if (Object.hasOwnProperty.call(topItems.topAds, domain)) {
+                        // Sanitize domain
+                        domain = escapeHtml(domain);
+                        url = "<a href=\"queries.php?domain=" + domain + "\">" + domain + "</a>";
+                        percentage = topItems.topAds[domain] / summary.adsBlockedToday * 100;
+                        adtable.append("<tr> <td>" + url +
+                            "</td> <td>" + topItems.topAds[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\"" + percentage.toFixed(1) + "%\"> <div class=\"progress-bar progress-bar-yellow\" style=\"width: " +
+                            percentage + "%\"></div> </div> </td> </tr> ");
+                    }
+                }
+                $("#domain-frequency .overlay")
+                    .remove();
+                $("#ad-frequency .overlay")
+                    .remove();
+            });
     };
 }(topLists));
 

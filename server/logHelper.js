@@ -371,6 +371,12 @@ logHelper.createForwardDestinationsSpy = function(forwardDestinations) {
  * @returns {Stream} return 
  */
 logHelper.createTopItemsSpy = function(topItems, blacklist) {
+    if (!topItems.hasOwnProperty("topAds")) {
+        topItems.topAds = {};
+    }
+    if (!topItems.hasOwnProperty("topQueries")) {
+        topItems.topQueries = {};
+    }
     return through2Spy.obj(function(chunk) {
         if (chunk !== false && chunk.type === "query") {
             var key = blacklist.indexOf(chunk.domain) !== -1 ? "topAds" : "topQueries";

@@ -528,33 +528,34 @@ var queryTypeChart = {};
         if (!ctx) {
             qTC.setup();
         }
-        $.getJSON("/api/data?queryTypes", function(data) {
-            var colors = [];
-            // Get colors from AdminLTE
-            $.each($.AdminLTE.options.colors, function(key, value) {
-                colors.push(value);
+        pihole.api.data.getQueryTypes()
+            .done(function(data) {
+                var colors = [];
+                // Get colors from AdminLTE
+                $.each($.AdminLTE.options.colors, function(key, value) {
+                    colors.push(value);
+                });
+                var v = [],
+                    c = [];
+                // Collect values and colors, immediately push individual labels
+                $.each(data.data, function(key, value) {
+                    v.push(value);
+                    c.push(colors.shift());
+                    qTC.chart.data.labels.push(key);
+                });
+                // Build a single dataset with the data to be pushed
+                var dd = {
+                    data: v,
+                    backgroundColor: c
+                };
+                // and push it at once
+                qTC.chart.data.datasets.push(dd);
+                $("#query-types .overlay")
+                    .remove();
+                qTC.chart.update();
+                qTC.chart.chart.config.options.cutoutPercentage = 30;
+                qTC.chart.update();
             });
-            var v = [],
-                c = [];
-            // Collect values and colors, immediately push individual labels
-            $.each(data.queryTypes, function(key, value) {
-                v.push(value);
-                c.push(colors.shift());
-                qTC.chart.data.labels.push(key);
-            });
-            // Build a single dataset with the data to be pushed
-            var dd = {
-                data: v,
-                backgroundColor: c
-            };
-            // and push it at once
-            qTC.chart.data.datasets.push(dd);
-            $("#query-types .overlay")
-                .remove();
-            qTC.chart.update();
-            qTC.chart.chart.config.options.cutoutPercentage = 30;
-            qTC.chart.update();
-        });
     };
 }(queryTypeChart));
 

@@ -75,6 +75,21 @@ var pihole = (function(pihole, $, undefined) {
          * @memberof module:pihole/api/data/
          * @since 1.0.1
          */
+        getQueryTypes: function() {
+            return $.ajax({
+                "url": "/api/data/queryTypes",
+                "headers": {
+                    "Accept": "application/json; charset=utf-8",
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                "method": "get",
+                "dataType": "json"
+            });
+        },
+        /**
+         * @memberof module:pihole/api/data/
+         * @since 1.0.1
+         */
         getOvertimeData: function() {
             return $.ajax({
                 "url": "/api/data/overtimeData",

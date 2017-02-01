@@ -171,7 +171,9 @@ router.get("/data/queryTypes", function(req, res, next) {
     var stream = logHelper.createLogParser()
         .pipe(logHelper.createQueryTypesSpy(resp))
         .on("end", function() {
-            res.json(resp);
+            res.json({
+                "data": resp
+            });
         })
         .on("error", function(error) {
             next(new Error("Error while parsing the log"));

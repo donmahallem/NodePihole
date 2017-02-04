@@ -5,6 +5,7 @@ const readline = require("readline");
 const moment = require("moment");
 const fs = require("fs");
 const logHelper = require("./../logHelper.js");
+const blacklistHelper = require("./../blacklistHelper.js");
 const appDefaults = require("./../defaults.js");
 const helper = require("./../helper.js");
 const childProcess = require("child_process");
@@ -414,7 +415,7 @@ router.get("/data/forwardDestinations", function(req, res, next) {
  * @apiGroup Log
  * @apiVersion 1.0.1
  * @apiPermission admin
- * @apiParam (Query Parameter) {String=all,query,forward,block} type=all gets all queries with the specified type
+ * @apiParam (Query Parameter) {String=all,query,forward,block} type=query gets all queries with the specified type
  *
  * @apiSuccess {Object} data Array with query data
  * @apiSuccessExample Success-Response:
@@ -432,8 +433,9 @@ router.get("/data/forwardDestinations", function(req, res, next) {
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
  */
-router.get("/log", function(req, res, next) {
-    const type = req.query.type || "all";
+router.get("/history", function(req, res, next) {
+    console.log(req.query);
+    const type = req.query.type || "query";
     if (type && (type === "query" || type === "forward" || type === "block")) {
         var first = true;
         var stream = logHelper.createLogParser()
@@ -454,7 +456,7 @@ router.get("/log", function(req, res, next) {
             }))
             .pipe(res);
     } else {
-        next(new Error("Unsupported '" + req.params.type + "' type"));
+        next(new Error("Unsupported '" + req.query.type + "' type"));
     }
 });
 
@@ -466,7 +468,7 @@ router.get("/log", function(req, res, next) {
  * @apiPermission admin
  * @apiUse NotAuthorized
  */
-router.get("/log/live",
+router.get("/live",
     apiMiddleware.auth,
     function(req, res) {
         var connectionOpen = true;
@@ -547,6 +549,26 @@ router.get("/list", apiMiddleware.auth, function(req, res) {
     }
 });
 
+router.get("/blacklist", apiMiddleware.auth, function(req, res, next) {
+    var brackedSent = false;
+    blacklistHelper
+        .createBlacklistStream()
+        .pipe(through2.obj(function(chunk, enc, cb) {
+            if (!brackedSent) {
+                this.push("[");
+                brackedSent = true;
+            } else {
+                this.push(",");
+            }
+            this.push(JSON.stringify(chunk));
+            //console.log(chunk);
+            cb();
+        }, function(cb) {
+            this.push("]");
+            cb();
+        }))
+        .pipe(res);
+});
 /**
  * @api {post} /api/list/ Adds a domain to the specified list
  * @apiName AddDomain
@@ -698,7 +720,6 @@ router.post("/disable",
  * @apiUse NotAuthorized
  */
 router.get("/status",
-    apiMiddleware.auth,
     function(req, res) {
         Promise.all([helper.getTemperature(), helper.getPiholeStatus(), helper.getFreeMemory()])
             .then(function(data) {

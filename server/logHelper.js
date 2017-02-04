@@ -11,8 +11,9 @@ const EventEmitter = require("events")
 const split2 = require("split2");
 const through2 = require("through2");
 const through2Spy = require("through2-spy");
-
+const multistream = require('multistream');
 const isWin = /^win/.test(os.platform());
+const mergestream = require('merge-stream');
 
 /**
  * @exports logHelper
@@ -419,11 +420,4 @@ logHelper.createAllQueriesSpy = function(allQueries) {
         }
     });
 };
-
 module.exports = logHelper;
-
-/**
- * This callback is displayed as part of the Requester class.
- * @callback lineNumberCallback
- * @param {Number} count - Line number count
- */

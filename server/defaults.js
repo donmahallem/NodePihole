@@ -20,8 +20,9 @@
 const appDefaultsProd = {
     logFile: "/var/log/pihole.log",
     setupVars: "/etc/pihole/setupVars.conf",
-    whiteListFile: "/etc/pihole/whitelist.txt",
-    blackListFile: "/etc/pihole/blacklist.txt",
+    whitelistFile: "/etc/pihole/whitelist.txt",
+    blacklistFile: "/etc/pihole/blacklist.txt",
+    wildcardBlacklistFile: "/etc/dnsmasq.d/03-pihole-wildcard.conf",
     port: 3000,
     csrfSecret: "1b60cf9905e665d6306d466df97c2311fd9eccbd4371d656abe1c9d5d1261c17",
     jwtSecret: "236761d24ce20e1c6dde676068b52d6453bd3b25dccce51b4ddb6cd78bb1a557",
@@ -31,8 +32,9 @@ const appDefaultsProd = {
 const appDefaultsTest = {
     logFile: __dirname + "/../test/pihole.log",
     setupVars: __dirname + "/../test/setupVars.conf",
-    whiteListFile: __dirname + "/../test/whitelist.txt",
-    blackListFile: __dirname + "/../test/blacklist.txt",
+    whitelistFile: __dirname + "/../test/whitelist.txt",
+    blacklistFile: __dirname + "/../test/blacklist.txt",
+    wildcardBlacklistFile: "/etc/dnsmasq.d/03-pihole-wildcard.conf",
     port: 3000,
     csrfSecret: "1b60cf9905e665d6306d466df97c2311fd9eccbd4371d656abe1c9d5d1261c17",
     jwtSecret: "236761d24ce20e1c6dde676068b52d6453bd3b25dccce51b4ddb6cd78bb1a557",

@@ -262,4 +262,20 @@ helper.getFreeMemory = function() {
             return false;
         });
 };
+
+helper.createNoErrorFileReadStream = function(filename) {
+    var stream = fs.createReadStream(filename)
+        .on("error", function(error) {
+            console.log("he", error);
+            stream.emit("end");
+        })
+        .on("close", function() {
+            console.log("close", "path: " + filename);
+        })
+        .on("end", function() {
+            console.log("end", "path: " + filename);
+        });
+    return stream;
+};
+
 module.exports = helper;

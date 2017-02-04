@@ -78,7 +78,7 @@ var domainList = {};
             } else {
                 data.forEach(function(entry, index) {
                     list.append(
-                        "<li id=\"" + index + "\" class=\"list-group-item clearfix\">" + entry +
+                        "<li id=\"" + index + "\" class=\"list-group-item clearfix\">" + entry.domain +
                         "<button class=\"btn btn-danger btn-xs pull-right\" type=\"button\">" +
                         "<span class=\"glyphicon glyphicon-trash\"></span></button></li>"
                     );

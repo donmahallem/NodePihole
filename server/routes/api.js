@@ -514,46 +514,14 @@ router.get("/live",
  * @apiUse InvalidRequest
  * @apiUse ErrorNotFound
  */
-router.get("/list", apiMiddleware.auth, function(req, res) {
-    if ("list" in req.query && (req.query.list === "white" || req.query.list === "black")) {
-        var filepath;
-        if (req.query.list === "white") {
-            filepath = appDefaults.whiteListFile;
-        } else {
-            filepath = appDefaults.blackListFile;
-        }
-        fs.access(filepath, fs.F_OK | fs.R_OK, function(err) {
-            if (err) {
-                res.status(500);
-                res.send("Could not open " + req.query.list + "list file");
-            } else {
-                var lines = [];
-                var lineReader = require("readline")
-                    .createInterface({
-                        input: require("fs")
-                            .createReadStream(filepath)
-                    });
-                lineReader.on("line", function(line) {
-                    if (line === "") {
-                        return;
-                    }
-                    lines.push(line);
-                });
-                lineReader.on("close", function() {
-                    res.json(lines);
-                });
-            }
-        });
-    } else {
-        res.sendStatus(400);
-    }
-});
-
-router.get("/blacklist", apiMiddleware.auth, function(req, res, next) {
+router.get("/list", apiMiddleware.auth, function(req, res, next) {
+    var requestedLists = req.query.list || "white,black,wildcard";
+    requestedLists = requestedLists.split(",");
     var brackedSent = false;
     blacklistHelper
-        .createBlacklistStream()
+        .createBlacklistStream(requestedLists)
         .pipe(through2.obj(function(chunk, enc, cb) {
+            // push array opening bracked as very first item otherwise leading comma for every item that passes
             if (!brackedSent) {
                 this.push("[");
                 brackedSent = true;
@@ -561,14 +529,19 @@ router.get("/blacklist", apiMiddleware.auth, function(req, res, next) {
                 this.push(",");
             }
             this.push(JSON.stringify(chunk));
-            //console.log(chunk);
             cb();
         }, function(cb) {
+            //Append array closing bracket at the end of the stream
             this.push("]");
             cb();
         }))
-        .pipe(res);
+        .pipe(res)
+        .on("error", function(error) {
+            //Pass errors to the error middleware
+            next(error);
+        });
 });
+
 /**
  * @api {post} /api/list/ Adds a domain to the specified list
  * @apiName AddDomain

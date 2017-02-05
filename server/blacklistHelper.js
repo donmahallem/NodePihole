@@ -1,17 +1,11 @@
 const appDefaults = require("./defaults.js");
 const fs = require("fs");
-const moment = require("moment");
 const os = require("os");
 const childProcess = require("child_process");
-const readline = require("readline");
 const setupVars = require("./setupVars.js");
 const helper = require("./helper.js");
-const dns = require("dns");
-const EventEmitter = require("events")
-    .EventEmitter;
 const split2 = require("split2");
 const through2 = require("through2");
-const mergestream = require('merge-stream');
 
 /**
  * @exports blackListHelper
@@ -80,7 +74,6 @@ const createWildcardDomainTransformer = function(type) {
     return through2.obj(function(chunk, enc, cb) {
         var splits = chunk.split("/");
         if (splits.length === 3) {
-
             this.push({
                 "domain": splits[1],
                 "type": type

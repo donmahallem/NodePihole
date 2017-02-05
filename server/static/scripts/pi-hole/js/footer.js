@@ -219,6 +219,7 @@ var statusUpdater = (function(statusUpdater, pihole) {
     var statusUpdater = statusUpdater = statusUpdater || {};
     const tempBox = $("#infoPanel #temperature");
     const memBox = $("#infoPanel #memory");
+    const loadBox = $("#infoPanel #load");
     var onUpdate = function(data) {
         if (data.temperature !== false) {
             if (!tempBox.is(":visible")) {
@@ -254,6 +255,15 @@ var statusUpdater = (function(statusUpdater, pihole) {
                 .html(data.memory.toFixed(2) + "%");
         } else if (data.memory === false && memBox.is(":visible")) {
             memBox.hide();
+        }
+        if (data.loadAverage !== false) {
+            if (!loadBox.is(":visible")) {
+                loadBox.show();
+            }
+            $("#infoPanel #load span.display")
+                .html(data.loadAverage.join(", "));
+        } else if (data.loadAverage === false && loadBox.is(":visible")) {
+            loadBox.hide();
         }
     };
     var pollUpdate = function() {

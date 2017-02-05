@@ -3,11 +3,7 @@ const fs = require("fs");
 const moment = require("moment");
 const os = require("os");
 const childProcess = require("child_process");
-const readline = require("readline");
-const setupVars = require("./setupVars.js");
 const dns = require("dns");
-const EventEmitter = require("events")
-    .EventEmitter;
 const split2 = require("split2");
 const through2 = require("through2");
 const through2Spy = require("through2-spy");

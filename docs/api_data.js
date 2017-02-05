@@ -689,7 +689,7 @@ define({ "api": [
     "title": "Gets the white/black list",
     "name": "GetDomains",
     "group": "Lists",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "permission": [
       {
         "name": "admin",
@@ -705,7 +705,8 @@ define({ "api": [
             "type": "string",
             "allowedValues": [
               "\"white\"",
-              "\"black\""
+              "\"black\"",
+              "\"wildcard\""
             ],
             "optional": false,
             "field": "The",
@@ -786,7 +787,7 @@ define({ "api": [
             ],
             "optional": false,
             "field": "type",
-            "defaultValue": "all",
+            "defaultValue": "query",
             "description": "<p>gets all queries with the specified type</p>"
           }
         ]

@@ -7,7 +7,6 @@ const os = require("os");
 const setupVars = require("./setupVars.js");
 const url = require("url");
 const childProcess = require("child_process");
-const readline = require("readline");
 const fs = require("fs");
 
 /**
@@ -191,7 +190,7 @@ helper.getTemperature = function() {
             }
             return {
                 "celsius": celsius,
-                "unit": appDefaults.TEMPERATUREUNIT || "C"
+                "unit": setupVars.TEMPERATUREUNIT || "C"
             };
         })
         .catch(function(err) {

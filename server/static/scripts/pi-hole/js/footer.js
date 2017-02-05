@@ -251,7 +251,7 @@ var statusUpdater = (function(statusUpdater, pihole) {
                 memBox.show();
             }
             $("#infoPanel #memory span.display")
-                .html(data.memory.toFixed(2));
+                .html(data.memory.toFixed(2) + "%");
         } else if (data.memory === false && memBox.is(":visible")) {
             memBox.hide();
         }

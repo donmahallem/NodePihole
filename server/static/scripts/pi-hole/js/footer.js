@@ -218,6 +218,7 @@ var statusUpdater = (function(statusUpdater, pihole) {
     'use strict';
     var statusUpdater = statusUpdater = statusUpdater || {};
     const tempBox = $("#infoPanel #temperature");
+    const memBox = $("#infoPanel #memory");
     var onUpdate = function(data) {
         if (data.temperature !== false) {
             if (!tempBox.is(":visible")) {
@@ -227,24 +228,33 @@ var statusUpdater = (function(statusUpdater, pihole) {
             var celsius = data.temperature.celsius;
             switch (data.temperature.unit) {
                 case "K":
-                    text = (celsius + 273.15) + "K";
+                    text = (celsius + 273.15)
+                        .toFixed(2) + "K";
                     break;
                 case "F":
-                    text = ((celsius * 9. / 5) + 32.0) + "F";
+                    text = ((celsius * 9. / 5) + 32.0)
+                        .toFixed(2) + "F";
                     break;
                 default:
-                    text = celsius + "&deg;C";
+                    text = celsius.toFixed(2) + "&deg;C";
                     break;
             }
             $("#infoPanel #temperature i")
-                .css("color", celsius > 60 ? "#FF0000" : "3366FF");
+                .css("color", (celsius > 60) ? "#FF0000" : "#3366FF");
             $("#infoPanel #temperature span.display")
                 .html(text);
         } else if (data.temperature === false && tempBox.is(":visible")) {
             tempBox.hide();
         }
-        $("#infoPanel #memory span.display")
-            .html(data.memory === false ? "---" : data.memory);
+        if (data.memory !== false) {
+            if (!memBox.is(":visible")) {
+                memBox.show();
+            }
+            $("#infoPanel #memory span.display")
+                .html(data.memory.toFixed(2));
+        } else if (data.memory === false && memBox.is(":visible")) {
+            memBox.hide();
+        }
     };
     var pollUpdate = function() {
         pihole.api.status.getStatus()

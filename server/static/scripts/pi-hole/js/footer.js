@@ -217,9 +217,32 @@ $(document)
 var statusUpdater = (function(statusUpdater, pihole) {
     'use strict';
     var statusUpdater = statusUpdater = statusUpdater || {};
+    const tempBox = $("#infoPanel #temperature");
     var onUpdate = function(data) {
-        $("#infoPanel #temperature span.display")
-            .html(data.temperature === false ? "---" : data.temperature);
+        if (data.temperature !== false) {
+            if (!tempBox.is(":visible")) {
+                tempBox.show();
+            }
+            var text;
+            var celsius = data.temperature.celsius;
+            switch (data.temperature.unit) {
+                case "K":
+                    text = (celsius + 273.15) + "K";
+                    break;
+                case "F":
+                    text = ((celsius * 9. / 5) + 32.0) + "F";
+                    break;
+                default:
+                    text = celsius + "&deg;C";
+                    break;
+            }
+            $("#infoPanel #temperature i")
+                .css("color", celsius > 60 ? "#FF0000" : "3366FF");
+            $("#infoPanel #temperature span.display")
+                .html(text);
+        } else if (data.temperature === false && tempBox.is(":visible")) {
+            tempBox.hide();
+        }
         $("#infoPanel #memory span.display")
             .html(data.memory === false ? "---" : data.memory);
     };

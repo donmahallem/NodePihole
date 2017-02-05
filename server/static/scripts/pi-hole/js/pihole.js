@@ -122,14 +122,14 @@ var pihole = (function(pihole, $, undefined) {
      * @module pihole/api/log
      * @since 1.0.1
      */
-    api.log = {
+    api.history = {
         /**
-         * @memberof module:pihole/api/log
+         * @memberof module:pihole/api/history
          * @since 1.0.1
          */
         get: function(type) {
             return $.ajax({
-                "url": "/api/log",
+                "url": "/api/history",
                 "headers": {
                     "Accept": "application/json; charset=utf-8",
                     "Content-Type": "application/json; charset=utf-8"

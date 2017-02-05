@@ -183,14 +183,16 @@ helper.getTemperature = function() {
         })
         .then(function(celsius) {
             if (isNaN(celsius)) {
-                return celsius;
+                return false;
             }
             celsius = parseFloat(celsius);
             if (celsius >= 1000) {
-                return celsius * 1e-3;
-            } else {
-                return celsius;
+                celsius = celsius * 1e-3;
             }
+            return {
+                "celsius": celsius,
+                "unit": appDefaults.TEMPERATUREUNIT || "C"
+            };
         })
         .catch(function(err) {
             return false;

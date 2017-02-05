@@ -118,7 +118,7 @@ $(document)
             .forEach(function(item) {
                 GETDict[item.split("=")[0]] = item.split("=")[1];
             });
-        var APIstring = "/api/data?allQueries";
+        var APIstring = "/api/history";
         if ("from" in GETDict) {
             APIstring += "&from=" + GETDict["from"];
         }
@@ -150,7 +150,7 @@ $(document)
                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",
                 "ajax": {
                     "url": APIstring,
-                    "dataSrc": "allQueries"
+                    "dataSrc": "data"
                 },
                 "autoWidth": false,
                 "order": [
@@ -158,7 +158,7 @@ $(document)
                 ],
                 "columns": [{
                     "width": "20%",
-                    "data": "time",
+                    "data": "timestamp",
                     "type": "date"
                 }, {
                     "width": "10%",

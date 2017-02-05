@@ -267,7 +267,7 @@ helper.getLoadAverage = function() {
                     process.nextTick(function() {
                         var splits = stdout.split("load average:");
                         if (splits.length === 2) {
-                            splits = splits.split(",");
+                            splits = splits[1].split(",");
                             var values = [];
                             for (var i = 0; i < splits.length; i++) {
                                 values.push(parseFloat(splits[i].trim()));

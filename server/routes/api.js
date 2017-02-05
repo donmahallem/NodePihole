@@ -506,9 +506,9 @@ router.get("/live",
  * @api {get} /api/list/ Gets the white/black list
  * @apiName GetDomains
  * @apiGroup Lists
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiPermission admin
- * @apiParam (Query Parameter) {string="white","black"} The list name
+ * @apiParam (Query Parameter) {string="white","black","wildcard"} The list name
  * @apiError NotFound The <code>list</code> is unknown to the server
  * @apiUse NotAuthorized
  * @apiUse InvalidRequest

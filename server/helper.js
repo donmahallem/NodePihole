@@ -225,36 +225,56 @@ helper.getPiholeStatus = function() {
 helper.getFreeMemory = function() {
     return new Promise(function(resolve, reject) {
             const meminfoPath = "/proc/meminfo";
-            fs.access(meminfoPath, fs.F_OK | fs.R_OK, function(err) {
+            fs.readFile(meminfoPath, "utf8", function(err, data) {
                 if (err) {
                     reject(err);
                 } else {
-                    fs.readFile(meminfoPath, "utf8", function(err, data) {
-                        if (err) {
-                            reject(err);
+                    var lines = data.split(/[\r\n]+/);
+                    var summary = {};
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i].trim();
+                        if (line.match(/^(MemTotal|MemFree|Buffers|Cached)/)) {
+                            var name = line.substring(0, line.indexOf(":"));
+                            var splits = line.substring(0, line.length - 3)
+                                .split(":");
+                            var value = parseInt(splits[1].trim());
+                            summary[name] = value;
+                        }
+                    }
+                    if (summary.hasOwnProperty("MemTotal") &&
+                        summary.hasOwnProperty("MemFree") &&
+                        summary.hasOwnProperty("Buffers") &&
+                        summary.hasOwnProperty("Cached")) {
+                        const memoryUsed = summary["MemTotal"] - summary["MemFree"] - summary["Buffers"] - summary["Cached"];
+                        const memoryTotal = summary["MemTotal"];
+                        resolve(memoryUsed / memoryTotal);
+                    } else {
+                        reject();
+                    }
+                }
+            });
+        })
+        .catch(function(err) {
+            return false;
+        });
+};
+helper.getLoadAverage = function() {
+    return new Promise(function(resolve, reject) {
+            childProcess.exec("uptime", function(error, stdout, stderr) {
+                if (error || stderr.trim() !== "") {
+                    reject();
+                } else {
+                    process.nextTick(function() {
+                        var splits = stdout.split("load average:");
+                        if (splits.length === 2) {
+                            splits = splits.split(",");
+                            var values = [];
+                            for (var i = 0; i < splits.length; i++) {
+                                values.push(parseFloat(splits[i].trim()));
+                            }
+                            resolve(values);
                         } else {
-                            var lines = data.split(/[\r\n]+/);
-                            var summary = {};
-                            for (var i = 0; i < lines.length; i++) {
-                                var line = lines[i].trim();
-                                if (line.match(/^(MemTotal|MemFree|Buffers|Cached)/)) {
-                                    var name = line.substring(0, line.indexOf(":"));
-                                    var splits = line.substring(0, line.length - 3)
-                                        .split(":");
-                                    var value = parseInt(splits[1].trim());
-                                    summary[name] = value;
-                                }
-                            }
-                            if (summary.hasOwnProperty("MemTotal") &&
-                                summary.hasOwnProperty("MemFree") &&
-                                summary.hasOwnProperty("Buffers") &&
-                                summary.hasOwnProperty("Cached")) {
-                                const memoryUsed = summary["MemTotal"] - summary["MemFree"] - summary["Buffers"] - summary["Cached"];
-                                const memoryTotal = summary["MemTotal"];
-                                resolve(memoryUsed / memoryTotal);
-                            } else {
-                                reject();
-                            }
+                            reject();
                         }
                     });
                 }

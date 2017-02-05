@@ -694,13 +694,14 @@ router.post("/disable",
  */
 router.get("/status",
     function(req, res) {
-        Promise.all([helper.getTemperature(), helper.getPiholeStatus(), helper.getFreeMemory()])
+        Promise.all([helper.getTemperature(), helper.getPiholeStatus(), helper.getFreeMemory(), helper.getLoadAverage()])
             .then(function(data) {
                 res.json({
                     "data": {
                         "temperature": data[0],
                         "status": data[1],
-                        "memory": data[2]
+                        "memory": data[2],
+                        "loadAverage": data[3]
                     }
                 });
             })

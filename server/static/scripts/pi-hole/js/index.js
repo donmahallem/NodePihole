@@ -370,36 +370,39 @@ var forwardDestinationChart = {};
         if (!ctx) {
             fDU.setup();
         }
-        $.getJSON("/api/data?forwardDestinations", function(data) {
-            var colors = [];
-            // Get colors from AdminLTE
-            $.each($.AdminLTE.options.colors, function(key, value) {
-                colors.push(value);
+        pihole.api.data.getForwardDestinations()
+            .done(function(data) {
+                var colors = [];
+                // Get colors from AdminLTE
+                $.each($.AdminLTE.options.colors, function(key, value) {
+                    colors.push(value);
+                });
+                var v = [],
+                    c = [];
+                // Collect values and colors, immediately push individual labels
+                $.each(data.data, function(key, value) {
+                    v.push(value);
+                    c.push(colors.shift());
+                    if (key.indexOf("|") > -1) {
+                        key = key.substr(0, key.indexOf("|"));
+                    }
+                    fDU.chart.data.labels.push(key);
+                });
+                // Build a single dataset with the data to be pushed
+                var dd = {
+                    data: v,
+                    backgroundColor: c
+                };
+                // and push it at once
+                fDU.chart.data.datasets.push(dd);
+                $("#forward-destinations .overlay")
+                    .remove();
+                fDU.chart.chart.config.options.cutoutPercentage = 30;
+                fDU.chart.update();
+            })
+            .fail(function(error) {
+
             });
-            var v = [],
-                c = [];
-            // Collect values and colors, immediately push individual labels
-            $.each(data.forwardDestinations, function(key, value) {
-                v.push(value);
-                c.push(colors.shift());
-                if (key.indexOf("|") > -1) {
-                    key = key.substr(0, key.indexOf("|"));
-                }
-                fDU.chart.data.labels.push(key);
-            });
-            // Build a single dataset with the data to be pushed
-            var dd = {
-                data: v,
-                backgroundColor: c
-            };
-            // and push it at once
-            fDU.chart.data.datasets.push(dd);
-            $("#forward-destinations .overlay")
-                .remove();
-            fDU.chart.update();
-            fDU.chart.chart.config.options.cutoutPercentage = 30;
-            fDU.chart.update();
-        });
     };
 }(forwardDestinationChart));
 

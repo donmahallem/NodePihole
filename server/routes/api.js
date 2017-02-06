@@ -384,31 +384,31 @@ router.get("/data/summary", function(req, res, next) {
  * @apiUse InvalidRequest
  * @apiUse NotAuthorized
  */
-router.get("/data/forwardDestinations", function(req, res, next) {
-    const type = req.params.type;
-    if (type && (type === "query" || type === "forward" || type === "block")) {
-        var first = true;
+router.get("/data/forwardDestinations",
+    apiMiddleware.auth,
+    function(req, res, next) {
+        var destinations = {};
         var stream = logHelper.createLogParser()
             .pipe(through2.obj(function(chunk, enc, callback) {
-                if (chunk !== false && chunk.type == type) {
-                    if (first) {
-                        this.push("{\"data\":[");
-                        first = false;
-                    } else if (!first && chunk !== null) {
-                        this.push(",");
+                if (chunk !== false && chunk.type === "forward") {
+                    if (destinations.hasOwnProperty(chunk.destination)) {
+                        destinations[chunk.destination]++;
+                    } else {
+                        destinations[chunk.destination] = 1;
                     }
-                    this.push(JSON.stringify(chunk));
                 }
                 callback();
-            }, function(callback) {
-                this.push("]}");
-                callback();
             }))
-            .pipe(res);
-    } else {
-        next(new Error("Unsupported '" + req.params.type + "' type"));
-    }
-});
+            .on("error", function(err) {
+                next(err);
+            })
+            .on("end", function() {
+                res.json({
+                    "data": destinations
+                });
+            })
+            .resume();
+    });
 /**
  * @api {get} /log?type=... Get Log
  * @apiName GetLog
@@ -710,5 +710,10 @@ router.get("/status",
             });
     }
 );
+
+router.use(function logErrors(err, req, res, next) {
+    console.log("error occured", err);
+    res.sendStatus(500);
+});
 
 module.exports = router;

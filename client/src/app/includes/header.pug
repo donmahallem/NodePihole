@@ -1,0 +1,54 @@
+header.main-header
+	// Logo
+	a.logo(href='http://pi-hole.net')
+		// mini logo for sidebar mini 50x50 pixels
+		span.logo-mini
+			b P
+			| H
+		// logo for regular state and mobile devices
+		span.logo-lg
+			b Pi
+			| -hole
+	// Header Navbar: style can be found in header.less
+	nav.navbar.navbar-static-top(role='navigation')
+		// Sidebar toggle button
+		a.sidebar-toggle(href='#', data-toggle='offcanvas', role='button')
+			span.sr-only Toggle navigation
+		.navbar-custom-menu
+			ul.nav.navbar-nav
+				// User Account: style can be found in dropdown.less
+				li#dropdown-menu.dropdown.user.user-menu
+					a.dropdown-toggle(href='#')
+						img.user-image(src='/static/img/logo.svg', style='border-radius: initial', sizes='160x160', alt='Pi-hole logo')
+						span.hidden-xs Pi-hole
+					ul.dropdown-menu
+						// User image
+						li.user-header
+							img(src='static/img/logo.svg', sizes='160x160', alt='User Image')
+							p
+								| Open Source Ad Blocker
+								small Designed For Raspberry Pi
+						// Menu Body
+						li.user-body
+							.col-xs-4.text-center
+								a(href='https://github.com/pi-hole/pi-hole') GitHub
+							.col-xs-4.text-center
+								a(href='http://jacobsalmela.com/block-millions-ads-network-wide-with-a-raspberry-pi-hole-2-0/') Details
+							.col-xs-4.text-center
+								a(href='https://github.com/pi-hole/pi-hole/releases') Updates
+							#sessiontimer.col-xs-12.text-center(style='display: none;')
+								| Session is valid for 
+								span#sessiontimercounter 0
+						// Menu Footer
+						li.user-footer
+							// Update alerts
+							#alPiholeUpdate.alert.alert-info.alert-dismissible.fade.in(role='alert', hidden='')
+								a.alert-link(href='https://github.com/pi-hole/pi-hole/releases') There's an update available for this Pi-hole!
+							#alWebUpdate.alert.alert-info.alert-dismissible.fade.in(role='alert', hidden='')
+								a.alert-link(href='https://github.com/pi-hole/AdminLTE/releases') There's an update available for this Web Interface!
+							// PayPal
+							div
+								form(action='https://www.paypal.com/cgi-bin/webscr', method='post', target='_top')
+									input(type='hidden', name='cmd', value='_s-xclick')
+									input(type='hidden', name='hosted_button_id', value='3J2L3Z4DHW9UY')
+									input(style='display: block; margin: 0 auto;', type='image', src='/static/img/donate.gif', border='0', name='submit', alt='PayPal - The safer, easier way to pay online!')

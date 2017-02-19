@@ -1,0 +1,67 @@
+summary-display
+.row
+	.col-md-12
+		overtime-data-graph
+			// /.box-body
+if 1<2
+	.row(ng-if="$ctrl.isSignedIn")
+		.col-md-6
+			query-types-graph
+		.col-md-6
+			forward-destinations-graph
+	.row(ng-if="$ctrl.isSignedIn")
+		div(class='col-md-6 col-lg-4')
+			#domain-frequency.box
+				.box-header.with-border
+					h3.box-title Top Domains
+				// /.box-header
+				.box-body
+					.table-responsive
+						table.table.table-bordered
+							thead
+								tr
+									th Domain
+									th Hits
+									th Frequency
+				.overlay
+					i.fa.fa-refresh.fa-spin
+				// /.box-body
+			// /.box
+		// /.col
+		div(class='col-md-6 col-lg-4')
+			#ad-frequency.box
+				.box-header.with-border
+					h3.box-title Top Advertisers
+				// /.box-header
+				.box-body
+					.table-responsive
+						table.table.table-bordered
+							tbody
+								tr
+									th Domain
+									th Hits
+									th Frequency
+				.overlay
+					i.fa.fa-refresh.fa-spin
+				// /.box-body
+			// /.box
+		// /.col
+		div(class='col-md-6 col-lg-4')
+			#client-frequency.box
+				.box-header.with-border
+					h3.box-title Top Clients
+				// /.box-header
+				.box-body
+					.table-responsive
+						table.table.table-bordered
+							tbody
+							tr
+									th Client
+									th Requests
+									th Frequency
+				.overlay
+					i.fa.fa-refresh.fa-spin
+				// /.box-body
+			// /.box
+		// /.col
+	// /.row

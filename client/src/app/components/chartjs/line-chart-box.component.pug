@@ -1,0 +1,8 @@
+.box
+    .box-header.with-border
+        h3.box-title {{title}}
+    .box-body
+        .chart
+            canvas(baseChart,[datasets]="chartDatasets",[labels]="chartLabels",[options]="chartOptions",[colors]="chartColors",[chartType]="chartType",[legend]="chartLegend",width="800", height="250")
+    .overlay(*ngIf="isLoading")
+        i.fa.fa-refresh.fa-spin

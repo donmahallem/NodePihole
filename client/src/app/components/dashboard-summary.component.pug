@@ -1,0 +1,8 @@
+.col-lg-3.col-xs-12
+	.small-box.bg-aqua(smallbox=true,[box-title]="summary?.adsBlockedToday||'---'",box-subtitle="DNS Queries Blocked Today",box-icon="ion-md-hand")
+.col-lg-3.col-xs-12
+	.small-box.bg-green(smallbox=true,[box-title]="summary?.dnsQueriesToday||'---'",box-subtitle="DNS Queries Today",box-icon="ion-md-globe")
+.col-lg-3.col-xs-12
+	.small-box.bg-yellow(smallbox=true,[box-title]="summary?.domainsBeingBlocked||'---'",box-subtitle="Of Today's Queries Were Blocked",box-icon="ion-md-pie")
+.col-lg-3.col-xs-12
+	.small-box.bg-red(smallbox=true,[box-title]="summary?.domainsBeingBlocked||'---'",box-subtitle="Domains Being Blocked",box-icon="ion-md-list")

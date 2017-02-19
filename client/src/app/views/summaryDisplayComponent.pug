@@ -1,0 +1,29 @@
+mixin smallbox_with_icon(title,subtitle,icon)
+	.small-box&attributes(attributes)
+		.inner
+			h3.statistic= title
+			p= subtitle
+		.icon
+			i.ion(class!=icon)
+		.overlay(ng-show="$ctrl.isLoading")
+			i.fa.fa-refresh.fa-spin
+.row#summaryDisplay
+	style(type='text/css').
+		div#summaryDisplay div.small-box div.overlay{position: absolute;width: 100%;height: 100%;top: 0; left: 0;z-index: 50;background: rgba(255,255,255,0.7);}
+		div#summaryDisplay div.small-box div.overlay i{position: absolute;top: 50%;left: 50%;margin-left: -15px;margin-top: -15px;color: #000;font-size: 30px;}
+	.col-lg-3.col-xs-12
+		// small box
+		+smallbox_with_icon("{{$ctrl.summary.adsBlockedToday||\"---\"}}","DNS Queries Blocked Today","ion-android-hand")(class="bg-aqua")
+	// ./col
+	.col-lg-3.col-xs-12
+		// small box
+		+smallbox_with_icon("{{$ctrl.summary.dnsQueriesToday||\"---\"}}","DNS Queries Today","ion-earth")(class="bg-green")
+	// ./col
+	.col-lg-3.col-xs-12
+		// small box
+		+smallbox_with_icon("{{$ctrl.summary.dnsQueriesToday||\"---\"}}","Of Today's Queries Were Blocked","ion-pie-graph")(class="bg-yellow")
+	// ./col
+	.col-lg-3.col-xs-12
+		// small box
+		+smallbox_with_icon("{{$ctrl.summary.dnsQueriesToday||\"---\"}}","Domains Being Blocked","ion-ios-list")(class="bg-red")
+	// ./col

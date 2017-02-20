@@ -4,7 +4,7 @@ import { DoughnutChartBoxComponent } from "./chartjs/doughnut-chart-box.componen
 
 @Component({
     selector: 'forward-destinations-chart-box',
-    template: require("pug-loader!./chartjs/doughnut-chart-box.component.pug")()
+    templateUrl: "./chartjs/doughnut-chart-box.component.pug"
 })
 export class ForwardDestinationsChartBoxComponent extends DoughnutChartBoxComponent {
 

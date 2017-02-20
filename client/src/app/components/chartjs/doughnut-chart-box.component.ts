@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { ChartBoxComponent } from "./chart-box.component";
+
 @Component({
-    selector: 'doughnut-graph-box',
-    template: require("pug-loader!./doughnut-chart-box.component.pug")()
+    selector: 'doughnut-chart-box',
+    templateUrl: "./doughnut-chart-box.component.pug"
 })
 export class DoughnutChartBoxComponent extends ChartBoxComponent {
     protected chartData: number[];

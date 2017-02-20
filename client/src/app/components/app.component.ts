@@ -1,12 +1,8 @@
 import { Component, HostBinding } from '@angular/core';
 
-export function loadPug(): string {
-    return require("pug-loader!./app.component.pug")();
-}
-
 @Component({
     selector: 'app-root',
-    template: loadPug(),
+    templateUrl: "./app.component.pug",
     styleUrls: ['./app.component.css'],
     host: { class: "skin-blue sidebar-mini" }
 })

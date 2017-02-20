@@ -62,7 +62,7 @@ export class MenuTreeView extends MenuItem {
 
 @Component({
     selector: "ul[pihole-sidebar-menu]",
-    template: require("pug-loader!./pihole-sidebar-menu.component.pug")()
+    templateUrl: "./pihole-sidebar-menu.component.pug"
 })
 export class PiholeSidebarMenuComponent {
     @Input() menuItems: Array<MenuItem>;
@@ -92,7 +92,7 @@ export class PiholeSidebarMenuComponent {
 
 @Component({
     selector: "li[pihole-sidebar-menu-view]",
-    template: require("pug-loader!./pihole-sidebar-menu-view.component.pug")()
+    templateUrl: "./pihole-sidebar-menu-view.component.pug"
 })
 export class PiholeSidebarMenuViewComponent {
     @Input() menuitem: MenuItem;
@@ -120,7 +120,7 @@ export class PiholeSidebarMenuViewComponent {
 
 @Component({
     selector: "li[pihole-sidebar-menu-treeview]",
-    template: require("pug-loader!./pihole-sidebar-menu-treeview.component.pug")(),
+    templateUrl: "./pihole-sidebar-menu-treeview.component.pug",
     animations: [
         trigger("openState", [
             state("true", style({ height: '*' })),

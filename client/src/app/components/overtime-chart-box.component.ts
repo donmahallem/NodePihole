@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { LineChartBoxComponent } from "./chartjs/line-chart-box.component"
 @Component({
     selector: 'overtime-chart-box',
-    template: require("pug-loader!./chartjs/line-chart-box.component.pug")()
+    templateUrl: "./chartjs/line-chart-box.component.pug"
 })
 export class OvertimeChartBoxComponent extends LineChartBoxComponent {
     constructor() {

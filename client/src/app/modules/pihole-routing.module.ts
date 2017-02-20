@@ -10,7 +10,11 @@ import { OvertimeChartBoxComponent } from './../components/overtime-chart-box.co
 import { QueryTypesChartBoxComponent } from './../components/query-types-chart-box.component';
 import { ForwardDestinationsChartBoxComponent } from './../components/forward-destinations-chart-box.component';
 import { ChartsModule } from 'ng2-charts';
-
+import { LineChartBoxComponent } from "./../components/chartjs/line-chart-box.component";
+import { ChartBoxComponent } from "./../components/chartjs/chart-box.component";
+import { DoughnutChartBoxComponent } from "./../components/chartjs/doughnut-chart-box.component";
+import { FormsModule } from '@angular/forms';
+import { BoxDirective, BoxBodyDirective, BoxBodyCollapseDirective } from "./../directives/adminlte/box.component";
 const piholeRoutes: Routes = [
     { path: '', component: PiholeDashboardComponent },
     { path: 'login', component: PiholeLoginComponent }
@@ -24,12 +28,18 @@ const piholeRoutes: Routes = [
         DashboardSummaryComponent,
         OvertimeChartBoxComponent,
         QueryTypesChartBoxComponent,
-        ForwardDestinationsChartBoxComponent
+        ForwardDestinationsChartBoxComponent,
+        LineChartBoxComponent,
+        DoughnutChartBoxComponent,
+        BoxDirective,
+        BoxBodyDirective,
+        BoxBodyCollapseDirective
     ],
     imports: [
         RouterModule.forRoot(piholeRoutes),
         ChartsModule,
-        BrowserModule
+        BrowserModule,
+        FormsModule
     ],
     exports: [
         RouterModule

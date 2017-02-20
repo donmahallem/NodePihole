@@ -1,8 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 
 @Component({
-  template: require("pug-loader!./pihole-login.component.pug")()
+    templateUrl: "./pihole-login.component.pug"
 })
 export class PiholeLoginComponent {
+    @Input("password") password: string;
+    protected isRequesting: boolean = false;
+    protected wrongPassword: boolean = false;
+
+    protected login() {
+        console.log(this.password);
+        this.wrongPassword = !this.wrongPassword;
+    }
 }

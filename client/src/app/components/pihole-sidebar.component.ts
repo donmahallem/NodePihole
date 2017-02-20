@@ -23,7 +23,7 @@ const MENUITEMS: MenuItem[] = [
 ];
 @Component({
     selector: 'pihole-sidebar',
-    template: require("pug-loader!./pihole-sidebar.component.pug")()
+    templateUrl: "./pihole-sidebar.component.pug"
 })
 export class PiholeSidebarComponent {
     menuItems: Array<MenuItem> = [];

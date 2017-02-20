@@ -1,12 +1,7 @@
 import {
-    AfterContentInit,
-    ContentChild,
     Directive,
-    QueryList,
     ElementRef,
     HostListener,
-    EventEmitter,
-    Output,
     Input,
     HostBinding,
     Injectable

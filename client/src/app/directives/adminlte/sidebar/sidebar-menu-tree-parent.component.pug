@@ -1,0 +1,5 @@
+ng-container(*ngFor="let menuitem of menuItems")
+	ng-container([ngSwitch]="menuitem.type")
+		li.header(*ngSwitchCase="menuItemType.HEADER",sidebar-menu-item-header=true,[menuitem]="menuitem")
+		li(*ngSwitchCase="menuItemType.ITEM",sidebar-menu-item-simple=true,[menuitem]="menuitem")
+		li.treeview(*ngSwitchCase="menuItemType.TREEITEM",sidebar-menu-item-tree=true,[menuitem]="menuitem")

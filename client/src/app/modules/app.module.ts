@@ -12,6 +12,7 @@ import {
     PiholeSidebarMenuViewComponent,
     PiholeSidebarMenuTreeviewComponent
 } from './../components/pihole-sidebar-menu.component';
+import { AdminLteSidebarMenu } from "./../directives/adminlte/sidebar/sidebar-menu.component";
 import { PiholeContentComponent } from './../components/pihole-content.component';
 
 import { PiholeRoutingModule } from './pihole-routing.module';
@@ -25,9 +26,7 @@ import { PiholeAuthService } from './../services/pihole-auth.service';
         PiholeHeadbarComponent,
         PiholeSidebarComponent,
         PiholeSidebarStatusComponent,
-        PiholeSidebarMenuComponent,
-        PiholeSidebarMenuViewComponent,
-        PiholeSidebarMenuTreeviewComponent,
+        AdminLteSidebarMenu,
         PiholeContentComponent
     ],
     imports: [

@@ -6,17 +6,22 @@ import 'rxjs/add/operator/map';
 
 @Injectable()
 export class PiholeAuthService {
-    private loginStateSubject: BehaviorSubject<boolean>;
-    private isLoggedIn: boolean = false;
+    private loginStateSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);;
+    private loggedIn: boolean = false;
+
     constructor(private http: Http) {
-        this.loginStateSubject = new BehaviorSubject<boolean>(false);
-        //setInterval(this.emitta.bind(this),2000);
     }
+
+    public get isLoggedIn(): boolean {
+        return this.loggedIn;
+    }
+
     private emitta() {
-        this.isLoggedIn = !this.isLoggedIn;
+        this.loggedIn = !this.loggedIn;
         this.loginStateSubject.next(this.isLoggedIn);
     }
-    public subscribe(a, b, c) {
-        return this.loginStateSubject.subscribe(a, b, c);
+
+    public subscribe(updateCallback) {
+        return this.loginStateSubject.subscribe(updateCallback);
     }
 }

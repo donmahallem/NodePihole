@@ -14,7 +14,7 @@ import { LineChartBoxComponent } from "./../components/chartjs/line-chart-box.co
 import { ChartBoxComponent } from "./../components/chartjs/chart-box.component";
 import { DoughnutChartBoxComponent } from "./../components/chartjs/doughnut-chart-box.component";
 import { FormsModule } from '@angular/forms';
-import { BoxDirective, BoxBodyDirective, BoxBodyCollapseDirective } from "./../directives/adminlte/box.component";
+import { AdminLteBox } from "./../components/adminlte/box.component";
 const piholeRoutes: Routes = [
     { path: '', component: PiholeDashboardComponent },
     { path: 'login', component: PiholeLoginComponent }
@@ -31,9 +31,7 @@ const piholeRoutes: Routes = [
         ForwardDestinationsChartBoxComponent,
         LineChartBoxComponent,
         DoughnutChartBoxComponent,
-        BoxDirective,
-        BoxBodyDirective,
-        BoxBodyCollapseDirective
+        AdminLteBox
     ],
     imports: [
         RouterModule.forRoot(piholeRoutes),

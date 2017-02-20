@@ -1,6 +1,0 @@
-a(href="#",(click)="toggle()")
-	i.fa(class="{{menuitem.icon}}")
-	span {{menuitem.title}}
-	span.pull-right-container
-		i.fa.pull-right([ngClass]="{'fa-angle-left':!isOpen,'fa-angle-down':isOpen}")
-ul.treeview-menu(pihole-sidebar-menu=true,[menuItems]="menuitem.children",[ngClass]="{'menu-open':isOpen}",*ngIf="isOpen",[@openState]="isOpen",style="display:block;overflow:hidden;")

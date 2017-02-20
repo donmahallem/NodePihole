@@ -7,12 +7,7 @@ import { AppComponent } from './../components/app.component';
 import { PiholeHeadbarComponent } from './../components/pihole-headbar.component';
 import { PiholeSidebarComponent } from './../components/pihole-sidebar.component';
 import { PiholeSidebarStatusComponent } from './../components/pihole-sidebar-status.component';
-import {
-    PiholeSidebarMenuComponent,
-    PiholeSidebarMenuViewComponent,
-    PiholeSidebarMenuTreeviewComponent
-} from './../components/pihole-sidebar-menu.component';
-import { AdminLteSidebarMenu } from "./../directives/adminlte/sidebar/sidebar-menu.component";
+import { AdminLteSidebarMenu } from "./../components/adminlte/sidebar/sidebar-menu.component";
 import { PiholeContentComponent } from './../components/pihole-content.component';
 
 import { PiholeRoutingModule } from './pihole-routing.module';

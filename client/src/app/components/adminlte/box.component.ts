@@ -90,3 +90,5 @@ export class BoxDirective {
         this.collapseSubscription.unsubscribe();
     }
 }
+
+export const AdminLteBox = [BoxDirective, BoxBodyDirective, BoxBodyCollapseDirective];

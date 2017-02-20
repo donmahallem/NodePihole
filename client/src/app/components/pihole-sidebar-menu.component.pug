@@ -1,6 +1,0 @@
-ng-container(*ngFor="let menuitem of menuItems")
-	ng-container([ngSwitch]="menuitem.type")
-		li.header(*ngSwitchCase="menuItemType.HEADER")
-			| {{menuitem.title}}
-		li(*ngSwitchCase="menuItemType.VIEW",pihole-sidebar-menu-view=true,[menuitem]="menuitem")
-		li(*ngSwitchCase="menuItemType.TREEVIEW",pihole-sidebar-menu-treeview=true,[menuitem]="menuitem")

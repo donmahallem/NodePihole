@@ -21,7 +21,7 @@ export class AdminLteSidebarMenuComponent extends AdminLteSidebarMenuTreeParent 
     }
 }
 
-export var AdminLteSidebarMenu = [
+export const AdminLteSidebarMenu = [
     AdminLteSidebarMenuComponent,
     AdminLteSidebarMenuItemTreeComponent,
     AdminLteSidebarMenuItemSimpleComponent,

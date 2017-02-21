@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { MenuItem, MenuItemHeader, MenuItemSimple, MenuItemTree } from "./adminlte/sidebar/sidebar-menu.models";
+import { APP_BASE_HREF } from '@angular/common';
 
 const DISABLE_SUBMENU: MenuItemTree = new MenuItemTree("Disable", "fa-stop")
     .add(new MenuItemSimple("Permanently", "#", "fa-stop"))
@@ -29,5 +30,6 @@ export class PiholeSidebarComponent {
     menuItems: Array<MenuItem> = [];
     constructor() {
         this.menuItems = MENUITEMS;
+        console.log("BASE HREF", APP_BASE_HREF);
     }
 }

@@ -6,10 +6,12 @@ import {
     RequestOptions
 } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import { PiholeAuthService } from "./pihole-auth.service";
-import { PiholeService } from "./pihole.service";
+import { PiholeApiService } from "./pihole-api.service";
+import { Subscription } from 'rxjs/Subscription';
 
 export class Summary {
     adsBlockedToday: number;
@@ -23,20 +25,57 @@ export class AuthData {
     csrf_token: string;
 }
 
-@Injectable()
-export class PiholeApiService {
-    private heroesUrl = 'app/heroes';  // URL to web API
-    constructor(private http: Http) {
+
+class PiholeAuth {
+
+    private loginStateSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);;
+    private loggedIn: boolean = false;
+    private authData: AuthData;
+
+    constructor(private piholeService: PiholeService) {
+    }
+
+    public get isLoggedIn(): boolean {
+        return this.loggedIn;
+    }
+
+    private emitta() {
+        this.loggedIn = !this.loggedIn;
+        this.loginStateSubject.next(this.isLoggedIn);
+    }
+
+    public login(password: string): Observable<AuthData> {
+        return this.piholeService
+            .api
+            .postLogin(password)
+            .map(this.storeAuthInformation);
+    }
+    private storeAuthInformation(authData: AuthData) {
+        this.authData = authData;
+        return authData;
+    }
+
+    public subscribe(updateCallback): Subscription {
+        return this.loginStateSubject.subscribe(updateCallback);
+    }
+}
+
+
+class PiholeApi {
+
+    constructor(private piholeService: PiholeService, private http: Http) {
+
     }
     public getSummary(): Observable<Summary> {
         let headers = new Headers({ 'Content-Type': 'application/json' });
         let options = new RequestOptions({ headers: headers });
-        return this.http.get("/api/login",
+        return this.http.get("/api/summary",
             options)
             .map(this.extractData)
             .catch(this.handleError);
     }
-    public login(password: string): Observable<AuthData> {
+
+    public postLogin(password: string): Observable<AuthData> {
         let headers = new Headers({ 'Content-Type': 'application/json' });
         let options = new RequestOptions({ headers: headers });
         return this.http.post("/api/login",
@@ -61,5 +100,18 @@ export class PiholeApiService {
         }
         console.error(errMsg);
         return Observable.throw(errMsg);
+    }
+}
+
+@Injectable()
+export class PiholeService {
+    private heroesUrl = 'app/heroes';  // URL to web API
+    public readonly api: PiholeApi;
+    public readonly auth: PiholeAuth;
+    private readonly http: Http;
+    constructor(http: Http) {
+        this.http = http;
+        this.api = new PiholeApi(this, this.http);
+        this.auth = new PiholeAuth(this);
     }
 }

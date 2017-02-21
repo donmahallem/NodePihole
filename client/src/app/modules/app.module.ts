@@ -14,6 +14,7 @@ import { PiholeRoutingModule } from './pihole-routing.module';
 
 import { PiholeApiService } from './../services/pihole-api.service';
 import { PiholeAuthService } from './../services/pihole-auth.service';
+import { PiholeService } from './../services/pihole.service';
 
 @NgModule({
     declarations: [
@@ -30,7 +31,7 @@ import { PiholeAuthService } from './../services/pihole-auth.service';
         HttpModule,
         PiholeRoutingModule
     ],
-    providers: [PiholeApiService, PiholeAuthService],
+    providers: [PiholeApiService, PiholeAuthService, PiholeService],
     bootstrap: [AppComponent]
 })
 export class AppModule { }

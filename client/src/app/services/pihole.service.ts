@@ -25,6 +25,11 @@ export class AuthData {
     csrf_token: string;
 }
 
+export class OvertimeData {
+    ads: Map<Number, Number>;
+    queries: Map<Number, Number>;
+}
+
 
 class PiholeAuth {
 
@@ -81,6 +86,15 @@ class PiholeApi {
         return this.piholeService
             .http
             .delete("/api/list", options)
+            .map(this.extractData)
+            .catch(this.handleError);
+    }
+    public getOvertimeData(): Observable<OvertimeData> {
+        let headers = new Headers({ 'Content-Type': 'application/json' });
+        let options = new RequestOptions({ headers: headers });
+        return this.piholeService
+            .http
+            .get("/api/data/overtimeData", options)
             .map(this.extractData)
             .catch(this.handleError);
     }

@@ -20,6 +20,7 @@ export class PiholeListComponent {
     protected alertMsg: AlertComponent;
     private statusType: string = "success";
     private statusMessage: string = "Adding to stuff";
+    private alertVisible: boolean = false;
     constructor(private piholeService: PiholeService, private activatedRoute: ActivatedRoute) {
 
     }
@@ -38,23 +39,58 @@ export class PiholeListComponent {
         this.statusMessage = message;
     }
 
+    private readonly domainRegex = /^(?!:\/\/)(?!.{256,})(([a-z0-9][a-z0-9_-]*?\.)+?[a-z]{2,6}?)$/i;
+    private isValidDomain(domain: string) {
+        return domain.match(this.domainRegex);
+    }
+
+    public showInfo(message: string) {
+        this.showAlert("info", message);
+    }
+
+    public showError(message: string) {
+        this.showAlert("danger", message);
+    }
+    public showSuccess(message: string) {
+        this.showAlert("success", message);
+    }
+
+    public showAlert(type: string, message: string) {
+        this.alertVisible = true;
+        this.statusType = type;
+        this.statusMessage = message;
+    }
+
     public addDomain() {
-        this.statusType = "info";
-        this.piholeService
-            .api
-            .addDomainToList("white", "test.com")
-            .subscribe(
-            success => console.log(success),
-            error => console.log(error));
+        this.showInfo("Adding domain");
+        if (this.isValidDomain(this.domain)) {
+            this.piholeService
+                .api
+                .addDomainToList("white", this.domain)
+                .subscribe(
+                success => this.showSuccess("Domain added successfully"),
+                error => this.showError("Couldn't add domain"));
+        } else {
+            this.showError("No valid domain");
+        }
+    }
+
+    public alertClosed(event: any) {
+        this.alertVisible = false;
     }
 
     public removeDomain() {
-        this.piholeService
-            .api
-            .removeDomainFromList("white", "test.com")
-            .subscribe(
-            success => console.log(success),
-            error => console.log(error));
+        this.showInfo("Removing domain");
+        if (this.isValidDomain(this.domain)) {
+            this.piholeService
+                .api
+                .removeDomainFromList("white", this.domain)
+                .subscribe(
+                success => this.showSuccess("Domain removed successfully"),
+                error => this.showError("Couldn't remove domain"));
+        } else {
+            this.showError("No valid domain");
+        }
     }
 
     public refreshList() {

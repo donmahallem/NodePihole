@@ -1,11 +1,16 @@
 import { Component } from '@angular/core';
 import { LineChartBoxComponent } from "./chartjs/line-chart-box.component"
+import { PiholeService, OvertimeData } from "./../services/pihole.service";
+const padNumber = function (num) {
+    return ("00" + num)
+        .substr(-2, 2);
+};
 @Component({
     selector: 'overtime-chart-box',
     templateUrl: "./chartjs/line-chart-box.component.pug"
 })
 export class OvertimeChartBoxComponent extends LineChartBoxComponent {
-    constructor() {
+    constructor(private piholeService: PiholeService) {
         super();
     }
 
@@ -13,7 +18,7 @@ export class OvertimeChartBoxComponent extends LineChartBoxComponent {
         this.title = "Queries over time";
         this.chartDatasets = [
             {
-                data: [65, 59, 80, 81, 56, 55, 40],
+                data: [],
                 label: 'Total DNS Queries',
                 fill: true,
                 pointRadius: 1,
@@ -22,7 +27,7 @@ export class OvertimeChartBoxComponent extends LineChartBoxComponent {
                 cubicInterpolationMode: "monotone"
             },
             {
-                data: [28, 48, 40, 19, 86, 27, 90],
+                data: [],
                 label: 'Blocked DNS Queries',
                 fill: true,
                 pointRadius: 1,
@@ -31,9 +36,58 @@ export class OvertimeChartBoxComponent extends LineChartBoxComponent {
                 cubicInterpolationMode: "monotone"
             }
         ];
-        this.chartLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+        this.chartLabels = [];
         this.chartOptions = {
-            responsive: true
+            responsive: true,
+            tooltips: {
+                enabled: true,
+                mode: "x-axis",
+                callbacks: {
+                    title: function (tooltipItem, data) {
+                        var label = tooltipItem[0].xLabel;
+                        var time = label.match(/(\d?\d):?(\d?\d?)/);
+                        var h = parseInt(time[1], 10);
+                        var m = parseInt(time[2], 10) || 0;
+                        var from = padNumber(h) + ":" + padNumber(m) + ":00";
+                        var to = padNumber(h) + ":" + padNumber(m + 9) + ":59";
+                        return "Queries from " + from + " to " + to;
+                    },
+                    label: function (tooltipItems, data) {
+                        if (tooltipItems.datasetIndex === 1) {
+                            var percentage = 0.0;
+                            var total = parseInt(data.datasets[0].data[tooltipItems.index]);
+                            var blocked = parseInt(data.datasets[1].data[tooltipItems.index]);
+                            if (total > 0) {
+                                percentage = 100.0 * blocked / total;
+                            }
+                            return data.datasets[tooltipItems.datasetIndex].label + ": " + tooltipItems.yLabel + " (" + percentage.toFixed(1) + "%)";
+                        } else {
+                            return data.datasets[tooltipItems.datasetIndex].label + ": " + tooltipItems.yLabel;
+                        }
+                    }
+                }
+            },
+            legend: {
+                display: false
+            },
+            scales: {
+                xAxes: [{
+                    type: "time",
+                    time: {
+                        unit: "hour",
+                        displayFormats: {
+                            hour: "HH:mm"
+                        },
+                        tooltipFormat: "HH:mm"
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            },
+            maintainAspectRatio: false
         };
         this.chartColors = [
             {
@@ -54,18 +108,58 @@ export class OvertimeChartBoxComponent extends LineChartBoxComponent {
             }
         ];
         this.chartLegend = true;
-        this.randomize();
     }
 
-    public randomize(): void {
-        let _lineChartData: Array<any> = new Array(this.chartDatasets.length);
-        for (let i = 0; i < this.chartDatasets.length; i++) {
-            _lineChartData[i] = { data: new Array(this.chartDatasets[i].data.length), label: this.chartDatasets[i].label };
-            for (let j = 0; j < this.chartDatasets[i].data.length; j++) {
-                _lineChartData[i].data[j] = Math.floor((Math.random() * 100) + 1);
-            }
+    ngAfterViewInit() {
+        this.piholeService
+            .api
+            .getOvertimeData()
+            .subscribe(this.onData.bind(this), this.onError.bind(this));
+    }
+
+    private sortNumberAsc = function (a, b) {
+        return a - b;
+    };
+    private onData(data: OvertimeData) {
+        console.log(data);
+        let labels = [];
+        //Copy datasets as settings are stored there
+        let datasets = new Array<any>();
+        datasets[0] = new Array();
+        datasets[1] = new Array();
+
+        // get all keys of ads datapoints
+        var adsKeys = Object.keys(data.ads)
+            .map(Number)
+            .sort(this.sortNumberAsc);
+        // get all keys of domain datapoints
+        var domainKeys = Object.keys(data.queries)
+            .map(Number)
+            .sort(this.sortNumberAsc);
+        // get the largest datapoint key
+        var largest = Math.max(adsKeys[adsKeys.length - 1], domainKeys[domainKeys.length - 1]);
+        // get the smallest datapoint key
+        var smallest = Math.min(adsKeys[0], domainKeys[0]);
+        // Add data for each hour that is available
+        for (var timeInterval = smallest; timeInterval <= largest; timeInterval++) {
+            var h = timeInterval;
+            var d = new Date()
+                .setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0);
+            labels.push(d);
+            datasets[0].push((timeInterval in data.queries) ? data.queries[timeInterval] : 0);
+            datasets[1].push((timeInterval in data.ads) ? data.ads[timeInterval] : 0);
         }
-        this.chartDatasets = _lineChartData;
+        console.log(datasets);
+        console.log("before", this.chartLabels, this.chartDatasets);
+        this.chartDatasets[0].data = datasets[0];
+        this.chartDatasets[1].data = datasets[1];
+        this.chartLabels = labels;
+        this.isLoading = false;
+        console.log("after", this.chartLabels, this.chartDatasets);
+    }
+
+    private onError(error: Error) {
+
     }
 
 }

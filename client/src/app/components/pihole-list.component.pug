@@ -34,7 +34,7 @@ ng-container(*ngIf="!isUnknownList")
             button.btn.btn-default(type='button',(click)="refreshList()", [disabled]="isRequesting")
                 i.fa.fa-refresh([ngClass]="{'fa-spin':isRequesting}")
     // Alerts
-    alert([type]="statusType",dismissible="true",dismissOnTimeout="3000") statusMessage
+    alert(*ngIf="alertVisible",[type]="statusType",dismissible="true",(onClosed)="alertClosed($event)",dismissOnTimeout="5000")
     // Domain List
     ul.list-group(*ngIf="domainList.length>0")
     p(*ngIf="domainList.length<=0")

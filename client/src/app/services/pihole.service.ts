@@ -60,17 +60,45 @@ class PiholeAuth {
     }
 }
 
-
 class PiholeApi {
+    private piholeService: PiholeService;
+    constructor(piholeService: PiholeService) {
+        this.piholeService = piholeService;
+    }
 
-    constructor(private piholeService: PiholeService, private http: Http) {
-
+    public addDomainToList(list: string, domain: string): Observable<boolean> {
+        let headers = new Headers({ 'Content-Type': 'application/json' });
+        let options = new RequestOptions({ headers: headers });
+        return this.piholeService
+            .http
+            .get("/api/list", options)
+            .map(this.extractData)
+            .catch(this.handleError);
+    }
+    public removeDomainFromList(list: string, domain: string): Observable<boolean> {
+        let headers = new Headers({ 'Content-Type': 'application/json' });
+        let options = new RequestOptions({ headers: headers });
+        return this.piholeService
+            .http
+            .delete("/api/list", options)
+            .map(this.extractData)
+            .catch(this.handleError);
+    }
+    public getList(list: string) {
+        let headers = new Headers({ 'Content-Type': 'application/json' });
+        let options = new RequestOptions({ headers: headers });
+        return this.piholeService
+            .http
+            .get("/api/list", options)
+            .map(this.extractData)
+            .catch(this.handleError);
     }
     public getSummary(): Observable<Summary> {
         let headers = new Headers({ 'Content-Type': 'application/json' });
         let options = new RequestOptions({ headers: headers });
-        return this.http.get("/api/summary",
-            options)
+        return this.piholeService
+            .http
+            .get("/api/summary", options)
             .map(this.extractData)
             .catch(this.handleError);
     }
@@ -78,9 +106,8 @@ class PiholeApi {
     public postLogin(password: string): Observable<AuthData> {
         let headers = new Headers({ 'Content-Type': 'application/json' });
         let options = new RequestOptions({ headers: headers });
-        return this.http.post("/api/login",
-            { "password": password },
-            options)
+        return this.piholeService
+            .http.post("/api/login", { "password": password }, options)
             .map(this.extractData)
             .catch(this.handleError);
     }
@@ -98,7 +125,6 @@ class PiholeApi {
         } else {
             errMsg = error.message ? error.message : error.toString();
         }
-        console.error(errMsg);
         return Observable.throw(errMsg);
     }
 }
@@ -108,10 +134,10 @@ export class PiholeService {
     private heroesUrl = 'app/heroes';  // URL to web API
     public readonly api: PiholeApi;
     public readonly auth: PiholeAuth;
-    private readonly http: Http;
+    public readonly http: Http;
     constructor(http: Http) {
         this.http = http;
-        this.api = new PiholeApi(this, this.http);
+        this.api = new PiholeApi(this);
         this.auth = new PiholeAuth(this);
     }
 }

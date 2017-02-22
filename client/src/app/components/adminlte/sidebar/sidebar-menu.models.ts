@@ -14,12 +14,26 @@ export class MenuItem {
     }
 }
 
-export class MenuItemSimple extends MenuItem {
-    path?: string;
-    icon?: string = null;
-    constructor(title: string, path: string, icon: string) {
-        super(title, MenuItemType.ITEM);
+export class MenuItemPath {
+    path: string;
+    queryParams?: Object;
+
+    constructor(path: string, queryParams?: Object) {
         this.path = path;
+        this.queryParams = queryParams;
+    }
+}
+
+export class MenuItemSimple extends MenuItem {
+    path: MenuItemPath;
+    icon?: string = null;
+    constructor(title: string, path: string | MenuItemPath, icon: string) {
+        super(title, MenuItemType.ITEM);
+        if (typeof path === "string") {
+            this.path = new MenuItemPath(path);
+        } else {
+            this.path = path;
+        }
         this.icon = icon;
     }
 }

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { MenuItem, MenuItemHeader, MenuItemSimple, MenuItemTree } from "./adminlte/sidebar/sidebar-menu.models";
+import { MenuItem, MenuItemHeader, MenuItemSimple, MenuItemTree, MenuItemPath } from "./adminlte/sidebar/sidebar-menu.models";
 import { APP_BASE_HREF } from '@angular/common';
 
 const DISABLE_SUBMENU: MenuItemTree = new MenuItemTree("Disable", "fa-stop")
@@ -17,8 +17,8 @@ const MENUITEMS: MenuItem[] = [
     new MenuItemSimple("Dashboard", "/", "fa-home"),
     new MenuItemSimple("Login", "/login", "fa-file-text-o"),
     new MenuItemSimple("Query Log", "/queries", "fa-file-text-o"),
-    new MenuItemSimple("Whitelist", "/list?l=white", "fa-pencil-square-o"),
-    new MenuItemSimple("Blacklist", "/list?l=black", "fa-ban"),
+    new MenuItemSimple("Whitelist", new MenuItemPath("/list", { l: "white" }), "fa-pencil-square-o"),
+    new MenuItemSimple("Blacklist", new MenuItemPath("/list", { l: "black" }), "fa-ban"),
     DISABLE_SUBMENU,
     TOOLS_SUBMENU
 ];

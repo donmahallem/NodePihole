@@ -10,11 +10,7 @@ import { MenuItemSimple } from "./sidebar-menu.models";
     providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
 })
 export class AdminLteSidebarMenuItemSimpleComponent extends AdminLteSidebarMenuItemComponent<MenuItemSimple>{
-    protected get locationPath() {
-        return this.location.prepareExternalUrl(this.menuitem.path);
-    }
     constructor(private location: Location) {
         super();
-        console.log("HAHA", location.prepareExternalUrl("/lol"));
     }
 }

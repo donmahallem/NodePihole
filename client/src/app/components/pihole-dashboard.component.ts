@@ -9,11 +9,11 @@ export class PiholeDashboardComponent {
     private isLoggedIn: boolean;
     private loginSubscription: Subscription;
     constructor(private piholeService: PiholeService) {
-        this.isLoggedIn = piholeService.isLoggedIn;
+        this.isLoggedIn = piholeService.auth.isLoggedIn;
     }
 
     ngOnInit() {
-        this.loginSubscription = this.piholeService.subscribe(
+        this.loginSubscription = this.piholeService.auth.subscribe(
             loggedIn => {
                 this.isLoggedIn = loggedIn;
             });

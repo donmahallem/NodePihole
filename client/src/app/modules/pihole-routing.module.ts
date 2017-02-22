@@ -4,6 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { PiholeDashboardComponent } from './../components/pihole-dashboard.component';
 import { PiholeLoginComponent } from './../components/pihole-login.component';
+import { PiholeListComponent } from './../components/pihole-list.component';
 import { SmallboxComponent } from './../components/smallbox.component';
 import { DashboardSummaryComponent } from './../components/dashboard-summary.component';
 import { OvertimeChartBoxComponent } from './../components/overtime-chart-box.component';
@@ -15,9 +16,12 @@ import { ChartBoxComponent } from "./../components/chartjs/chart-box.component";
 import { DoughnutChartBoxComponent } from "./../components/chartjs/doughnut-chart-box.component";
 import { FormsModule } from '@angular/forms';
 import { AdminLteBox } from "./../components/adminlte/box.component";
+import { AlertModule } from 'ng2-bootstrap/alert';
+
 const piholeRoutes: Routes = [
     { path: '', component: PiholeDashboardComponent },
-    { path: 'login', component: PiholeLoginComponent }
+    { path: 'login', component: PiholeLoginComponent },
+    { path: 'list', component: PiholeListComponent }
 ];
 
 @NgModule({
@@ -31,10 +35,13 @@ const piholeRoutes: Routes = [
         ForwardDestinationsChartBoxComponent,
         LineChartBoxComponent,
         DoughnutChartBoxComponent,
-        AdminLteBox
+        AdminLteBox,
+        AdminLteBox,
+        PiholeListComponent
     ],
     imports: [
         RouterModule.forRoot(piholeRoutes),
+        AlertModule.forRoot(),
         ChartsModule,
         BrowserModule,
         FormsModule

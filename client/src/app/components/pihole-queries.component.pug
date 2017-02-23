@@ -22,7 +22,6 @@ alert(*ngIf="alertVisible",[type]="statusType",dismissible="true",(onClosed)="al
                 h3.box-title Recent Queries
             .box-body
                 .table-responsive
-                    ng-table([config]="config",(cellClicked)="onCellClick($event)",[rows]="rows",[columns]="columns",itemsPerPage="25")
-                    pagination.pagination-sm([(ngModel)]='currentPage', [totalItems]='totalItems', [itemsPerPage]='itemsPerPage', [maxSize]='maxSize', [boundaryLinks]='true', [rotate]='false', (pageChanged)='onChangePage', (numPages)='numPages = $event')
+                    table.display.table.table-striped.table-bordered(cellspacing='0', width='100%',queries-table=true)
             .overlay(*ngIf="isLoading")
                 i.fa.fa-refresh.fa-spin

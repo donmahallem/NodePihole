@@ -98,6 +98,15 @@ class PiholeApi {
             .map(this.extractData)
             .catch(this.handleError);
     }
+    public getQueries(): Observable<OvertimeData> {
+        let headers = new Headers({ 'Content-Type': 'application/json' });
+        let options = new RequestOptions({ headers: headers });
+        return this.piholeService
+            .http
+            .get("/api/history?type=query", options)
+            .map(this.extractData)
+            .catch(this.handleError);
+    }
     public getList(list: string) {
         let headers = new Headers({ 'Content-Type': 'application/json' });
         let options = new RequestOptions({ headers: headers });

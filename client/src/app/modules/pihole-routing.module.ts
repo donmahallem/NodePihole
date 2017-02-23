@@ -18,7 +18,7 @@ import { DoughnutChartBoxComponent } from "./../components/chartjs/doughnut-char
 import { FormsModule } from '@angular/forms';
 import { AdminLteBox } from "./../components/adminlte/box.component";
 import { AlertModule, PaginationModule } from 'ng2-bootstrap';
-import { Ng2TableModule } from 'ng2-table/ng2-table';
+import { PiholeQueriesTableComponent } from "./../components/pihole-queries-table.component";
 const piholeRoutes: Routes = [
     { path: '', component: PiholeDashboardComponent },
     { path: 'login', component: PiholeLoginComponent },
@@ -40,7 +40,8 @@ const piholeRoutes: Routes = [
         DoughnutChartBoxComponent,
         AdminLteBox,
         AdminLteBox,
-        PiholeListComponent
+        PiholeListComponent,
+        PiholeQueriesTableComponent
     ],
     imports: [
         RouterModule.forRoot(piholeRoutes),
@@ -48,7 +49,6 @@ const piholeRoutes: Routes = [
         ChartsModule,
         BrowserModule,
         FormsModule,
-        Ng2TableModule,
         PaginationModule.forRoot()
     ],
     exports: [

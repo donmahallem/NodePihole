@@ -1,18 +1,20 @@
 import { Component, Input } from '@angular/core';
+import { Location, LocationStrategy, PathLocationStrategy } from '@angular/common';
+import { Router } from '@angular/router';
 import { PiholeService } from "./../services/pihole.service";
 
 @Component({
-    templateUrl: "./pihole-login.component.pug"
+    templateUrl: "./pihole-login.component.pug",
+    providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }]
 })
 export class PiholeLoginComponent {
     @Input("password") password: string;
     protected isRequesting: boolean = false;
     protected wrongPassword: boolean = false;
-    constructor(private piholeService: PiholeService) {
+    constructor(private piholeService: PiholeService, private router: Router) {
 
     }
     protected login() {
-        this.wrongPassword = !this.wrongPassword;
         this.isRequesting = true;
         this.piholeService
             .auth
@@ -22,10 +24,14 @@ export class PiholeLoginComponent {
     }
 
     private onLoginError(error: Error) {
+        this.wrongPassword = true;
+        this.isRequesting = false;
         console.log("login error", error);
     }
 
     private onLoginSuccess(data) {
-        console.log("success", data);
+        this.wrongPassword = false;
+        this.isRequesting = false;
+        this.router.navigate(["/"]);
     }
 }

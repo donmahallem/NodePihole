@@ -6,6 +6,14 @@ thead
         th Client
         th Status
         th Action
+tbody
+    tr(*ngFor="let row of mInputData | slice:startIdx:endIdx")
+        td {{row.timestamp}}
+        td {{row.type}}
+        td {{row.domain}}
+        td b
+        td c
+        td e
 tfoot
     tr
         th Time
@@ -14,3 +22,6 @@ tfoot
         th Client
         th Status
         th Action
+    tr
+        td(colspan="6")
+            pagination.pagination-sm([directionLinks]="true",[rotate]="true",[boundaryLinks]="true",[totalItems]="config.totalItems",[maxSize]="10",[itemsPerPage]="config.itemsPerPage",[(ngModel)]="config.currentPage",(numPages)="smallnumPages = $event",(pageChanged)="onPageChanged($event)")

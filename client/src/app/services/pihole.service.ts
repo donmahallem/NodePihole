@@ -29,7 +29,16 @@ export class OvertimeData {
     ads: Map<Number, Number>;
     queries: Map<Number, Number>;
 }
-
+export class Query {
+    domain: string;
+    timestamp: string;
+}
+export class Status {
+    temperature: number | boolean;
+    status: boolean;
+    memory: number;
+    loadAverage: number;
+}
 
 class PiholeAuth {
 
@@ -98,7 +107,7 @@ class PiholeApi {
             .map(this.extractData)
             .catch(this.handleError);
     }
-    public getQueries(): Observable<OvertimeData> {
+    public getQueries(): Observable<Query[]> {
         let headers = new Headers({ 'Content-Type': 'application/json' });
         let options = new RequestOptions({ headers: headers });
         return this.piholeService
@@ -122,6 +131,15 @@ class PiholeApi {
         return this.piholeService
             .http
             .get("/api/summary", options)
+            .map(this.extractData)
+            .catch(this.handleError);
+    }
+    public getStatus(): Observable<Status> {
+        let headers = new Headers({ 'Content-Type': 'application/json' });
+        let options = new RequestOptions({ headers: headers });
+        return this.piholeService
+            .http
+            .get("/api/status", options)
             .map(this.extractData)
             .catch(this.handleError);
     }

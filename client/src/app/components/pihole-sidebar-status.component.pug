@@ -1,19 +1,19 @@
 .user-panel
 	.pull-left.image
-		img.img-responsive(src='static/img/logo.svg', alt='Pi-hole logo', style='display: table; table-layout: fixed; height: 67px;')
+		img.img-responsive(src='assets/images/logo.svg', alt='Pi-hole logo', style='display: table; table-layout: fixed; height: 67px;')
 	.pull-left.info#infoPanel(ng-cloack)
 		p Status
 		a(href='#')
 			i.fa.fa-circle(style='color:#7FFF00')
-			span {{$ctrl.status}}
-		a(href='#',ng-style="{'color':($ctrl.temperature===false)?'#AAAAAA':false}")
-			i.fa.fa-fire(ng-style="{'color': ($ctrl.temperature>60)?'#FF0000':'#3366FF'}")
-			|  Temp:&nbsp;{{$ctrl.temperature===false?"---":$ctrl.temperature}}
+			span {{status?.status}}
+		a(href='#',ng-style="{'color':(status?.temperature===false)?'#AAAAAA':false}")
+			i.fa.fa-fire(ng-style="{'color': (status?.temperature>60)?'#FF0000':'#3366FF'}")
+			|  Temp:&nbsp;{{status?.temperature===false?"---":status?.temperature}}
 		br
-		a(href='#',ng-style="{'color':($ctrl.loadAverage===false)?'#AAAAAA':false}")
+		a(href='#',ng-style="{'color':(status?.loadAverage===false)?'#AAAAAA':false}")
 			i.fa.fa-circle(style='color:#7FFF00')
-			|  Load:&nbsp;{{$ctrl.loadAverage===false?"---":$ctrl.loadAverage}}
+			|  Load:&nbsp;{{status?.loadAverage===false?"---":status?.loadAverage}}
 		br
-		a(href='#',ng-style="{'color':($ctrl.memoryUsage===false)?'#AAAAAA':false}")
+		a(href='#',ng-style="{'color':(status?.memoryUsage===false)?'#AAAAAA':false}")
 			i.fa.fa-circle(style='color:#7FFF00')
-			|  Memory usage:&nbsp;{{$ctrl.memoryUsage===false?"---":$ctrl.memoryUsage}}%
+			|  Memory usage:&nbsp;{{status?.memoryUsage===false?"---":status?.memoryUsage}}%

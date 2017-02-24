@@ -1,5 +1,6 @@
 import { Component, Input } from "@angular/core";
 import { PiholeService } from "./../services/pihole.service";
+import { Query } from "./../services/pihole.service";
 @Component({
     templateUrl: "./pihole-queries.component.pug",
 })
@@ -35,12 +36,12 @@ export class PiholeQueriesComponent {
         filtering: { filterString: "" },
         className: []
     };
-    private isLoading: boolean = false;
+    private isLoading: boolean = true;
     private currentPage: number = 0;
     private totalItems: number = 100;
     private itemsPerPage: number = 10;
     private rows: any[] = [];
-    private data: any[];
+    private data: Query[] = [];
     constructor(private piholeService: PiholeService) {
     }
 
@@ -52,13 +53,15 @@ export class PiholeQueriesComponent {
             this.onLoadError.bind(this));
     }
 
-    private onDataLoaded(data: any) {
+    private onDataLoaded(data: Query[]) {
         console.log("data loaded", data);
         this.data = data;
+        this.isLoading = false;
     }
 
     private onLoadError(error: Error) {
         console.log("error", error);
+        this.isLoading = false;
     }
 
     public onChangeTable(a, b) {

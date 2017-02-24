@@ -22,10 +22,8 @@ export class PiholeSidebarStatusComponent {
             .subscribe(
             data => {
                 this.status = data;
-                console.log(data);
             },
             error => {
-                console.log("error loading status");
             },
             () => {
                 setTimeout(this.loadStatus.bind(this), 10000);

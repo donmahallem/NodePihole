@@ -37,5 +37,6 @@ ng-container(*ngIf="!isUnknownList")
     alert(*ngIf="alertVisible",[type]="statusType",dismissible="true",(onClosed)="alertClosed($event)",dismissOnTimeout="5000")
     // Domain List
     ul.list-group(*ngIf="domainList.length>0")
+        li(*ngFor="let domainEntry of domainList") {{domainEntry.domain}}
     p(*ngIf="domainList.length<=0")
     |   No Domains are listed 

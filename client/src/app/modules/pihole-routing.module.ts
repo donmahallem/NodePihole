@@ -1,5 +1,9 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import {
+    RouterModule,
+    Routes,
+    Data
+} from '@angular/router';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { PiholeDashboardComponent } from './../components/pihole-dashboard.component';
@@ -17,13 +21,45 @@ import { ChartBoxComponent } from "./../components/chartjs/chart-box.component";
 import { DoughnutChartBoxComponent } from "./../components/chartjs/doughnut-chart-box.component";
 import { FormsModule } from '@angular/forms';
 import { AdminLteBox } from "./../components/adminlte/box.component";
-import { AlertModule, PaginationModule } from 'ng2-bootstrap';
+import {
+    AlertModule,
+    PaginationModule
+} from 'ng2-bootstrap';
 import { PiholeQueriesTableComponent } from "./../components/pihole-queries-table.component";
+import { RouteGuardService } from "./../services/route-guard.service";
+
+
 const piholeRoutes: Routes = [
-    { path: '', component: PiholeDashboardComponent },
-    { path: 'login', component: PiholeLoginComponent },
-    { path: 'list', component: PiholeListComponent },
-    { path: 'queries', component: PiholeQueriesComponent }
+    {
+        path: '',
+        component: PiholeDashboardComponent,
+        data: {
+            requiresLogin: false
+        }
+    },
+    {
+        path: 'login',
+        component: PiholeLoginComponent,
+        data: {
+            requiresLogin: false
+        }
+    },
+    {
+        path: 'list',
+        component: PiholeListComponent,
+        canActivate: [RouteGuardService],
+        data: {
+            requiresLogin: true
+        }
+    },
+    {
+        path: 'queries',
+        component: PiholeQueriesComponent,
+        canActivate: [RouteGuardService],
+        data: {
+            requiresLogin: true
+        }
+    }
 ];
 
 @NgModule({
@@ -53,6 +89,9 @@ const piholeRoutes: Routes = [
     ],
     exports: [
         RouterModule
+    ],
+    providers: [
+        RouteGuardService
     ]
 })
 

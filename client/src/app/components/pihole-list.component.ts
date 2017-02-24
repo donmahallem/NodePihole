@@ -3,9 +3,10 @@ import {
     Input,
     ContentChild
 } from '@angular/core';
-import { PiholeService } from "./../services/pihole.service";
+import { PiholeService, ListEntry } from "./../services/pihole.service";
 import { ActivatedRoute, Params } from '@angular/router';
 import { AlertComponent } from 'ng2-bootstrap/alert'
+import { Subscription } from 'rxjs/Subscription';
 @Component({
     templateUrl: "./pihole-list.component.pug"
 })
@@ -13,7 +14,7 @@ export class PiholeListComponent {
     @Input()
     protected domain: string;
     private list: string;
-    protected domainList: string[] = [];
+    protected domainList: ListEntry[] = [];
     protected isUnknownList: boolean = false;
     protected isRequesting: boolean = false;
     @ContentChild(AlertComponent)
@@ -21,17 +22,34 @@ export class PiholeListComponent {
     private statusType: string = "success";
     private statusMessage: string = "Adding to stuff";
     private alertVisible: boolean = false;
+    private queryParamSubscription: Subscription;
     constructor(private piholeService: PiholeService, private activatedRoute: ActivatedRoute) {
 
     }
 
     ngOnInit() {
         // subscribe to router event
-        this.activatedRoute.queryParams.subscribe((params: Params) => {
+        this.queryParamSubscription = this.activatedRoute.queryParams.subscribe((params: Params) => {
             this.list = params["l"];
-            console.log("got", this.list);
         });
-        console.log(this.alertMsg);
+    }
+    ngAfterViewInit() {
+        this.piholeService
+            .api
+            .getList(this.list)
+            .subscribe(
+            data => {
+                this.domainList = data;
+            },
+            error => {
+                console.log(error);
+            }
+            )
+    }
+
+    ngOnDestroy() {
+        this.queryParamSubscription
+            .unsubscribe();
     }
 
     public showStatus(type: string, message: string) {

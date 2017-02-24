@@ -13,7 +13,9 @@ export class PiholeDashboardComponent {
     }
 
     ngOnInit() {
-        this.loginSubscription = this.piholeService.auth.subscribe(
+        this.loginSubscription = this.piholeService
+            .auth
+            .loginState.subscribe(
             loggedIn => {
                 this.isLoggedIn = loggedIn;
             });

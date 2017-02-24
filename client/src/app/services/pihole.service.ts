@@ -39,38 +39,38 @@ export class Status {
     memory: number;
     loadAverage: number;
 }
+export class ListEntry {
+    domain: string;
+    type: number;
+}
 
 class PiholeAuth {
 
-    private loginStateSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);;
+    private loginStateSubject: BehaviorSubject<boolean>;
+    public readonly loginState: Observable<boolean>;
     private loggedIn: boolean = false;
     private authData: AuthData;
 
     constructor(private piholeService: PiholeService) {
+        this.loginStateSubject = new BehaviorSubject<boolean>(false);
+        this.loginState = this.loginStateSubject.asObservable();
     }
 
     public get isLoggedIn(): boolean {
         return this.loggedIn;
     }
 
-    private emitta() {
-        this.loggedIn = !this.loggedIn;
-        this.loginStateSubject.next(this.isLoggedIn);
-    }
-
     public login(password: string): Observable<AuthData> {
         return this.piholeService
             .api
             .postLogin(password)
-            .map(this.storeAuthInformation);
+            .map(this.storeAuthInformation.bind(this));
     }
     private storeAuthInformation(authData: AuthData) {
         this.authData = authData;
+        this.loggedIn = true;
+        this.loginStateSubject.next(this.loggedIn);
         return authData;
-    }
-
-    public subscribe(updateCallback): Subscription {
-        return this.loginStateSubject.subscribe(updateCallback);
     }
 }
 
@@ -116,7 +116,7 @@ class PiholeApi {
             .map(this.extractData)
             .catch(this.handleError);
     }
-    public getList(list: string) {
+    public getList(list: string): Observable<ListEntry[]> {
         let headers = new Headers({ 'Content-Type': 'application/json' });
         let options = new RequestOptions({ headers: headers });
         return this.piholeService

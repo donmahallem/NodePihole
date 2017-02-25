@@ -5,12 +5,14 @@ export enum MenuItemType {
 }
 
 export class MenuItem {
-    title: string;
-    type: MenuItemType;
+    readonly title: string;
+    readonly type: MenuItemType;
+    readonly requiresLogin: boolean;
 
-    constructor(title: string, type: MenuItemType) {
+    constructor(title: string, type: MenuItemType, requiresLogin: boolean = false) {
         this.title = title;
         this.type = type;
+        this.requiresLogin = requiresLogin;
     }
 }
 
@@ -25,8 +27,8 @@ export class MenuItemPath {
 }
 
 export class MenuItemSimple extends MenuItem {
-    path: MenuItemPath;
-    icon?: string = null;
+    readonly path: MenuItemPath;
+    readonly icon?: string = null;
     constructor(title: string, path: string | MenuItemPath, icon: string) {
         super(title, MenuItemType.ITEM);
         if (typeof path === "string") {

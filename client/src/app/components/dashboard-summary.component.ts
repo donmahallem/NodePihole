@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { PiholeService, Summary } from './../services/pihole.service';
+import { PiholeApiService, Summary } from './../services/pihole-api.service';
 
 @Component({
     selector: '.row[dashboard-summary]',
@@ -9,9 +9,9 @@ import { PiholeService, Summary } from './../services/pihole.service';
 export class DashboardSummaryComponent {
     summary: Summary;
     errorMessage: string;
-    constructor(private piholeService: PiholeService) { }
+    constructor(private piholeApi: PiholeApiService) { }
     private getSummary() {
-        this.piholeService.api.getSummary()
+        this.piholeApi.getSummary()
             .subscribe(
             heroes => this.summary = heroes,
             error => console.error(error));

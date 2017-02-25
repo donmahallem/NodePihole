@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { PiholeService } from "./../services/pihole.service";
+import { PiholeAuthService } from "./../services/pihole-auth.service";
 import { Subscription } from 'rxjs/Subscription';
 
 @Component({
@@ -8,13 +8,12 @@ import { Subscription } from 'rxjs/Subscription';
 export class PiholeDashboardComponent {
     private isLoggedIn: boolean;
     private loginSubscription: Subscription;
-    constructor(private piholeService: PiholeService) {
-        this.isLoggedIn = piholeService.auth.isLoggedIn;
+    constructor(private piholeAuth: PiholeAuthService) {
+        this.isLoggedIn = piholeAuth.isLoggedIn;
     }
 
     ngOnInit() {
-        this.loginSubscription = this.piholeService
-            .auth
+        this.loginSubscription = this.piholeAuth
             .loginState.subscribe(
             loggedIn => {
                 this.isLoggedIn = loggedIn;

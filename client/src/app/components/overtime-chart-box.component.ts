@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { LineChartBoxComponent } from "./chartjs/line-chart-box.component"
-import { PiholeService, OvertimeData } from "./../services/pihole.service";
+import { PiholeApiService, OvertimeData } from "./../services/pihole-api.service";
 const padNumber = function (num) {
     return ("00" + num)
         .substr(-2, 2);
@@ -10,7 +10,7 @@ const padNumber = function (num) {
     templateUrl: "./chartjs/line-chart-box.component.pug"
 })
 export class OvertimeChartBoxComponent extends LineChartBoxComponent {
-    constructor(private piholeService: PiholeService) {
+    constructor(private piholeApi: PiholeApiService) {
         super();
     }
 
@@ -111,8 +111,7 @@ export class OvertimeChartBoxComponent extends LineChartBoxComponent {
     }
 
     ngAfterViewInit() {
-        this.piholeService
-            .api
+        this.piholeApi
             .getOvertimeData()
             .subscribe(this.onData.bind(this), this.onError.bind(this));
     }
@@ -121,7 +120,6 @@ export class OvertimeChartBoxComponent extends LineChartBoxComponent {
         return a - b;
     };
     private onData(data: OvertimeData) {
-        console.log(data);
         let labels = [];
         //Copy datasets as settings are stored there
         let datasets = new Array<any>();
@@ -149,13 +147,10 @@ export class OvertimeChartBoxComponent extends LineChartBoxComponent {
             datasets[0].push((timeInterval in data.queries) ? data.queries[timeInterval] : 0);
             datasets[1].push((timeInterval in data.ads) ? data.ads[timeInterval] : 0);
         }
-        console.log(datasets);
-        console.log("before", this.chartLabels, this.chartDatasets);
         this.chartDatasets[0].data = datasets[0];
         this.chartDatasets[1].data = datasets[1];
         this.chartLabels = labels;
         this.isLoading = false;
-        console.log("after", this.chartLabels, this.chartDatasets);
     }
 
     private onError(error: Error) {

@@ -1,6 +1,6 @@
 import { Component, Input } from "@angular/core";
-import { PiholeService } from "./../services/pihole.service";
-import { Query } from "./../services/pihole.service";
+import { PiholeApiService } from "./../services/pihole-api.service";
+import { Query } from "./../services/pihole-api.service";
 @Component({
     templateUrl: "./pihole-queries.component.pug",
 })
@@ -42,25 +42,22 @@ export class PiholeQueriesComponent {
     private itemsPerPage: number = 10;
     private rows: any[] = [];
     private data: Query[] = [];
-    constructor(private piholeService: PiholeService) {
+    constructor(private piholeApi: PiholeApiService) {
     }
 
     ngAfterViewInit() {
-        this.piholeService
-            .api
+        this.piholeApi
             .getQueries()
             .subscribe(this.onDataLoaded.bind(this),
             this.onLoadError.bind(this));
     }
 
     private onDataLoaded(data: Query[]) {
-        console.log("data loaded", data);
         this.data = data;
         this.isLoading = false;
     }
 
     private onLoadError(error: Error) {
-        console.log("error", error);
         this.isLoading = false;
     }
 
@@ -69,6 +66,5 @@ export class PiholeQueriesComponent {
     }
 
     public onChangePage($event: { page: number, itemsPerPage: number }) {
-        console.log("page changed", $event.page, $event.itemsPerPage);
     }
 }

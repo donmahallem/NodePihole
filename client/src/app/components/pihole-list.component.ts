@@ -3,7 +3,7 @@ import {
     Input,
     ContentChild
 } from '@angular/core';
-import { PiholeService, ListEntry } from "./../services/pihole.service";
+import { PiholeApiService, ListEntry } from "./../services/pihole-api.service";
 import { ActivatedRoute, Params } from '@angular/router';
 import { AlertComponent } from 'ng2-bootstrap/alert'
 import { Subscription } from 'rxjs/Subscription';
@@ -23,7 +23,7 @@ export class PiholeListComponent {
     private statusMessage: string = "Adding to stuff";
     private alertVisible: boolean = false;
     private queryParamSubscription: Subscription;
-    constructor(private piholeService: PiholeService, private activatedRoute: ActivatedRoute) {
+    constructor(private piholeApi: PiholeApiService, private activatedRoute: ActivatedRoute) {
 
     }
 
@@ -34,8 +34,7 @@ export class PiholeListComponent {
         });
     }
     ngAfterViewInit() {
-        this.piholeService
-            .api
+        this.piholeApi
             .getList(this.list)
             .subscribe(
             data => {
@@ -82,8 +81,7 @@ export class PiholeListComponent {
     public addDomain() {
         this.showInfo("Adding domain");
         if (this.isValidDomain(this.domain)) {
-            this.piholeService
-                .api
+            this.piholeApi
                 .addDomainToList("white", this.domain)
                 .subscribe(
                 success => this.showSuccess("Domain added successfully"),
@@ -100,8 +98,7 @@ export class PiholeListComponent {
     public removeDomain() {
         this.showInfo("Removing domain");
         if (this.isValidDomain(this.domain)) {
-            this.piholeService
-                .api
+            this.piholeApi
                 .removeDomainFromList("white", this.domain)
                 .subscribe(
                 success => this.showSuccess("Domain removed successfully"),
@@ -114,8 +111,7 @@ export class PiholeListComponent {
     public refreshList() {
         if (!this.isRequesting) {
             this.isRequesting = true;
-            this.piholeService
-                .api
+            this.piholeApi
                 .getList("white")
                 .subscribe(
                 success => console.log(success),

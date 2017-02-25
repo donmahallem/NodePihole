@@ -1,5 +1,5 @@
 import { Component, Input, ElementRef } from "@angular/core";
-import { Query } from "./../services/pihole.service";
+import { Query } from "./../services/pihole-api.service";
 import { PageChangedEvent } from "ng2-bootstrap/pagination/pagination.component";
 import * as moment from "moment";
 
@@ -32,7 +32,6 @@ export class PiholeQueriesTableComponent {
     private config: TableConfig = new TableConfig();
     @Input("inputData")
     public set inputData(data: Query[]) {
-        console.log(data);
         this.mInputData = data.sort(sortByDate(true));
         this.config.totalItems = data.length;
         this.visibleRows = data;
@@ -68,7 +67,6 @@ export class PiholeQueriesTableComponent {
     private numPages: number = 0;
 
     constructor(private elementRef: ElementRef) {
-        console.log(this.elementRef);
     }
 
     ngAfterViewInit() {

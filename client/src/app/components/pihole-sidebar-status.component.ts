@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { PiholeService, Status } from "./../services/pihole.service";
+import { PiholeApiService, Status } from "./../services/pihole-api.service";
 @Component({
     selector: 'pihole-sidebar-status',
     templateUrl: "./pihole-sidebar-status.component.pug"
@@ -7,7 +7,7 @@ import { PiholeService, Status } from "./../services/pihole.service";
 export class PiholeSidebarStatusComponent {
 
     private status: Status = new Status();
-    constructor(private piholeService: PiholeService) {
+    constructor(private piholeApi: PiholeApiService) {
 
     }
 
@@ -16,8 +16,7 @@ export class PiholeSidebarStatusComponent {
     }
 
     private loadStatus(): void {
-        this.piholeService
-            .api
+        this.piholeApi
             .getStatus()
             .subscribe(
             data => {
@@ -26,7 +25,7 @@ export class PiholeSidebarStatusComponent {
             error => {
             },
             () => {
-                setTimeout(this.loadStatus.bind(this), 10000);
+                setTimeout(this.loadStatus.bind(this), 60000);
             }
             )
     }

@@ -20,19 +20,8 @@ export class RouteGuardService implements CanActivate, CanActivateChild {
         if (!route.data["requiresLogin"]) {
             return true;
         } else {
-            this.piholeService
-                .auth
-                .loginState.first()
-                .subscribe(data => {
-                    console.log("allowed", data),
-                    error => { console.log("not allowed", error) },
-                    () => {
-                        console.log("complete");
-                    }
-                });
             return this.piholeService
-                .auth
-                .loginState.first();
+                .auth.getLoginState();
         }
     }
 

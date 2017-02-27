@@ -20,12 +20,17 @@ export class RouteGuardService implements CanActivate, CanActivateChild {
         if (!route.data["requiresLogin"]) {
             return true;
         } else {
-            return this.piholeAuth.getLoginState();
+            return this.piholeAuth.getLoginState()
+                .map(authorized => {
+                    if (!authorized) {
+                        this.router.navigate(["/login"]);
+                    }
+                    return authorized;
+                });
         }
     }
 
     canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
-        return Observable.of(true).delay(1000);
-
+        return this.canActivate(route, state);
     }
 }

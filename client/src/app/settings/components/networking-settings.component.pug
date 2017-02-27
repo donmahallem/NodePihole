@@ -1,0 +1,28 @@
+.box.box-warning
+    .box-header.with-border
+        h3.box-title Networking
+    .box-body
+        .form-group
+            label Pi-Hole Ethernet Interface
+            .input-group
+                .input-group-addon
+                    i.fa.fa-plug
+                input.form-control(type="text", disabled=true, value="interface")
+        .form-group
+             label Pi-Hole IPv4 address
+             .input-group
+                 .input-group-addon
+                     i.fa.fa-plug
+                 input.form-control(type="text", disabled=true, value="{{ipv4}}" )
+        .form-group
+            label Pi-Hole IPv6 address
+            .input-group
+                .input-group-addon
+                    i.fa.fa-plug
+                input.form-control(type="text", disabled=true, value="{{ipv6}}")
+        .form-group
+            label Pi-Hole hostname
+            .input-group
+                .input-group-addon
+                    i.fa.fa-laptop
+                input.form-control(type="text", disabled=true, value="{{hostname}}")

@@ -43,16 +43,18 @@ export class PiholeQueriesComponent {
     private rows: any[] = [];
     private data: Query[] = [];
     constructor(private piholeApi: PiholeApiService) {
-    }
-
-    ngAfterViewInit() {
         this.piholeApi
             .getQueries()
+            .map(data => {
+                console.log("in");
+                return data;
+            })
             .subscribe(this.onDataLoaded.bind(this),
             this.onLoadError.bind(this));
     }
 
     private onDataLoaded(data: Query[]) {
+        console.log("out");
         this.data = data;
         this.isLoading = false;
     }

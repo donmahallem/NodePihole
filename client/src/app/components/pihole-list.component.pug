@@ -27,7 +27,7 @@ ng-container(*ngIf="!isUnknownList")
         h1 {{listTitle}}
     // Domain Input
     .form-group.input-group
-        input.form-control(type='text', placeholder='Add a domain (example.com or sub.example.com)', [(ngModel)]="domain")
+        input.form-control(type='text', placeholder='Add a domain (example.com or sub.example.com)',[value]="domain")
         span.input-group-btn
             button.btn.btn-default(type='button',(click)="addDomain()", [disabled]="isRequesting")
                 i.fa.fa-plus
@@ -37,6 +37,9 @@ ng-container(*ngIf="!isUnknownList")
     alert(*ngIf="alertVisible",[type]="statusType",dismissible="true",(onClosed)="alertClosed($event)",dismissOnTimeout="5000")
     // Domain List
     ul.list-group(*ngIf="domainList.length>0")
-        li(*ngFor="let domainEntry of domainList") {{domainEntry.domain}}
-    p(*ngIf="domainList.length<=0")
+        li.list-group-item.clearfix(*ngFor="let domainEntry of domainList") {{domainEntry.domain}}
+            button.btn.btn-danger.btn-xs.pull-right(type='button',(click)="remove(domainEntry)")
+                span.glyphicon.glyphicon-trash
+
+    p(*ngIf="domainList.length==0")
     |   No Domains are listed 

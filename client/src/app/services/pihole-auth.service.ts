@@ -33,6 +33,10 @@ export class PiholeAuthService extends PiholeBackendService {
         super(http);
         this.loginStateSubject = new BehaviorSubject<boolean>(false);
         this.loginState = this.loginStateSubject.asObservable();
+        this.checkAccessToken()
+            .subscribe(state => {
+                console.log("Initial login state", state);
+            });
     }
 
 
@@ -84,7 +88,8 @@ export class PiholeAuthService extends PiholeBackendService {
             headers: headers,
             body: { "password": password }
         });
-        return this.request("/api/auth/login", options);
+        return this.request("/api/auth/login", options)
+            .map(this.storeAuthInformation.bind(this));
     }
     private request(url: Request | string, requestOptions: RequestOptions): Observable<any> {
         requestOptions.headers["Content-Type"] = "application/json";

@@ -14,9 +14,9 @@
 					i.fa.fa-times-circle-o
 					|  Wrong password!
 		.panel-body
-			form((ngSubmit)="login()")
+			form((ngSubmit)="login(loginForm)",[formGroup]="loginForm")
 				.form-group.has-feedback([ngClass]="{'has-error':wrongPassword}")
-					input.form-control(type='password', [disabled]="isRequesting", placeholder='Password', name="password", autofocus='', [value]="password")
+					input.form-control(type='password', [disabled]="isRequesting", placeholder='Password', name="password", autofocus='',formControlName="password")
 					span.glyphicon.glyphicon-lock.form-control-feedback
 				.row
 					.col-xs-8
@@ -29,7 +29,7 @@
 								kbd Ctrl+Return
 								|  → Log in and go to Settings page
 					.col-xs-4
-						button.btn.btn-primary.pull-right(type='submit', [disabled]="isRequesting", href='#')
+						button.btn.btn-primary.pull-right(type='submit', [disabled]="isRequesting||!loginForm.valid", href='#')
 							i.glyphicon.glyphicon-log-in
 							|    Log in
 				br

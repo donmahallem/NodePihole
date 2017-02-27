@@ -19,8 +19,6 @@ import { ChartsModule } from 'ng2-charts';
 import { LineChartBoxComponent } from "./../components/chartjs/line-chart-box.component";
 import { ChartBoxComponent } from "./../components/chartjs/chart-box.component";
 import { DoughnutChartBoxComponent } from "./../components/chartjs/doughnut-chart-box.component";
-import { FormsModule } from '@angular/forms';
-import { AdminLteBox } from "./../components/adminlte/box.component";
 import {
     AlertModule,
     PaginationModule
@@ -39,10 +37,10 @@ const piholeRoutes: Routes = [
     },
     {
         path: 'login',
-        component: PiholeLoginComponent,
         data: {
             requiresLogin: false
-        }
+        },
+        loadChildren: "app/login/login.module#LoginModule"
     },
     {
         path: 'list',
@@ -59,6 +57,14 @@ const piholeRoutes: Routes = [
         data: {
             requiresLogin: true
         }
+    },
+    {
+        path: 'settings',
+        canActivate: [RouteGuardService],
+        data: {
+            requiresLogin: true
+        },
+        loadChildren: "app/settings/settings.module#SettingsModule"
     }
 ];
 
@@ -74,8 +80,6 @@ const piholeRoutes: Routes = [
         ForwardDestinationsChartBoxComponent,
         LineChartBoxComponent,
         DoughnutChartBoxComponent,
-        AdminLteBox,
-        AdminLteBox,
         PiholeListComponent,
         PiholeQueriesTableComponent
     ],
@@ -84,7 +88,6 @@ const piholeRoutes: Routes = [
         AlertModule.forRoot(),
         ChartsModule,
         BrowserModule,
-        FormsModule,
         PaginationModule.forRoot()
     ],
     exports: [

@@ -1,10 +1,17 @@
 import {
     Component,
     Input,
-    ContentChild
+    ContentChild,
+    NgZone
 } from '@angular/core';
-import { PiholeApiService, ListEntry } from "./../services/pihole-api.service";
-import { ActivatedRoute, Params } from '@angular/router';
+import {
+    PiholeApiService,
+    ListEntry
+} from "./../services/pihole-api.service";
+import {
+    ActivatedRoute,
+    Params
+} from '@angular/router';
 import { AlertComponent } from 'ng2-bootstrap/alert'
 import { Subscription } from 'rxjs/Subscription';
 @Component({
@@ -23,27 +30,33 @@ export class PiholeListComponent {
     private statusMessage: string = "Adding to stuff";
     private alertVisible: boolean = false;
     private queryParamSubscription: Subscription;
-    constructor(private piholeApi: PiholeApiService, private activatedRoute: ActivatedRoute) {
-
-    }
-
-    ngOnInit() {
+    constructor(private piholeApi: PiholeApiService,
+        private activatedRoute: ActivatedRoute,
+        private zone: NgZone) {
+        this.refreshList();
         // subscribe to router event
         this.queryParamSubscription = this.activatedRoute.queryParams.subscribe((params: Params) => {
             this.list = params["l"];
         });
     }
-    ngAfterViewInit() {
-        this.piholeApi
-            .getList(this.list)
-            .subscribe(
-            data => {
-                this.domainList = data;
-            },
-            error => {
-                console.log(error);
-            }
-            )
+
+    public refreshList() {
+        if (!this.isRequesting) {
+            this.isRequesting = true;
+            this.piholeApi
+                .getList(this.list)
+                .subscribe(
+                data => {
+                    this.zone.run(() => {
+                        this.domainList = data;
+                    });
+                },
+                error => {
+                    console.log(error);
+                }, () => {
+                    this.isRequesting = false;
+                })
+        }
     }
 
     ngOnDestroy() {
@@ -91,6 +104,10 @@ export class PiholeListComponent {
         }
     }
 
+    private remove(item: ListEntry) {
+        console.log("Remove", item);
+    }
+
     public alertClosed(event: any) {
         this.alertVisible = false;
     }
@@ -108,15 +125,4 @@ export class PiholeListComponent {
         }
     }
 
-    public refreshList() {
-        if (!this.isRequesting) {
-            this.isRequesting = true;
-            this.piholeApi
-                .getList("white")
-                .subscribe(
-                success => console.log(success),
-                error => console.log(error),
-                () => this.isRequesting = false);
-        }
-    }
 }

@@ -1,0 +1,64 @@
+form(role='form', [formGroup]="dhcpForm", novalidate=true,(ngSubmit)="onSubmit()")
+    .box.box-warning
+        .box-header.with-border
+            h3.box-title Pi-Hole DHCP Server
+        .box-body
+            .col-md-6
+                .form-group
+                    .checkbox
+                        label
+                            input(type='checkbox',formControlName="enabled")
+                            |  DHCP server enabled
+            .col-md-6
+                p(hidden='')
+                    | Make sure your router's DHCP server is disabled when using the Pi-hole DHCP server!
+            .col-md-12
+                label Range of IP addresses to hand out
+            div(formGroupName="settings")
+                div(formGroupName="range")
+                    .col-md-6
+                        .form-group([ngClass]="{'has-error':formSettingsRange.get('from').hasError('pattern'),'has-success':formSettingsRange.get('from').valid}")
+                            .input-group
+                                .input-group-addon From
+                                input.form-control(type='text',formControlName="from")
+                    .col-md-6
+                        .form-group([ngClass]="{'has-error':formSettingsRange.get('to').hasError('pattern'),'has-success':formSettingsRange.get('to').valid}")
+                            .input-group
+                                .input-group-addon To
+                                input.form-control(type='text',formControlName="to")
+                .col-md-12
+                    label Router (gateway) IP address
+                    .form-group([ngClass]="{'has-error':formSettings.get('gateway').hasError('pattern'),'has-success':formSettings.get('gateway').valid}")
+                        .input-group
+                            .input-group-addon Router
+                            input.form-control(type='text',formControlName="gateway")
+                .col-md-12(formGroupName="advanced")
+                    .box.box-warning.collapsed-box
+                        .box-header.with-border
+                            h3.box-title Advanced DHCP settings
+                            .box-tools.pull-right
+                                button.btn.btn-box-tool(type='button', data-widget='collapse')
+                                    i.fa.fa-plus
+                        .box-body
+                            .col-md-12
+                                .form-group
+                                    .checkbox
+                                        label
+                                            input(type='checkbox', checked='',formControlName="ipv6Enabled")
+                                            |  Enable IPv6 support (SLAAC + RA)
+                            .col-md-12
+                                label Pi-Hole domain name
+                                .form-group([ngClass]="{'has-error':formSettingsAdvanced.get('domain').hasError('pattern'),'has-success':formSettingsAdvanced.get('domain').valid}")
+                                    .input-group
+                                        .input-group-addon Domain
+                                        input.form-control(type='text', value='local',formControlName="domain")
+                            .col-md-12
+                                label DHCP lease time
+                                .form-group([ngClass]="{'has-error':formSettingsAdvanced.get('leasetime').hasError('pattern'),'has-success':formSettingsAdvanced.get('leasetime').valid}")
+                                    .input-group
+                                        .input-group-addon Lease time in hours
+                                        input.form-control(type='text',  value='24',formControlName="leasetime")
+                                p
+                                    | Hint: 0 = infinite, 24 = one day, 168 = one week, 744 = one month, 8760 = one year
+        .box-footer
+            button.btn.btn-primary.pull-right(type='submit') Save

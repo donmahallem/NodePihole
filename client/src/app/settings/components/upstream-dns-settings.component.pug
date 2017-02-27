@@ -1,0 +1,104 @@
+.box.box-warning
+    .box-header.with-border
+        h3.box-title Upstream DNS Servers
+    .box-body
+        form(role='form', method='post',[formGroup]="upstreamDnsForm")
+            .col-lg-6
+                label Upstream DNS Servers
+                .form-group
+                    .checkbox
+                        label(title='8.8.8.8')
+                            input(type='checkbox', name='DNSserver8.8.8.8', value='true', checked='')
+                            | Google (Primary)
+                    .checkbox
+                        label(title='208.67.222.222')
+                            input(type='checkbox', name='DNSserver208.67.222.222', value='true')
+                            | OpenDNS (Primary)
+                    .checkbox
+                        label(title='4.2.2.1')
+                            input(type='checkbox', name='DNSserver4.2.2.1', value='true')
+                            | Level3 (Primary)
+                    .checkbox
+                        label(title='199.85.126.10')
+                            input(type='checkbox', name='DNSserver199.85.126.10', value='true')
+                            | Norton (Primary)
+                    .checkbox
+                        label(title='8.26.56.26')
+                            input(type='checkbox', name='DNSserver8.26.56.26', value='true')
+                            | Comodo (Primary)
+                    .checkbox
+                        label(title='8.8.4.4')
+                            input(type='checkbox', name='DNSserver8.8.4.4', value='true', checked='')
+                            | Google (Secondary)
+                    .checkbox
+                        label(title='208.67.220.220')
+                            input(type='checkbox', name='DNSserver208.67.220.220', value='true')
+                            | OpenDNS (Secondary)
+                    .checkbox
+                        label(title='4.2.2.2')
+                            input(type='checkbox', name='DNSserver4.2.2.2', value='true')
+                            | Level3 (Secondary)
+                    .checkbox
+                        label(title='199.85.127.10')
+                            input(type='checkbox', name='DNSserver199.85.127.10', value='true')
+                            | Norton (Secondary)
+                    .checkbox
+                        label(title='8.20.247.20')
+                            input(type='checkbox', name='DNSserver8.20.247.20', value='true')
+                            | Comodo (Secondary)
+            .col-lg-6
+                label  
+                .form-group
+                    label Custom 1 (IPv4)
+                    .input-group
+                        .input-group-addon
+                            input(type='checkbox', name='custom1', value='Customv4')
+                        input#custom1val.form-control(type='text', name='custom1val', maxlength='15', size='15')
+                    label Custom 2 (IPv4)
+                    .input-group
+                        .input-group-addon
+                            input(type='checkbox', name='custom2', value='Customv4')
+                        input#custom2val.form-control(type='text', name='custom2val', maxlength='15', size='15')
+                    label Custom 3 (IPv6)
+                    .input-group
+                        .input-group-addon
+                            input(type='checkbox', name='custom3', value='Customv6')
+                        input#custom3val.form-control(type='text', name='custom3val', maxlength='39', size='39')
+                    label Custom 4 (IPv6)
+                    .input-group
+                        .input-group-addon
+                            input(type='checkbox', name='custom4', value='Customv6')
+                        input#custom4val.form-control(type='text', name='custom4val', maxlength='39', size='39')
+            .col-lg-12
+                .box.box-warning.collapsed-box
+                    .box-header.with-border
+                        h3.box-title Advanced DNS settings
+                        .box-tools.pull-right
+                            button.btn.btn-box-tool(type='button', data-widget='collapse')
+                                i.fa.fa-plus
+                    .box-body
+                        .col-lg-12
+                            .form-group
+                                .checkbox
+                                    label
+                                        input(type='checkbox', name='DNSrequiresFQDN', checked='', title='domain-needed')
+                                        |  never forward non-FQDNs
+                            .form-group
+                                .checkbox
+                                    label
+                                        input(type='checkbox', name='DNSbogusPriv', checked='', title='bogus-priv')
+                                        |  never forward reverse lookups for private IP ranges
+                            p
+                                | Note that enabling these two options may increase your privacy slightly, but may also prevent you from being able to access local hostnames if the Pi-Hole is not used as DHCP server
+                            .form-group
+                                .checkbox
+                                    label
+                                        input(type='checkbox', name='DNSSEC')
+                                        |  Use DNSSEC
+                            p
+                                | Validate DNS replies and cache DNSSEC data. When forwarding DNS queries, Pi-hole requests the DNSSEC records needed to  validate the replies. Use Google or Norton DNS servers when activating DNSSEC. Note that the size of your log might increase significantly when enabling DNSSEC. A DNSSEC resolver test can be found 
+                                a(href='http://dnssec.vs.uni-due.de/', target='_blank') here
+                                | .
+    .box-footer
+        input(type='hidden', name='field', value='DNS')
+        button.btn.btn-primary.pull-right(type='submit') Save

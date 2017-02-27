@@ -2,6 +2,9 @@ import { Component, Input, ElementRef } from "@angular/core";
 import { Query } from "./../services/pihole-api.service";
 import { PageChangedEvent } from "ng2-bootstrap/pagination/pagination.component";
 import * as moment from "moment";
+import { Observable } from 'rxjs/Observable';
+import { Subscription } from 'rxjs/Subscription';
+import 'rxjs/add/observable/fromEvent';
 
 class TableConfig {
     itemsPerPage: number = 100;
@@ -30,12 +33,36 @@ export class PiholeQueriesTableComponent {
     private mInputData: Query[];
     private visibleRows: Query[];
     private config: TableConfig = new TableConfig();
+    private sortWorker: Worker;
+    private sortObservable: Observable<any>;
+    private sortSubscription: Subscription;
+    constructor() {
+        this.sortWorker = new Worker("assets/scripts/sort.worker.js");
+        this.sortObservable = Observable.fromEvent(this.sortWorker, "onmessage");
+        this.sortSubscription = this.sortObservable.subscribe(this.onSorted.bind(this));
+        this.sortWorker.onmessage = function (e) {
+            this.onSorted(e.data);
+        }.bind(this);
+    }
+
+    private onSorted(list: Query[]) {
+        this.mInputData = list;
+        this.config.totalItems = list.length;
+        this.visibleRows = list;
+        this.updateView();
+        console.log("rec", list, this.visibleRows);
+    }
+    private asyncSort(data): Observable<Query[]> {
+        let worker = new Worker("assets/js/sort.worker.js");
+        worker.postMessage(data);
+        return Observable.fromEvent(worker, "onmessage");
+    }
+
+
     @Input("inputData")
     public set inputData(data: Query[]) {
-        this.mInputData = data.sort(sortByDate(true));
-        this.config.totalItems = data.length;
-        this.visibleRows = data;
-        this.updateView();
+        //this.mInputData = data.sort(sortByDate(true));
+        this.sortWorker.postMessage(data);
     }
 
     public updateView() {
@@ -66,8 +93,6 @@ export class PiholeQueriesTableComponent {
 
     private numPages: number = 0;
 
-    constructor(private elementRef: ElementRef) {
-    }
 
     ngAfterViewInit() {
     }

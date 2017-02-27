@@ -24,4 +24,4 @@ tfoot
         th Action
     tr
         td(colspan="6")
-            pagination.pagination-sm([directionLinks]="true",[rotate]="true",[boundaryLinks]="true",[totalItems]="config.totalItems",[maxSize]="10",[itemsPerPage]="config.itemsPerPage",[(ngModel)]="config.currentPage",(numPages)="smallnumPages = $event",(pageChanged)="onPageChanged($event)")
+            pagination.pagination-sm([directionLinks]="true",[rotate]="true",[boundaryLinks]="true",[totalItems]="config.totalItems",[maxSize]="10",[itemsPerPage]="config.itemsPerPage",(numPages)="smallnumPages = $event",(pageChanged)="onPageChanged($event)")

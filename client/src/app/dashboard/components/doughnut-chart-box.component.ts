@@ -1,16 +1,16 @@
 import { Component } from '@angular/core';
-import { ChartBoxComponent } from "./chart-box.component";
+import { AbstractChartBoxComponent } from "./abstract-chart-box.component";
 
 @Component({
     selector: 'doughnut-chart-box',
     templateUrl: "./doughnut-chart-box.component.pug"
 })
-export class DoughnutChartBoxComponent extends ChartBoxComponent {
+export class DoughnutChartBoxComponent extends AbstractChartBoxComponent {
     protected chartData: number[];
     constructor() {
         super("doughnut");
         this.chartColors = [{
-            backgroundColor: ChartBoxComponent.DEFAULT_COLORS
+            backgroundColor: AbstractChartBoxComponent.DEFAULT_COLORS
         }
         ];
     }

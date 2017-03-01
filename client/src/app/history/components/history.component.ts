@@ -1,10 +1,10 @@
 import { Component, Input } from "@angular/core";
-import { PiholeApiService } from "./../services/pihole-api.service";
-import { Query } from "./../services/pihole-api.service";
+import { PiholeApiService } from "./../../services/pihole-api.service";
+import { Query } from "./../../services/pihole-api.service";
 @Component({
-    templateUrl: "./pihole-queries.component.pug",
+    templateUrl: "./history.component.pug",
 })
-export class PiholeQueriesComponent {
+export class HistoryComponent {
     public columns: Array<any> = [
         {
             title: "Domain",

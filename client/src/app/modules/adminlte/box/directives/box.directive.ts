@@ -1,10 +1,8 @@
 import {
     Directive,
-    ElementRef,
-    HostListener,
-    Input,
     HostBinding,
-    Injectable
+    Injectable,
+    Input
 } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
@@ -13,21 +11,30 @@ import { Subscription } from 'rxjs/Subscription';
 export class AdminLteBoxService {
     private boxCollapseSource = new Subject<boolean>();
     boxCollapse$ = this.boxCollapseSource.asObservable();
-    private isBoxCollapsed: boolean = false;
 
-    public get boxCollapsed(): boolean {
-        return this.isBoxCollapsed;
+    private _collapsed: boolean;
+
+    public get collapsed(): boolean {
+        return this._collapsed;
     }
 
-    public set boxCollapsed(collapsed: boolean) {
-        if (this.isBoxCollapsed != collapsed) {
-            this.isBoxCollapsed = collapsed;
-            this.boxCollapseSource.next(this.isBoxCollapsed);
+    public set collapsed(collapsed: boolean) {
+        if (this._collapsed != collapsed) {
+            console.log("collapse state switch", this._collapsed, " => ", collapsed);
+            this._collapsed = collapsed;
+            this.boxCollapseSource.next(this._collapsed);
         }
     }
 
+    public collapse() {
+        this.collapsed = true;
+    }
+    public expand() {
+        this.collapsed = false;
+    }
+
     public toggleCollapse() {
-        this.boxCollapsed = !this.boxCollapsed;
+        this.collapsed = !this.collapsed;
     }
 }
 
@@ -36,19 +43,17 @@ export class AdminLteBoxService {
     providers: [AdminLteBoxService]
 })
 export class BoxDirective {
-    @HostBinding("class.collapsed-box")
-    @Input("collapsed")
-    private collapsed: boolean = false;
-    private collapseSubscription: Subscription;
     constructor(private adminLteBoxService: AdminLteBoxService) {
-        this.adminLteBoxService.boxCollapsed = this.collapsed;
-        this.collapseSubscription = this.adminLteBoxService.boxCollapse$.subscribe(
-            collapsed => {
-                this.collapsed = collapsed;
-            });
+        console.log("Coll1", this.collapsed);
     }
-
-    ngOnDestroy() {
-        this.collapseSubscription.unsubscribe();
+    @HostBinding("class.collapsed-box")
+    set collapsed(collapsed: boolean) {
+        this.adminLteBoxService.collapsed = collapsed;
+    }
+    get collapsed(): boolean {
+        return this.adminLteBoxService.collapsed;
+    }
+    ngAfterViewInit() {
+        console.log("Coll2", this.collapsed);
     }
 }

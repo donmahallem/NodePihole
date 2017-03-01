@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-export abstract class ChartBoxComponent {
+export abstract class AbstractChartBoxComponent {
     protected isLoading: boolean = false;
     protected chartType: string;
     protected chartColors: Array<any>;

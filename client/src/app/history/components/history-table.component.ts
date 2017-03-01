@@ -1,5 +1,5 @@
 import { Component, Input, ElementRef } from "@angular/core";
-import { Query } from "./../services/pihole-api.service";
+import { Query } from "./../../services/pihole-api.service";
 import { PageChangedEvent } from "ng2-bootstrap/pagination/pagination.component";
 import * as moment from "moment";
 import { Observable } from 'rxjs/Observable';
@@ -24,9 +24,9 @@ function sortByDate(asc: boolean = true) {
 
 @Component({
     selector: "table[queries-table]",
-    templateUrl: "./pihole-queries-table.component.pug"
+    templateUrl: "./history-table.component.pug"
 })
-export class PiholeQueriesTableComponent {
+export class HistoryTableComponent {
 
     private startIdx: number = 0;
     private endIdx: number = 0;

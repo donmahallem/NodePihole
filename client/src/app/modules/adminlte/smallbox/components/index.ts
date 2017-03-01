@@ -1,0 +1,1 @@
+export { SmallboxComponent } from "./smallbox.component";

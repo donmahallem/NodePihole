@@ -4,3 +4,7 @@ export {
     BoxBodyDirective,
     BoxModule
 } from './box';
+export {
+    SmallboxComponent,
+    SmallboxModule
+} from './smallbox';

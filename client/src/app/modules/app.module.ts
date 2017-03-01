@@ -11,12 +11,13 @@ import { AdminLteSidebarMenu } from "./../components/adminlte/sidebar/sidebar-me
 import { PiholeContentComponent } from './../components/pihole-content.component';
 
 import { PiholeRoutingModule } from './pihole-routing.module';
-import { SettingsModule } from './../settings/settings.module';
+import { SettingsModule } from './../settings';
+import { DashboardModule } from './../dashboard';
+import { HistoryModule } from './../history';
 
 import { PiholeApiService } from './../services/pihole-api.service';
 import { PiholeAuthService } from './../services/pihole-auth.service';
 
-import { AdminLteBox } from "./../components/adminlte/box.component";
 
 @NgModule({
     declarations: [
@@ -25,14 +26,15 @@ import { AdminLteBox } from "./../components/adminlte/box.component";
         PiholeSidebarComponent,
         PiholeSidebarStatusComponent,
         AdminLteSidebarMenu,
-        PiholeContentComponent,
-        AdminLteBox
+        PiholeContentComponent
     ],
     imports: [
         BrowserModule,
         HttpModule,
         PiholeRoutingModule,
-        SettingsModule
+        SettingsModule,
+        DashboardModule,
+        HistoryModule
     ],
     providers: [PiholeApiService, PiholeAuthService],
     bootstrap: [AppComponent]

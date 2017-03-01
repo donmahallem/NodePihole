@@ -1,10 +1,7 @@
 import {
     Directive,
-    ElementRef,
     HostListener,
-    Input,
-    HostBinding,
-    Injectable
+    Host
 } from '@angular/core';
 import { AdminLteBoxService } from "./box.directive";
 
@@ -16,7 +13,7 @@ export class BoxBodyToggleDirective {
     private onClick() {
         this.adminLteBoxService.toggleCollapse();
     }
-    constructor(private adminLteBoxService: AdminLteBoxService) {
+    constructor( @Host() private adminLteBoxService: AdminLteBoxService) {
 
     }
 }

@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
-import { LineChartBoxComponent } from "./chartjs/line-chart-box.component"
-import { PiholeApiService, OvertimeData } from "./../services/pihole-api.service";
+import { LineChartBoxComponent } from "./line-chart-box.component"
+import { PiholeApiService, OvertimeData } from "./../../services/pihole-api.service";
 const padNumber = function (num) {
     return ("00" + num)
         .substr(-2, 2);
 };
 @Component({
     selector: 'overtime-chart-box',
-    templateUrl: "./chartjs/line-chart-box.component.pug"
+    templateUrl: "./line-chart-box.component.pug"
 })
-export class OvertimeChartBoxComponent extends LineChartBoxComponent {
+export class OvertimeChartComponent extends LineChartBoxComponent {
     constructor(private piholeApi: PiholeApiService) {
         super();
     }

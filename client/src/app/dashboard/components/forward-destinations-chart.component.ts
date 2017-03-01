@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import { DoughnutChartBoxComponent } from "./chartjs/doughnut-chart-box.component"
+import { DoughnutChartBoxComponent } from "./doughnut-chart-box.component"
 
 
 @Component({
     selector: 'forward-destinations-chart-box',
-    templateUrl: "./chartjs/doughnut-chart-box.component.pug"
+    templateUrl: "./doughnut-chart-box.component.pug"
 })
-export class ForwardDestinationsChartBoxComponent extends DoughnutChartBoxComponent {
+export class ForwardDestinationsChartComponent extends DoughnutChartBoxComponent {
 
     constructor() {
         super();

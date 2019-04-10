@@ -23,7 +23,7 @@
         "tail" : "^1.2.1"
     },
     "devDependencies" : {
-        "chai" : "^3.5.0",
+        "chai" : "^4.2.0",
         "chai-http" : "^3.0.0",
         "grunt" : "^1.0.1",
         "grunt-apidoc" : "^0.11.0",

@@ -20,7 +20,7 @@
         "moment" : "^2.24.0",
         "pug" : "^2.0.3",
         "serve-static" : "^1.13.2",
-        "tail" : "^1.2.1"
+        "tail" : "^2.0.2"
     },
     "devDependencies" : {
         "chai" : "^4.2.0",

@@ -17,7 +17,7 @@
         "express" : "^4.17.3",
         "ini" : "^3.0.0",
         "jsonwebtoken" : "^8.5.1",
-        "moment" : "^2.29.2",
+        "moment" : "^2.29.3",
         "pug" : "^3.0.2",
         "serve-static" : "^1.15.0",
         "tail" : "^2.2.4"

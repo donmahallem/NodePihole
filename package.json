@@ -27,7 +27,7 @@
         "chai-http" : "4.3.0",
         "grunt" : "1.5.3",
         "grunt-apidoc" : "0.11.0",
-        "grunt-contrib-uglify" : "5.2.1",
+        "grunt-contrib-uglify" : "5.2.2",
         "grunt-jsbeautifier" : "0.2.13",
         "istanbul" : "0.4.5",
         "mocha" : "10.0.0",

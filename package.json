@@ -10,7 +10,7 @@
     "author" : "",
     "license" : "MIT",
     "dependencies" : {
-        "body-parser" : "^1.20.0",
+        "body-parser" : "^1.20.1",
         "cookie" : "^0.5.0",
         "cookie-parser" : "^1.4.6",
         "csp-header" : "5.1.0",

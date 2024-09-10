@@ -31,7 +31,7 @@
         "grunt-jsbeautifier" : "0.2.13",
         "istanbul" : "0.4.5",
         "mocha" : "10.7.3",
-        "sinon" : "18.0.0",
+        "sinon" : "18.0.1",
         "sinon-chai" : "4.0.0"
     }
 }

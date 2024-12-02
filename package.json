@@ -30,7 +30,7 @@
         "grunt-contrib-uglify" : "5.2.2",
         "grunt-jsbeautifier" : "0.2.13",
         "istanbul" : "0.4.5",
-        "mocha" : "10.8.2",
+        "mocha" : "11.0.1",
         "sinon" : "19.0.2",
         "sinon-chai" : "4.0.0"
     }

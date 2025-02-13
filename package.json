@@ -13,7 +13,7 @@
         "body-parser" : "^1.20.3",
         "cookie" : "^1.0.2",
         "cookie-parser" : "^1.4.7",
-        "csp-header" : "6.0.0",
+        "csp-header" : "6.0.1",
         "express" : "^4.21.2",
         "ini" : "^5.0.0",
         "jsonwebtoken" : "^9.0.2",
